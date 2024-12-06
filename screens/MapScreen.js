@@ -4,13 +4,14 @@ import { Dimensions } from 'react-native';
 import * as Location from 'expo-location';
 import { useSelector } from 'react-redux';
 import { Marker } from 'react-native-maps';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 
 
 export default function MapScreen({ navigation }) {
     const user = useSelector((state) => state.user.value)
 
-    console.log(user.places[0].latitude)
+    console.log(user.places[0]?.latitude)
 
           // if (currentLocation == null) {
   //   return (
@@ -31,7 +32,7 @@ export default function MapScreen({ navigation }) {
         style={{ flex: 1 }}
        >
         <Marker pinColor ={'#C44949'}coordinate={{ latitude: user.places[0].latitude, longitude: user.places[0].longitude}}>
-          <Image source={require('../assets/map-pin-red.png')} style={styles.markerImage}/>
+          <MaterialCommunityIcons name={'map-marker-star'} size={100} color={'#C44949'} style={styles.logo}/>
         </Marker>
        </MapView>
 
@@ -49,5 +50,6 @@ const styles = StyleSheet.create({
       width: 50,
       height: 50,
       color: 'red',
-    }
+    },
+
   });

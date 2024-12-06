@@ -29,12 +29,12 @@ const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => {
   return (
-    
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name='Home' component={HomeScreen} />
-        <Stack.Screen name='Resto' component={RestoScreen} />
-      </Stack.Navigator>
-    
+
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name='Home' component={HomeScreen} />
+      <Stack.Screen name='Resto' component={RestoScreen} />
+    </Stack.Navigator>
+
   )
 }
 
@@ -43,39 +43,49 @@ export default function App() {
   return (
     <Provider store={store}>
 
-    <NavigationContainer>
-      <Tab.Navigator screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          let iconName = '';
+      <NavigationContainer>
+        <Tab.Navigator screenOptions={({ route }) => ({
+          tabBarIcon: ({ color, size }) => {
+            let iconName = '';
 
-          if (route.name === 'Home') {
-            iconName = 'home';
-          } else if (route.name === 'User') {
-            iconName = 'user';
-          } else if (route.name === 'Like') {
-            iconName = 'heart';
-          } else if (route.name === 'Map') {
-            iconName = 'map-marker';
-          }
 
-          return <FontAwesome name={iconName} size={size} color={color} />
-          // return <Entypo name={iconName} size={size} color={color} />
-        },
-        tabBarActiveTintColor: '#C44949',
-        tabBarInactiveTintColor: 'grey',
-        headerShown: false,
-      })}>
-        <Tab.Screen name="Home" component={StackNavigator} />
-        <Tab.Screen name="Map" component={MapScreen} />
-        <Tab.Screen name="Like" component={LikeScreen} />
-        <Tab.Screen name="User" component={UserScreen} />
-        {/* <View style={styles.container}>
+            if (route.name === 'Home') {
+              fontName = FontAwesome
+              iconName = 'home';
+              return <FontAwesome name={iconName} size={size} color={color} />
+            } else if (route.name === 'User') {
+              fontName = FontAwesome
+              iconName = 'user';
+              return <FontAwesome name={iconName} size={size} color={color} />
+            } else if (route.name === 'Like') {
+              fontName = FontAwesome
+              iconName = 'heart';
+              return <FontAwesome name={iconName} size={size} color={color} />
+            } else if (route.name === 'Map') {
+              fontName = Feather
+              iconName = 'map-pin';
+              return <Feather name={iconName} size={size} color={color} />
+            }
+
+            return <fontName name={iconName} size={size} color={color} />
+
+            // return <Entypo name={iconName} size={size} color={color} />
+          },
+          tabBarActiveTintColor: '#C44949',
+          tabBarInactiveTintColor: 'grey',
+          headerShown: false,
+        })}>
+          <Tab.Screen name="Home" component={StackNavigator} />
+          <Tab.Screen name="Map" component={MapScreen} />
+          <Tab.Screen name="Like" component={LikeScreen} />
+          <Tab.Screen name="User" component={UserScreen} />
+          {/* <View style={styles.container}>
       <Text>Open up App.js to start working on your app!</Text>
       <StatusBar style="auto" />
     </View> */}
 
-      </Tab.Navigator>
-    </NavigationContainer>
+        </Tab.Navigator>
+      </NavigationContainer>
     </Provider>
   );
 }
