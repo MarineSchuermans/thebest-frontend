@@ -11,7 +11,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 export default function MapScreen({ navigation }) {
     const user = useSelector((state) => state.user.value)
 
-    console.log(user)
+    // console.log(user)
 
           // if (currentLocation == null) {
   //   return (

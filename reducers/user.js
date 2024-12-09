@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    value: {userName: '', places: [] }
+    value: {userName: '', places:'', favorites: [] }
 };
 
 export const userSlice = createSlice({
@@ -9,10 +9,16 @@ export const userSlice = createSlice({
     initialState,
     reducers: {
         addLocationToStore: (state, action) => {
-            state.value.places.push(action.payload)
+            state.value.places = action.payload 
+        },
+        addFavoritesToStore: (state, action) => {
+            state.value.favorites.push(action.payload)
+        },
+        removeFavoritesToStore: (state, action) => {
+            state.value.favorites = state.value.favorites.filter(favorite => favorite.id !== action.payload.id)
         }
     }
 });
 
-export const { addLocationToStore } = userSlice.actions;
+export const { addLocationToStore, addFavoritesToStore, removeFavoritesToStore } = userSlice.actions;
 export default userSlice.reducer;
