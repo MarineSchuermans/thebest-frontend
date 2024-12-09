@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, SafeAreaView, FlatList } from 'react-native';
 import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addLocationToStore } from '../reducers/user';
+import { useDispatch, useSelector } from 'react-redux';
+import { addLocationToStore, addFavoritesToStore, removeFavoritesToStore } from '../reducers/user';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome';
 
@@ -13,6 +13,7 @@ export default function HomeScreen({ navigation }) {
     const dispatch = useDispatch()
     const [favorites, setFavorites] = useState(new Set());
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
+    const user = useSelector((state) => state.user.value)
 
     const restaurants = [
         {
@@ -75,6 +76,18 @@ export default function HomeScreen({ navigation }) {
         }
     ];
 
+    const handleFavorite = (item) => {
+        const isFavorite = user.favorites.some(user => user.id === item.id);
+
+        if (!isFavorite){
+            console.log('Add Favorite')
+            dispatch(addFavoritesToStore({id: item.id, title: item.title, description: item.description, rating: item.rating, latitude: item.latitude, longitude: item.longitude}))
+        } else if (isFavorite){
+            console.log('Favorite deleted')
+            dispatch(removeFavoritesToStore({id: item.id}))
+        }
+    }
+
 
     const RenderRestaurantItem = ({ item }) => (
 <TouchableOpacity 
@@ -103,6 +116,7 @@ export default function HomeScreen({ navigation }) {
                     <View style={styles.restaurantHeader}>
                         <Text style={styles.restaurantTitle}>{item.title}</Text>
                         <TouchableOpacity onPress={() => {
+                            handleFavorite(item)
                             const newFavorites = new Set(favorites);
                             favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
                             setFavorites(newFavorites);
