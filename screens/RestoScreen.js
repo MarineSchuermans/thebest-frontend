@@ -161,15 +161,21 @@ export default function RestoScreen({ route, navigation }) {
                 ListHeaderComponent={
                     <View>
                         <View style={styles.imageContainer}>
-                            <Image source={{ uri: image }} style={styles.image} />
-                            <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
-                                <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
-                            </TouchableOpacity>
-                            <View style={styles.imageOverlay}>
-                                <Text style={styles.overlayTitle}>{title}</Text>
-                                <Text style={styles.overlayLocation}>{location}</Text>
-                            </View>
-                        </View>
+    <ScrollView horizontal pagingEnabled style={styles.imageScrollView}>
+        {image.map((img, index) => (
+            <View key={index} style={styles.imageWrapper}>
+                <Image source={{ uri: img }} style={styles.image} />
+            </View>
+        ))}
+    </ScrollView>
+    <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
+        <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
+    </TouchableOpacity>
+    <View style={styles.imageOverlay}>
+        <Text style={styles.overlayTitle}>{title}</Text>
+        <Text style={styles.overlayLocation}>{location}</Text>
+    </View>
+</View>
                         <View style={styles.contentContainer}>
                             <View style={styles.buttonContainer}>
                                 <TouchableOpacity style={styles.actionButton} onPress={() => setIsCameraVisible(true)}>
@@ -487,5 +493,18 @@ const styles = StyleSheet.create({
         color: '#C44949',
         fontWeight: 'bold',
         marginTop: 5,
+    },
+    imageWrapper: {
+        width: '100%',
+        paddingHorizontal: 100,
+    },
+    imageScrollView: {
+        height: 300,
+    },
+    image: {
+        width: '100%',
+        height: 300,
+        resizeMode: 'cover',
+        borderRadius: 10,
     },
 });

@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, SafeAreaView, FlatList } from 'react-native';
 import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { addLocationToStore, addFavoritesToStore, removeFavoritesToStore } from '../reducers/user';
+import { useDispatch } from 'react-redux';
+import { addLocationToStore } from '../reducers/user';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome';
 
@@ -13,20 +13,19 @@ export default function HomeScreen({ navigation }) {
     const dispatch = useDispatch()
     const [favorites, setFavorites] = useState(new Set());
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
-    const user = useSelector((state) => state.user.value)
-
-
-    // console.log(favorites)
 
     const restaurants = [
         {
             id: 1,
-            title: 'Le Gourmet',
-            description: 'Description duis aute irure dolor in reprehenderit in volup...',
-            rating: 4.9,
-            image: 'https://www.aixenprovencetourism.com/wp-content/uploads/2013/07/ou_manger-1920x1080.jpg',
-            phoneNumber: '+33123456789',
-            location: '123 Rue de la Paix, Paris, France',
+            title: "Le Gourmet",
+            description: "Fine dining experience",
+            rating: 4.5,
+            image: [
+                "https://www.aixenprovencetourism.com/wp-content/uploads/2013/07/ou_manger-1920x1080.jpg",
+                "https://placeholder.com/150x100"
+            ],
+            phoneNumber: "123-456-7890",
+            location: "123 Main St"
         },
         {
             id: 2,
@@ -67,57 +66,6 @@ export default function HomeScreen({ navigation }) {
     ];
 
 
-    // const isFavorite = user.favorites.map((data) => {
-    //     // return console.log(data)
-    //     // if (!data.id === item.id){
-    //     //     console.log(true)
-    //     // } else {
-    //     //     console.log(false)
-    //     // }
-    // })
-    // console.log(isFavorite)
-    // console.log(isFavorite)
-
-    
-    
-    const handleFavorite = (item) => {
-        // setFavoriteListe(...favoriteListe, item)
-        // setFavoriteListe(item)
-        console.log(item.id)
-       
-            const isFavorite = user.favorites.some(user => user.id === item.id);
-            console.log(isFavorite)
-
-            
-            
-            if (!isFavorite) {
-                console.log('Okay')
-                dispatch(addFavoritesToStore({id: item.id, title: item.title, description: item.description, rating: item.rating} ))
-            } else if (isFavorite) {
-                console.log('delete')
-                dispatch(removeFavoritesToStore({id: item.id}))
-            }
-        
-            
-        // dispatch(addFavoritesToStore(item))
-        // dispatch(addFavoritesToStore(item))
-        // user.favorites.map((data) => {
-        //     console.log(data)
-
-
-        //     if (!data.id === item.id){
-        //         console.log('Okay')
-        //         dispatch(addFavoritesToStore({item}))
-        //     } else if (data.id === item.id) {
-        //         console.log('delete')
-        //         dispatch(removeFavoritesToStore({item}))
-        //     }
-        // })
-
-
-    }
-
-
     const RenderRestaurantItem = ({ item }) => (
 <TouchableOpacity 
         onPress={() => navigation.navigate('Resto', {
@@ -131,45 +79,43 @@ export default function HomeScreen({ navigation }) {
         style={styles.restaurantCard}
     >            
 
-            {item.id === 1 ? (
-                <Image
-                    source={{ uri: item.image }}
-                    style={styles.restaurantImage}
-                />
-            ) : (
-                <View style={styles.placeholderImage}>
-                    <View style={styles.placeholderInner} />
-                </View>
-            )}
-            <View style={styles.restaurantInfo}>
-                <View style={styles.restaurantHeader}>
-                    <Text style={styles.restaurantTitle}>{item.title}</Text>
-                    <TouchableOpacity onPress={() => {
-                        handleFavorite(item)
-                        const newFavorites = new Set(favorites);
-                        favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
-                        setFavorites(newFavorites);
-
-                    }}>
-                        <Feather
-                            name="heart"
-                            size={20}
-                            color={favorites.has(item.id) ? "#FF0000" : "#9CA3AF"}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <Text style={styles.description}>{item.description}</Text>
-                <View style={styles.restaurantFooter}>
-                    <Feather name="phone" size={16} />
-                    <Feather name="map-pin" size={16} style={styles.footerIcon} />
-                    <View style={styles.rating}>
-                        <Text>{'★'.repeat(Math.floor(item.rating))}</Text>
-                        <Text>{'☆'.repeat(5 - Math.floor(item.rating))}</Text>
-                        <Text style={styles.ratingText}>({item.rating})</Text>
+                {item.id === 1 ? (
+                    <Image
+                        source={{ uri: item.image[0] }}
+                        style={styles.restaurantImage}
+                    />
+                ) : (
+                    <View style={styles.placeholderImage}>
+                        <View style={styles.placeholderInner} />
+                    </View>
+                )}
+                <View style={styles.restaurantInfo}>
+                    <View style={styles.restaurantHeader}>
+                        <Text style={styles.restaurantTitle}>{item.title}</Text>
+                        <TouchableOpacity onPress={() => {
+                            const newFavorites = new Set(favorites);
+                            favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
+                            setFavorites(newFavorites);
+                        }}>
+                            <Feather
+                                name="heart"
+                                size={20}
+                                color={favorites.has(item.id) ? "#FF0000" : "#9CA3AF"}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                    <Text style={styles.description}>{item.description}</Text>
+                    <View style={styles.restaurantFooter}>
+                        <Feather name="phone" size={16} />
+                        <Feather name="map-pin" size={16} style={styles.footerIcon} />
+                        <View style={styles.rating}>
+                            <Text>{'★'.repeat(Math.floor(item.rating))}</Text>
+                            <Text>{'☆'.repeat(5 - Math.floor(item.rating))}</Text>
+                            <Text style={styles.ratingText}>({item.rating})</Text>
+                        </View>
                     </View>
                 </View>
-            </View>
-
+            
         </TouchableOpacity>
     );
 
@@ -178,10 +124,10 @@ export default function HomeScreen({ navigation }) {
             const { status } = await Location.requestForegroundPermissionsAsync();
 
             if (status === 'granted') {
-                Location.watchPositionAsync({ distanceInterval: 10 },
-                    (location) => {
-                        console.log(location)
+                Location.watchPositionAsync({ distanceInterval : 10},
+                    (location) => {console.log(location)
                         dispatch(addLocationToStore({ latitude: location.coords.latitude, longitude: location.coords.longitude }))
+
                     }
                 )
                 // const location = await Location.getCurrentPositionAsync({});
@@ -222,15 +168,27 @@ export default function HomeScreen({ navigation }) {
                     ))}
                 </ScrollView>
             </View>
-
+                
             <View style={styles.restaurantList}>
-                {restaurants.map((restaurant) => (
-                    <RenderRestaurantItem item={restaurant} />
-                ))}
+                    {restaurants.map((restaurant) => (
+                        <RenderRestaurantItem item={restaurant}/>
+                    ))}
             </View>
 
 
+            {/* <FlatList
+                data={restaurants}
+                renderItem={renderRestaurantItem}
+                keyExtractor={item => item.id.toString()}
+                style={styles.restaurantList}
+            /> */}
         </SafeAreaView>
+
+        // <View style={styles.container}>
+        //     <Text> Home Screen </Text>
+        //     <Button title = 'Go to Reso'
+        //     onPress={() => navigation.navigate('Resto')}/>
+        // </View>
     )
 }
 
