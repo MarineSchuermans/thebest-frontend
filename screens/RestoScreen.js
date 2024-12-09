@@ -5,14 +5,14 @@ import { CameraView, Camera } from 'expo-camera';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons'; 
-import { KeyboardAvoidingView } from 'react-native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
-const ReviewModal = ({ visible, onClose, onSubmit }) => {
+const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
 
     const handleSubmit = () => {
-        onSubmit({ rating, comment });
+        onSubmit({ rating, comment, photo });
         setRating(0);
         setComment('');
         onClose();
@@ -26,10 +26,14 @@ const ReviewModal = ({ visible, onClose, onSubmit }) => {
             onRequestClose={onClose}
         >
             <TouchableOpacity style={styles.modalContainer} activeOpacity={1} onPress={onClose}>
-                <KeyboardAvoidingView style={styles.modalContent}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalContent}
+                >
                     <Text style={styles.modalTitle}>Add a Review</Text>
+                    {photo && <Image source={{ uri: photo }} style={styles.reviewPhoto} />}
                     <View style={styles.ratingContainer}>
-                        {[...Array(5)].map((_, index) => (
+                    {[...Array(5)].map((_, index) => (
                             <TouchableOpacity key={index} onPress={() => setRating(index + 1)}>
                                 <FontAwesome
                                     name={index < rating ? "star" : "star-o"}
@@ -66,6 +70,8 @@ export default function RestoScreen({ route, navigation }) {
     const [isFavorite, setIsFavorite] = useState(false); // State for favorite
     const cameraRef = useRef(null);
     const isFocused = useIsFocused();
+    const [photoUri, setPhotoUri] = useState(null);
+    const [userReview, setUserReview] = useState(null);
 
     useEffect(() => {
         (async () => {
@@ -78,7 +84,32 @@ export default function RestoScreen({ route, navigation }) {
         if (cameraRef.current) {
             const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
             setIsCameraVisible(false);
-            uploadPhoto(photo.uri);
+            setPhotoUri(photo.uri);
+            setModalVisible(true);
+        }
+    };
+
+    const handleAddReview = (review) => {
+        const newReview = {
+            ...review,
+            date: new Date().toISOString(),
+            isUserReview: true
+        };
+        if (userReview) {
+            // Modifier l'avis existant
+            setReviews(reviews.map(r => r.isUserReview ? newReview : r));
+        } else {
+            // Ajouter un nouvel avis
+            setReviews([...reviews, newReview]);
+        }
+        setUserReview(newReview);
+        setPhotoUri(null);
+    };
+
+    const handleEditReview = () => {
+        if (userReview) {
+            setPhotoUri(userReview.photo);
+            setModalVisible(true);
         }
     };
 
@@ -95,10 +126,6 @@ export default function RestoScreen({ route, navigation }) {
         } catch (error) {
             console.error('Error sharing:', error);
         }
-    };
-
-    const handleAddReview = (review) => {
-        setReviews([...reviews, review]);
     };
 
     const navigateToMap = () => {
@@ -143,7 +170,6 @@ export default function RestoScreen({ route, navigation }) {
                                     <Text style={styles.actionButtonText}>Carte</Text>
                                 </TouchableOpacity>
                             </View>
-                            <Text style={styles.title}>{title}</Text>
                             <Text style={styles.description}>{description}</Text>
                             <View style={styles.ratingContainer}>
                                 {[...Array(5)].map((_, index) => (
@@ -168,11 +194,26 @@ export default function RestoScreen({ route, navigation }) {
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => (
                     <View style={styles.reviewItem}>
+                        {item.photo && <Image source={{ uri: item.photo }} style={styles.reviewPhoto} />}
                         <View style={styles.reviewRating}>
-                            <Feather name="star" size={16} color="#FFD700" />
-                            <Text style={styles.reviewRatingText}>{item.rating}/5</Text>
+                        {[...Array(5)].map((_, index) => (
+                                <FontAwesome
+                                    key={index}
+                                    name={index < item.rating ? "star" : "star-o"}
+                                    size={16}
+                                    color="#FFD700"
+                                />
+                            ))}
                         </View>
                         <Text style={styles.reviewComment}>{item.comment}</Text>
+                        <Text style={styles.reviewDate}>
+                            {new Date(item.date).toLocaleDateString()}
+                        </Text>
+                        {item.isUserReview && (
+                            <TouchableOpacity onPress={handleEditReview}>
+                                <Text style={styles.editReview}>Edit</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 )}
             />
@@ -180,6 +221,7 @@ export default function RestoScreen({ route, navigation }) {
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 onSubmit={handleAddReview}
+                photo={photoUri}
             />
             {isCameraVisible && (
                 <View style={styles.cameraContainer}>
@@ -395,5 +437,21 @@ const styles = StyleSheet.create({
         backgroundColor: '#F2994A',
         padding: 15,
         borderRadius: 50,
+    },
+    reviewPhoto: {
+        width: '100%',
+        height: 200,
+        borderRadius: 10,
+        marginBottom: 10,
+    },
+    reviewDate: {
+        fontSize: 12,
+        color: '#999',
+        marginTop: 5,
+    },
+    editReview: {
+        color: '#C44949',
+        fontWeight: 'bold',
+        marginTop: 5,
     },
 });
