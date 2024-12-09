@@ -5,7 +5,7 @@ import { CameraView, Camera } from 'expo-camera';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons'; 
-import { KeyboardAvoidingView, Platform } from 'react-native';
+import { KeyboardAvoidingView, Platform} from 'react-native';
 
 const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
     const [rating, setRating] = useState(0);
@@ -67,7 +67,7 @@ export default function RestoScreen({ route, navigation }) {
     const [isCameraVisible, setIsCameraVisible] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [reviews, setReviews] = useState([]);
-    const [isFavorite, setIsFavorite] = useState(false); // State for favorite
+    const [isFavorite, setIsFavorite] = useState(false);
     const cameraRef = useRef(null);
     const isFocused = useIsFocused();
     const [photoUri, setPhotoUri] = useState(null);
@@ -87,6 +87,23 @@ export default function RestoScreen({ route, navigation }) {
             setPhotoUri(photo.uri);
             setModalVisible(true);
         }
+    };
+
+    const navigateToMap = () => {
+        navigation.navigate('Map', { 
+            location,
+            title,
+            showRoute: true, // Indique qu'on veut afficher un tracé
+            showParking: true // Indique qu'on veut afficher les parkings
+        });
+    };
+
+    const openGPS = () => {
+        const url = Platform.select({
+            ios: `maps:0,0?q=${location}`,
+            android: `geo:0,0?q=${location}`
+        });
+        Linking.openURL(url);
     };
 
     const handleAddReview = (review) => {
@@ -112,6 +129,12 @@ export default function RestoScreen({ route, navigation }) {
             setModalVisible(true);
         }
     };
+    const handleDeleteReview = () => {
+        if (userReview) {
+            setReviews(reviews.filter(r => r.isUserReview === false));
+            setUserReview(null);
+        }
+    };
 
     const uploadPhoto = async (uri) => {
         // Implémentation de l'upload de la photo
@@ -126,10 +149,6 @@ export default function RestoScreen({ route, navigation }) {
         } catch (error) {
             console.error('Error sharing:', error);
         }
-    };
-
-    const navigateToMap = () => {
-        navigation.navigate('MapScreen', { location });
     };
 
     if (!hasPermission || !isFocused) {
@@ -166,9 +185,13 @@ export default function RestoScreen({ route, navigation }) {
                                     <Text style={styles.actionButtonText}>Avis</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.actionButton} onPress={navigateToMap}>
-                                    <Feather name="map" size={20} color="#FFFFFF" />
-                                    <Text style={styles.actionButtonText}>Carte</Text>
-                                </TouchableOpacity>
+                                <Feather name="map" size={20} color="#FFFFFF" />
+                                <Text style={styles.actionButtonText}>Carte</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.actionButton} onPress={openGPS}>
+                                <Feather name="navigation" size={20} color="#FFFFFF" />
+                                <Text style={styles.actionButtonText}>GPS</Text>
+                            </TouchableOpacity>
                             </View>
                             <Text style={styles.description}>{description}</Text>
                             <View style={styles.ratingContainer}>
@@ -210,9 +233,15 @@ export default function RestoScreen({ route, navigation }) {
                             {new Date(item.date).toLocaleDateString()}
                         </Text>
                         {item.isUserReview && (
+                            <View>
                             <TouchableOpacity onPress={handleEditReview}>
                                 <Text style={styles.editReview}>Edit</Text>
                             </TouchableOpacity>
+
+                            <TouchableOpacity onPress={handleDeleteReview}>
+                                <Text style={styles.deleteReview}>Delete</Text>
+                            </TouchableOpacity>
+                            </View>
                         )}
                     </View>
                 )}
@@ -450,6 +479,11 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     editReview: {
+        color: '#C44949',
+        fontWeight: 'bold',
+        marginTop: 5,
+    },
+    deleteReview: {
         color: '#C44949',
         fontWeight: 'bold',
         marginTop: 5,
