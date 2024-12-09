@@ -98,10 +98,15 @@ export default function HomeScreen({ navigation }) {
             const { status } = await Location.requestForegroundPermissionsAsync();
 
             if (status === 'granted') {
-                const location = await Location.getCurrentPositionAsync({});
-                console.log(location);
+                Location.watchPositionAsync({ distanceInterval : 10},
+                    (location) => {console.log(location)
+                        dispatch(addLocationToStore({ latitude: location.coords.latitude, longitude: location.coords.longitude }))
 
-                dispatch(addLocationToStore({ latitude: location.coords.latitude, longitude: location.coords.longitude }))
+                    }
+                )
+                // const location = await Location.getCurrentPositionAsync({});
+                // console.log(location);
+
             }
         })();
     }, []);

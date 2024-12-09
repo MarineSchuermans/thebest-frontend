@@ -11,7 +11,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 export default function MapScreen({ navigation }) {
     const user = useSelector((state) => state.user.value)
 
-    console.log(user.places[0]?.latitude)
+    console.log(user)
 
           // if (currentLocation == null) {
   //   return (
@@ -24,15 +24,14 @@ export default function MapScreen({ navigation }) {
     return (
         <MapView
         initialRegion={{
-          latitude: user.places[0].latitude,
-          longitude: user.places[0].longitude,
+          latitude: user.places[0]?.latitude,
+          longitude: user.places[0]?.longitude,
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
         style={{ flex: 1 }}
        >
-        <Marker pinColor ={'#C44949'}coordinate={{ latitude: user.places[0].latitude, longitude: user.places[0].longitude}}>
-          <MaterialCommunityIcons name={'map-marker-star'} size={100} color={'#C44949'} style={styles.logo}/>
+        <Marker pinColor ={'#C44949'}coordinate={{ latitude: user.places[0]?.latitude, longitude: user.places[0]?.longitude}}>
         </Marker>
        </MapView>
 
@@ -47,8 +46,8 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
     },
     markerImage: {
-      width: 50,
-      height: 50,
+      width: 200,
+      height: 200,
       color: 'red',
     },
 
