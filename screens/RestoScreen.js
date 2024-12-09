@@ -5,6 +5,7 @@ import { CameraView, Camera } from 'expo-camera';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons'; 
+import { KeyboardAvoidingView } from 'react-native';
 
 const ReviewModal = ({ visible, onClose, onSubmit }) => {
     const [rating, setRating] = useState(0);
@@ -18,34 +19,40 @@ const ReviewModal = ({ visible, onClose, onSubmit }) => {
     };
 
     return (
-        <Modal visible={visible} animationType="slide" transparent={true}>
-            <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                    <Text style={styles.modalTitle}>Laisser un avis</Text>
+        <Modal
+            transparent={true}
+            visible={visible}
+            animationType="slide"
+            onRequestClose={onClose}
+        >
+            <TouchableOpacity style={styles.modalContainer} activeOpacity={1} onPress={onClose}>
+                <KeyboardAvoidingView style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Add a Review</Text>
+                    <View style={styles.ratingContainer}>
+                        {[...Array(5)].map((_, index) => (
+                            <TouchableOpacity key={index} onPress={() => setRating(index + 1)}>
+                                <FontAwesome
+                                    name={index < rating ? "star" : "star-o"}
+                                    size={30}
+                                    color="#FFD700"
+                                />
+                            </TouchableOpacity>
+                        ))}
+                    </View>
                     <TextInput
-                        style={styles.input}
-                        placeholder="Note (0-5)"
-                        keyboardType="numeric"
-                        value={rating.toString()}
-                        onChangeText={(text) => setRating(Number(text))}
-                    />
-                    <TextInput
-                        style={[styles.input, styles.commentInput]}
-                        placeholder="Commentaire"
-                        multiline
+                        style={styles.commentInput}
+                        placeholder="Write your review"
                         value={comment}
                         onChangeText={setComment}
+                        multiline
                     />
-                    <View style={styles.modalButtons}>
-                        <TouchableOpacity style={styles.modalButton} onPress={onClose}>
-                            <Text style={styles.modalButtonText}>Annuler</Text>
-                        </TouchableOpacity>
+                    <View style={styles.modalButtonContainer}>
                         <TouchableOpacity style={styles.modalButton} onPress={handleSubmit}>
-                            <Text style={styles.modalButtonText}>Soumettre</Text>
+                            <Text style={styles.modalButtonText}>Submit</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
-            </View>
+                </KeyboardAvoidingView>
+            </TouchableOpacity>
         </Modal>
     );
 };
@@ -104,75 +111,71 @@ export default function RestoScreen({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.searchContainer}>
-                <TextInput
-                    placeholder="Search"
-                    style={styles.searchInput}
-                />
-            </View>
-            <ScrollView>
-                <View style={styles.imageContainer}>
-                    <Image source={{ uri: image }} style={styles.image} />
-                    <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
-                        <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
-                    </TouchableOpacity>
-                    <View style={styles.imageOverlay}>
-                        <Text style={styles.overlayTitle}>{title}</Text>
-                        <Text style={styles.overlayLocation}>{location}</Text>
-                    </View>
-                </View>
-                <View style={styles.contentContainer}>
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.actionButton} onPress={() => setIsCameraVisible(true)}>
-                            <Feather name="camera" size={20} color="#FFFFFF" />
-                            <Text style={styles.actionButtonText}>Photo</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-                            <Feather name="share-2" size={20} color="#FFFFFF" />
-                            <Text style={styles.actionButtonText}>Partager</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.actionButton} onPress={() => setModalVisible(true)}>
-                            <Feather name="edit" size={20} color="#FFFFFF" />
-                            <Text style={styles.actionButtonText}>Avis</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.actionButton} onPress={navigateToMap}>
-                            <Feather name="map" size={20} color="#FFFFFF" />
-                            <Text style={styles.actionButtonText}>Carte</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <Text style={styles.title}>{title}</Text>
-                    <Text style={styles.description}>{description}</Text>
-                    <View style={styles.ratingContainer}>
-                        {[...Array(5)].map((_, index) => (
-                            <FontAwesome
-                                key={index}
-                                name={index < Math.floor(rating) ? "star" : "star-o"}
-                                size={24}
-                                color="#FFD700"
-                            />
-                        ))}
-                        <Text style={styles.rating}>{rating}/5</Text>
-                    </View>
-                    <TouchableOpacity style={styles.phoneButton} onPress={() => Linking.openURL(`tel:${phoneNumber}`)}>
-                        <Feather name="phone" size={20} color="#FFFFFF" />
-                        <Text style={styles.phoneNumber}>{phoneNumber}</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.reviewsTitle}>Avis</Text>
-                    <FlatList
-                        data={reviews}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({ item }) => (
-                            <View style={styles.reviewItem}>
-                                <View style={styles.reviewRating}>
-                                    <Feather name="star" size={16} color="#FFD700" />
-                                    <Text style={styles.reviewRatingText}>{item.rating}/5</Text>
-                                </View>
-                                <Text style={styles.reviewComment}>{item.comment}</Text>
+            <FlatList
+                ListHeaderComponent={
+                    <View>
+                        <View style={styles.imageContainer}>
+                            <Image source={{ uri: image }} style={styles.image} />
+                            <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
+                                <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
+                            </TouchableOpacity>
+                            <View style={styles.imageOverlay}>
+                                <Text style={styles.overlayTitle}>{title}</Text>
+                                <Text style={styles.overlayLocation}>{location}</Text>
                             </View>
-                        )}
-                    />
-                </View>
-            </ScrollView>
+                        </View>
+                        <View style={styles.contentContainer}>
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity style={styles.actionButton} onPress={() => setIsCameraVisible(true)}>
+                                    <Feather name="camera" size={20} color="#FFFFFF" />
+                                    <Text style={styles.actionButtonText}>Photo</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+                                    <Feather name="share-2" size={20} color="#FFFFFF" />
+                                    <Text style={styles.actionButtonText}>Partager</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.actionButton} onPress={() => setModalVisible(true)}>
+                                    <Feather name="edit" size={20} color="#FFFFFF" />
+                                    <Text style={styles.actionButtonText}>Avis</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.actionButton} onPress={navigateToMap}>
+                                    <Feather name="map" size={20} color="#FFFFFF" />
+                                    <Text style={styles.actionButtonText}>Carte</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={styles.title}>{title}</Text>
+                            <Text style={styles.description}>{description}</Text>
+                            <View style={styles.ratingContainer}>
+                                {[...Array(5)].map((_, index) => (
+                                    <FontAwesome
+                                        key={index}
+                                        name={index < Math.floor(rating) ? "star" : "star-o"}
+                                        size={24}
+                                        color="#FFD700"
+                                    />
+                                ))}
+                                <Text style={styles.rating}>{rating}/5</Text>
+                            </View>
+                            <TouchableOpacity style={styles.phoneButton} onPress={() => Linking.openURL(`tel:${phoneNumber}`)}>
+                                <Feather name="phone" size={20} color="#FFFFFF" />
+                                <Text style={styles.phoneNumber}>{phoneNumber}</Text>
+                            </TouchableOpacity>
+                            <Text style={styles.reviewsTitle}>Avis</Text>
+                        </View>
+                    </View>
+                }
+                data={reviews}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                    <View style={styles.reviewItem}>
+                        <View style={styles.reviewRating}>
+                            <Feather name="star" size={16} color="#FFD700" />
+                            <Text style={styles.reviewRatingText}>{item.rating}/5</Text>
+                        </View>
+                        <Text style={styles.reviewComment}>{item.comment}</Text>
+                    </View>
+                )}
+            />
             <ReviewModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
@@ -198,16 +201,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FAFAFA',
     },
-    searchContainer: {
-        backgroundColor: '#C44949',
-        padding: 10,
-    },
-    searchInput: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        paddingHorizontal: 20,
-        paddingVertical: 8,
-    },
     imageContainer: {
         position: 'relative',
     },
@@ -216,11 +209,12 @@ const styles = StyleSheet.create({
         height: 300,
         borderRadius: 30,
         resizeMode: 'cover',
+        marginTop: 10,
     },
     favoriteIcon: {
         position: 'absolute',
-        top: 10,
-        right: 10,
+        top: 30,
+        right: 20,
     },
     imageOverlay: {
         position: 'absolute',

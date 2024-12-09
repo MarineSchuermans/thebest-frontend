@@ -20,7 +20,7 @@ export default function HomeScreen({ navigation }) {
             title: 'Le Gourmet',
             description: 'Description duis aute irure dolor in reprehenderit in volup...',
             rating: 4.9,
-            image: 'https://placeholder.com/150x100',
+            image: 'https://www.aixenprovencetourism.com/wp-content/uploads/2013/07/ou_manger-1920x1080.jpg',
             phoneNumber: '+33123456789',
             location: '123 Rue de la Paix, Paris, France',
         },
