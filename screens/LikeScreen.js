@@ -1,4 +1,4 @@
-import { Button, Text, View, StyleSheet, SafeAreaView, TextInput, ScrollView} from 'react-native';
+import { Button, Text, View, StyleSheet, SafeAreaView, TextInput, ScrollView, TouchableOpacity, Image} from 'react-native';
 import { useSelector } from 'react-redux';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome';
@@ -6,7 +6,115 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome';
 export default function LikeScreen({ navigation }) {
     const user = useSelector((state) => state.user.value)
 
-    console.log(user.favorites)
+    console.log(user)
+
+    const favoriteListe = user.favorites.map((data, i) => {
+        console.log(data)
+        return (
+            <TouchableOpacity 
+                onPress={() => navigation.navigate('Resto', {
+                    key: {i},
+                    title: data.title,
+                    description: data.description,
+                    rating: data.rating,
+                    image: data.image,
+                    phoneNumber: data?.phoneNumber,
+                    location: data?.location,
+                })} 
+                style={styles.restaurantCard}
+            >            
+        
+                  
+                        <Image
+                            source={{ uri: data.image }}
+                            style={styles.restaurantImage}
+                        />
+                    <View style={styles.restaurantInfo}>
+                        <View style={styles.restaurantHeader}>
+                            <Text style={styles.restaurantTitle}>{data.title}</Text>
+                            <TouchableOpacity >
+                                
+                                {/* <Feather
+                                    name="trash"
+                                    size={20}
+                                    // color={favorites.has(.id) ? "#FF0000" : "#9CA3AF"}
+                                /> */}
+                            </TouchableOpacity>
+                        </View>
+                        <Text style={styles.description}>{data.description}</Text>
+                        <View style={styles.restaurantFooter}>
+                            <Feather name="phone" size={16} />
+                            <Feather name="map-pin" size={16} style={styles.footerIcon} />
+                            <View style={styles.rating}>
+                                <Text>{'★'.repeat(Math.floor(data.rating))}</Text>
+                                <Text>{'☆'.repeat(5 - Math.floor(data.rating))}</Text>
+                                <Text style={styles.ratingText}>({data.rating})</Text>
+                            </View>
+                        </View>
+                    </View>
+        
+                </TouchableOpacity>
+
+        )
+    })
+    
+   
+
+    // const RenderFavoriteItem = ({ item }) => (
+    //     <TouchableOpacity 
+    //             onPress={() => navigation.navigate('Resto', {
+    //                 title: item.title,
+    //                 description: item.description,
+    //                 rating: item.rating,
+    //                 image: item.image,
+    //                 phoneNumber: item.phoneNumber,
+    //                 location: item.location,
+    //             })} 
+    //             style={styles.restaurantCard}
+    //         >            
+        
+    //                 {item.id === 1 ? (
+    //                     <Image
+    //                         source={{ uri: item.image }}
+    //                         style={styles.restaurantImage}
+    //                     />
+    //                 ) : (
+    //                     <View style={styles.placeholderImage}>
+    //                         <View style={styles.placeholderInner} />
+    //                     </View>
+    //                 )}
+    //                 <View style={styles.restaurantInfo}>
+    //                     <View style={styles.restaurantHeader}>
+    //                         <Text style={styles.restaurantTitle}>{item.title}</Text>
+    //                         <TouchableOpacity onPress={() => {
+    //                             handleFavorite(item)
+    //                             const newFavorites = new Set(favorites);
+    //                             favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
+    //                             setFavorites(newFavorites);
+        
+    //                         }}>
+    //                             <Feather
+    //                                 name="trash"
+    //                                 size={20}
+    //                                 color={favorites.has(item.id) ? "#FF0000" : "#9CA3AF"}
+    //                             />
+    //                         </TouchableOpacity>
+    //                     </View>
+    //                     <Text style={styles.description}>{item.description}</Text>
+    //                     <View style={styles.restaurantFooter}>
+    //                         <Feather name="phone" size={16} />
+    //                         <Feather name="map-pin" size={16} style={styles.footerIcon} />
+    //                         <View style={styles.rating}>
+    //                             <Text>{'★'.repeat(Math.floor(item.rating))}</Text>
+    //                             <Text>{'☆'.repeat(5 - Math.floor(item.rating))}</Text>
+    //                             <Text style={styles.ratingText}>({item.rating})</Text>
+    //                         </View>
+    //                     </View>
+    //                 </View>
+        
+    //             </TouchableOpacity>
+    //         );
+        
     
 
 
@@ -42,6 +150,7 @@ export default function LikeScreen({ navigation }) {
             </View> */}
 
             <View style={styles.restaurantList}>
+                {favoriteListe}
                 {/* {restaurants.map((restaurant) => (
                     <RenderRestaurantItem item={restaurant} />
                 ))} */}

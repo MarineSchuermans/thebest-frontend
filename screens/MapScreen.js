@@ -24,14 +24,14 @@ export default function MapScreen({ navigation }) {
     return (
         <MapView
         initialRegion={{
-          latitude: user.places[0]?.latitude,
-          longitude: user.places[0]?.longitude,
+          latitude: user.places.latitude,
+          longitude: user.places.longitude,
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
         style={{ flex: 1 }}
        >
-        <Marker pinColor ={'#C44949'}coordinate={{ latitude: user.places[0]?.latitude, longitude: user.places[0]?.longitude}}>
+        <Marker pinColor ={'#C44949'}coordinate={{ latitude: user.places.latitude, longitude: user.places.longitude}}>
         </Marker>
        </MapView>
 
