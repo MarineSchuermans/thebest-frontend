@@ -20,38 +20,61 @@ export default function HomeScreen({ navigation }) {
             title: 'Le Gourmet',
             description: 'Description duis aute irure dolor in reprehenderit in volup...',
             rating: 4.9,
-            image: 'https://placeholder.com/150x100'
+            image: 'https://placeholder.com/150x100',
+            phoneNumber: '+33123456789',
+            location: '123 Rue de la Paix, Paris, France',
         },
         {
             id: 2,
             title: "Saveurs d'Asie",
             description: 'Description duis aute irure dolor in reprehenderit in volup...',
-            rating: 4.9
+            rating: 4.9,
+            image: 'https://placeholder.com/150x100',
+            phoneNumber: '+33987654321',
+            location: '456 Rue de la Concorde, Paris, France',
         },
         {
             id: 3,
             title: 'Pizza Roma',
             description: 'Description duis aute irure dolor in reprehenderit in v...',
-            rating: 4.9
+            rating: 4.9,
+            image: 'https://placeholder.com/150x100',
+            phoneNumber: '+33987654321',
+            location: '789 Rue de la Ferme, Paris, France',
         },
         {
             id: 4,
             title: 'Le Bistrot',
             description: 'Description duis aute irure dolor in reprehenderit in v...',
-            rating: 4.8
+            rating: 4.8,
+            image: 'https://placeholder.com/150x100',
+            phoneNumber: '+33123456789',
+            location: '123 Rue de la Paix, Paris, France',
         },
         {
             id: 5,
             title: 'Sushi Master',
             description: 'Description duis aute irure dolor in reprehenderit in v...',
-            rating: 4.0
+            rating: 4.0,
+            image: 'https://placeholder.com/150x100',
+            phoneNumber: '+33123456789',
+            location: '456 Rue de la Concorde, Paris, France',
         }
     ];
 
 
     const RenderRestaurantItem = ({ item }) => (
-        <TouchableOpacity onPress={() => navigation.navigate('Resto')} style={styles.restaurantCard}>
-            
+<TouchableOpacity 
+        onPress={() => navigation.navigate('Resto', {
+            title: item.title,
+            description: item.description,
+            rating: item.rating,
+            image: item.image,
+            phoneNumber: item.phoneNumber,
+            location: item.location,
+        })} 
+        style={styles.restaurantCard}
+    >            
 
                 {item.id === 1 ? (
                     <Image
