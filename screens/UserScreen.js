@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   Button,
+  Image,
   Modal,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -16,6 +17,13 @@ import {
   Keyboard,
 } from "react-native";
 import { backendAdress } from "../config";
+
+const avatarMap = {
+  "map-pin-yellow": require(`../assets/map-pin-yellow.png`),
+  avatar1: require(`../assets/avatars/avatar1.png`),
+  avatar2: require(`../assets/avatars/avatar2.png`),
+  avatar3: require(`../assets/avatars/avatar3.png`),
+};
 
 export default function UserScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -38,7 +46,10 @@ export default function UserScreen({ navigation }) {
       return;
     }
     if (!validatePassword(password)) {
-      Alert.alert("Weak password", "Password must be at least 8 characters long.");
+      Alert.alert(
+        "Weak password",
+        "Password must be at least 8 characters long."
+      );
       return;
     }
 
@@ -55,7 +66,9 @@ export default function UserScreen({ navigation }) {
       .then((data) => {
         if (data.result) {
           Alert.alert("Success", "Registration successful!");
-          dispatch(login({ username, token: data.token }));
+          dispatch(
+            login({ username, token: data.token, avatarUrl: data.avatarUrl })
+          );
           setUsername("");
           setPassword("");
           setEmail("");
@@ -81,7 +94,10 @@ export default function UserScreen({ navigation }) {
       .then((response) => response.json())
       .then((data) => {
         if (data.result) {
-          dispatch(login({ username, token: data.token }));
+          console.log("Server Response:", data);
+          dispatch(
+            login({ username, token: data.token, avatarUrl: data.avatarUrl })
+          );
           setUsername("");
           setPassword("");
           setIsModalVisible(false);
@@ -108,6 +124,12 @@ export default function UserScreen({ navigation }) {
     <View style={styles.container}>
       {user.token ? (
         <View style={styles.logoutSection}>
+          <Image
+            // source={{uri: (`../assets/${user.avatarUrl}.png`)}}
+            source={avatarMap[user.avatarUrl]}
+            style={styles.avatar}
+          />
+          {/* <View style={styles.logoutSection}> */}
           <Text>Welcome {user.username} / </Text>
           <Button title="Logout" onPress={handleLogout} />
         </View>
@@ -129,7 +151,10 @@ export default function UserScreen({ navigation }) {
           >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.registerContainer}>
-                <TouchableOpacity onPress={toggleModal} style={styles.closeModal}>
+                <TouchableOpacity
+                  onPress={toggleModal}
+                  style={styles.closeModal}
+                >
                   <Text style={styles.closeModalText}>X</Text>
                 </TouchableOpacity>
 
@@ -155,7 +180,12 @@ export default function UserScreen({ navigation }) {
                       onChangeText={setPassword}
                       value={password}
                     />
-                    <Button title="Register" onPress={ () => handleSignUp() + navigation.navigate("Home")} />
+                    <Button
+                      title="Register"
+                      onPress={() =>
+                        handleSignUp() + navigation.navigate("Home")
+                      }
+                    />
                     <TouchableOpacity onPress={toggleSignUp}>
                       <Text style={styles.toggleText}>
                         Already have an account? Sign in
@@ -178,8 +208,7 @@ export default function UserScreen({ navigation }) {
                       onChangeText={setPassword}
                       value={password}
                     />
-                    <Button title="Connect" onPress={handleSignIn}
-                 />
+                    <Button title="Connect" onPress={handleSignIn} />
                     <TouchableOpacity onPress={toggleSignUp}>
                       <Text style={styles.toggleText}>
                         Don't have an account? Sign up
@@ -197,6 +226,11 @@ export default function UserScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  avatar: {
+    margin: 10,
+    width: 150,
+    height: 150,
+  },
   // Vos styles d'origine + ajout d'un style pour `toggleText`
   toggleText: {
     marginTop: 10,
@@ -206,17 +240,17 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
-    backgroundColor: '#F9F9F9', // Un gris clair pour un fond neutre et moderne
+    backgroundColor: "#F9F9F9", // Un gris clair pour un fond neutre et moderne
   },
   userIcon: {
     padding: 10,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: "#F0F0F0",
     borderRadius: 20,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
@@ -224,10 +258,10 @@ const styles = StyleSheet.create({
   },
   registerContainer: {
     padding: 25,
-    backgroundColor: '#C44949',
+    backgroundColor: "#C44949",
     borderRadius: 25,
-    width: '85%',
-    shadowColor: '#000',
+    width: "85%",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
@@ -238,76 +272,75 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 45,
-    borderColor: '#E5E5E5',
+    borderColor: "#E5E5E5",
     borderWidth: 1,
     marginBottom: 15,
     paddingLeft: 12,
     borderRadius: 8,
-    backgroundColor: '#D9D9D9',
+    backgroundColor: "#D9D9D9",
     fontSize: 16,
-    color: '#333', // Texte sombre pour un bon contraste
+    color: "#333", // Texte sombre pour un bon contraste
   },
   logoutSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 20,
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Ajout d'un overlay semi-transparent
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Ajout d'un overlay semi-transparent
   },
   closeModal: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     marginBottom: 20,
     marginRight: -10,
     padding: 5,
-    backgroundColor: '#D9D9D9',
+    backgroundColor: "#D9D9D9",
     borderRadius: 15,
     width: 30,
     height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   closeModalText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   modalContent: {
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   btnConnect: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: "#F0F0F0",
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 8,
     marginTop: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   btnConnectText: {
-    color: '#333',
+    color: "#333",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   btnRegister: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 8,
     marginTop: 10,
     borderWidth: 1,
-    borderColor: '#C44949',
-    alignItems: 'center',
+    borderColor: "#C44949",
+    alignItems: "center",
   },
-//   btnRegisterText: {
-//     color: '#C44949',
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//   },
+    btnRegisterText: {
+      color: '#C44949',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
 });
- 
