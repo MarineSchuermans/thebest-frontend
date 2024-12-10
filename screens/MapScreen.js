@@ -127,6 +127,15 @@ export default function MapScreen({ route, navigation }) {
       }
   };
 
+  const favoriteMarkers = user.favorites.map((data, i) => {
+    return <Marker
+    key={i}
+    coordinate={{ latitude: data.latitude, longitude: data.longitude }}
+    title={data.title}>
+        <Image source={require('../assets/Icone_Favoris.png')} style={styles.favoriteMarker}/>
+    </Marker>
+  })
+
   return (
       <View style={styles.container}>
           {mapRegion && (
@@ -141,6 +150,7 @@ export default function MapScreen({ route, navigation }) {
                           pinColor="#4285F4"
                       />
                   )}
+                  {favoriteMarkers}
                   {restaurants.map((restaurant) => (
                       <Marker
                           key={restaurant.id}
@@ -172,6 +182,10 @@ export default function MapScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    favoriteMarker: {
+        height: 60,
+        width: 60
     },
     map: {
         flex: 1,

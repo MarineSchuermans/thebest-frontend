@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addLocationToStore, addFavoritesToStore, removeFavoritesToStore } from '../reducers/user';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome';
+import { backendAdress } from "../config";
 
 export default function HomeScreen({ navigation }) {
     const dispatch = useDispatch()
@@ -13,13 +14,13 @@ export default function HomeScreen({ navigation }) {
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value)
 
-    console.log(user.favorite)
+    console.log(restaurants)
 
     useEffect(() => {
-        const restaurants = async () => {
+        const getRestaurants = async () => {
             try {
             
-                const response = await fetch('http://192.168.1.13:3000/findNearbyRestaurants');
+                const response = await fetch(`${backendAdress}/findNearbyRestaurants`);
                 const restaurantData = await response.json();
     
           
@@ -39,7 +40,7 @@ export default function HomeScreen({ navigation }) {
             }
         };
     
-        restaurants();
+        getRestaurants();
     }, []);
 
     // const restaurants = [
