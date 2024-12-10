@@ -7,6 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons'; 
 import { KeyboardAvoidingView, Platform} from 'react-native';
 import { Dimensions } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from'react-redux';
+
 const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
@@ -62,7 +65,7 @@ const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
     );
 };
 
-export default function RestoScreen({ route, navigation }) {
+export default function RestoScreen({ route }) {
     const { title, description, rating, image, phoneNumber, location } = route.params;
     const [hasPermission, setHasPermission] = useState(false);
     const [isCameraVisible, setIsCameraVisible] = useState(false);
@@ -74,7 +77,8 @@ export default function RestoScreen({ route, navigation }) {
     const [photoUri, setPhotoUri] = useState(null);
     const [userReview, setUserReview] = useState(null);
     const screenWidth = Dimensions.get('window').width;
-    
+    const navigation = useNavigation();
+
     useEffect(() => {
         (async () => {
             const result = await Camera.requestCameraPermissionsAsync();
@@ -92,13 +96,14 @@ export default function RestoScreen({ route, navigation }) {
     };
 
     const navigateToMap = () => {
-        navigation.navigate('Map', { 
-            location,
-            title,
-            showRoute: true, // Indique qu'on veut afficher un tracé
-            showParking: true // Indique qu'on veut afficher les parkings
+        navigation.navigate('Map', {
+            restaurantLocation: {
+                latitude: parseFloat(location.latitude),
+                longitude: parseFloat(location.longitude),
+            }
         });
     };
+
 
     const openGPS = () => {
         const url = Platform.select({
@@ -199,9 +204,9 @@ export default function RestoScreen({ route, navigation }) {
                                     <Text style={styles.actionButtonText}>Avis</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.actionButton} onPress={navigateToMap}>
-                                <Feather name="map" size={20} color="#FFFFFF" />
-                                <Text style={styles.actionButtonText}>Carte</Text>
-                            </TouchableOpacity>
+                <Feather name="map" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>Carte</Text>
+            </TouchableOpacity>
                             <TouchableOpacity style={styles.actionButton} onPress={openGPS}>
                                 <Feather name="navigation" size={20} color="#FFFFFF" />
                                 <Text style={styles.actionButtonText}>GPS</Text>
