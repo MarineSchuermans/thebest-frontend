@@ -15,6 +15,8 @@ export default function HomeScreen({ navigation }) {
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value)
 
+    console.log(user.token)
+
     const restaurants = [
         {
             id: 1,
@@ -76,23 +78,45 @@ export default function HomeScreen({ navigation }) {
         }
     ];
 
-    const isReallyFavorite = user.favorites.some(user => user.id === favorites)
-
-    console.log(isReallyFavorite)
-
+    // Verifier si le user est connecté via la présence ou non d'un token
+    let isConnected = false
+    if (user.token?.length > 0 ){
+        isConnected = true
+    } 
      
     //envoyer les favoris dans le reducer user au click sur le coeur
     const handleFavorite = (item) => {
+        if (!isConnected){
+            return navigation.navigate('User')
+        }
         const isFavorite = user.favorites.some(user => user.id === item.id);
+        console.log(isFavorite)
 
         if (!isFavorite){
             console.log('Add Favorite') 
-            dispatch(addFavoritesToStore({id: item.id, title: item.title, description: item.description, rating: item.rating, latitude: item.latitude, longitude: item.longitude}))
+            dispatch(addFavoritesToStore({id: item.id, title: item.title, description: item.description, rating: item.rating, latitude: item.latitude, longitude: item.longitude, isFavorite: true}))
         } else if (isFavorite){
             console.log('Favorite deleted')
             dispatch(removeFavoritesToStore({id: item.id}))
         }
     }
+
+    
+
+    // let heartColor = <Feather
+    //     name="heart"
+    //     size={20}
+    //     color={favorites.has(item.id) && true ? "#FF0000" : "#9CA3AF"}
+    // />
+
+  
+
+    user.favorites.map((data, i) => {
+        console.log(data.isFavorite)
+        if (data.isFavorite){
+            let heartColor = "#9CA3AF"
+        }
+    })
 
 
     const RenderRestaurantItem = ({ item }) => (
@@ -127,6 +151,8 @@ export default function HomeScreen({ navigation }) {
                             favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
                             setFavorites(newFavorites);
                         }}>
+
+                            {/* {heartColor} */}
                             <Feather
                                 name="heart"
                                 size={20}
