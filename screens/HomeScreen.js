@@ -15,7 +15,7 @@ export default function HomeScreen({ navigation }) {
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value)
 
-    console.log(user.token)
+    console.log(user.favorite)
 
     const restaurants = [
         {
@@ -87,11 +87,10 @@ export default function HomeScreen({ navigation }) {
     //envoyer les favoris dans le reducer user au click sur le coeur
     const handleFavorite = (item) => {
         if (!isConnected){
-            return navigation.navigate('User')
+            return navigation.navigate('User') //Au press sur le coeur, si le user n'est pas connecté il est renvoyé sur la page log-in
         }
         const isFavorite = user.favorites.some(user => user.id === item.id);
         console.log(isFavorite)
-
         if (!isFavorite){
             console.log('Add Favorite') 
             dispatch(addFavoritesToStore({id: item.id, title: item.title, description: item.description, rating: item.rating, latitude: item.latitude, longitude: item.longitude, isFavorite: true}))
@@ -100,24 +99,6 @@ export default function HomeScreen({ navigation }) {
             dispatch(removeFavoritesToStore({id: item.id}))
         }
     }
-
-    
-
-    // let heartColor = <Feather
-    //     name="heart"
-    //     size={20}
-    //     color={favorites.has(item.id) && true ? "#FF0000" : "#9CA3AF"}
-    // />
-
-  
-
-    user.favorites.map((data, i) => {
-        console.log(data.isFavorite)
-        if (data.isFavorite){
-            let heartColor = "#9CA3AF"
-        }
-    })
-
 
     const RenderRestaurantItem = ({ item }) => (
 <TouchableOpacity key={item.id}
@@ -145,18 +126,18 @@ export default function HomeScreen({ navigation }) {
                 <View style={styles.restaurantInfo}>
                     <View style={styles.restaurantHeader}>
                         <Text style={styles.restaurantTitle}>{item.title}</Text>
-                        <TouchableOpacity onPress={() => {
+                        <TouchableOpacity style={styles.heart} onPress={() => {
                             handleFavorite(item)
-                            const newFavorites = new Set(favorites);
-                            favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
-                            setFavorites(newFavorites);
+                            // const newFavorites = new Set(favorites);
+                            // favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
+                            // setFavorites(newFavorites);
                         }}>
 
                             {/* {heartColor} */}
                             <Feather
                                 name="heart"
                                 size={20}
-                                color={favorites.has(item.id) ? "#FF0000" : "#9CA3AF"}
+                                color={user.favorites?.some((data) => item.id === data.id) ? "#FF0000" : "#9CA3AF"} //Changement de couleur si un resto de la liste favoris est supprimé 
                             />
                         </TouchableOpacity>
                     </View>
@@ -283,6 +264,10 @@ const styles = StyleSheet.create({
     },
     categoriesContainer: {
         paddingHorizontal: 16,
+    },
+    heart: {
+        height: 50,
+        width: 50
     },
     categoryButton: {
         backgroundColor: '#F3F4F6',
