@@ -76,11 +76,17 @@ export default function HomeScreen({ navigation }) {
         }
     ];
 
+    const isReallyFavorite = user.favorites.some(user => user.id === favorites)
+
+    console.log(isReallyFavorite)
+
+     
+    //envoyer les favoris dans le reducer user au click sur le coeur
     const handleFavorite = (item) => {
         const isFavorite = user.favorites.some(user => user.id === item.id);
 
         if (!isFavorite){
-            console.log('Add Favorite')
+            console.log('Add Favorite') 
             dispatch(addFavoritesToStore({id: item.id, title: item.title, description: item.description, rating: item.rating, latitude: item.latitude, longitude: item.longitude}))
         } else if (isFavorite){
             console.log('Favorite deleted')
@@ -90,7 +96,7 @@ export default function HomeScreen({ navigation }) {
 
 
     const RenderRestaurantItem = ({ item }) => (
-<TouchableOpacity 
+<TouchableOpacity key={item.id}
         onPress={() => navigation.navigate('Resto', {
             title: item.title,
             description: item.description,
@@ -154,8 +160,6 @@ export default function HomeScreen({ navigation }) {
 
                     }
                 )
-                // const location = await Location.getCurrentPositionAsync({});
-                // console.log(location);
 
             }
         })();
