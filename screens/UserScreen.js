@@ -85,7 +85,7 @@ export default function UserScreen({ navigation }) {
           setUsername("");
           setPassword("");
           setIsModalVisible(false);
-          navigation.navigate("Like");
+          navigation.navigate("Home");
         } else {
           Alert.alert("Error", data.error || "Login failed.");
         }
@@ -155,7 +155,7 @@ export default function UserScreen({ navigation }) {
                       onChangeText={setPassword}
                       value={password}
                     />
-                    <Button title="Register" onPress={handleSignUp} />
+                    <Button title="Register" onPress={ () => handleSignUp() + navigation.navigate("Home")} />
                     <TouchableOpacity onPress={toggleSignUp}>
                       <Text style={styles.toggleText}>
                         Already have an account? Sign in
@@ -178,7 +178,8 @@ export default function UserScreen({ navigation }) {
                       onChangeText={setPassword}
                       value={password}
                     />
-                    <Button title="Connect" onPress={handleSignIn} />
+                    <Button title="Connect" onPress={handleSignIn}
+                 />
                     <TouchableOpacity onPress={toggleSignUp}>
                       <Text style={styles.toggleText}>
                         Don't have an account? Sign up
