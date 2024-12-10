@@ -20,6 +20,15 @@ export default function MapScreen({ navigation }) {
   //   )
   // }
 
+  const favoritesMarkers = user.favorites.map((data, i) => {
+    console.log('location')
+    return (
+      <Marker key= {i} pinColor ={'#C44949'} coordinate={{ latitude: data.latitude, longitude: data.longitude}} title={data.title}>
+        <Image source= {require('../assets/Icone_Favoris.png')} style={styles.markerImage}/>
+      </Marker>
+    )
+  })
+
 
     return (
         <MapView
@@ -31,8 +40,9 @@ export default function MapScreen({ navigation }) {
         }}
         style={{ flex: 1 }}
        >
-        <Marker pinColor ={'#C44949'}coordinate={{ latitude: user.places.latitude, longitude: user.places.longitude}}>
+        <Marker pinColor ={'#C44949'}coordinate={{ latitude: user.places.latitude, longitude: user.places.longitude}} title='My Position'>
         </Marker>
+        {favoritesMarkers}
        </MapView>
 
     )
@@ -46,8 +56,8 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
     },
     markerImage: {
-      width: 200,
-      height: 200,
+      width: 80,
+      height: 80,
       color: 'red',
     },
 

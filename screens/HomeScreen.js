@@ -27,8 +27,8 @@ export default function HomeScreen({ navigation }) {
             ],
             phoneNumber: "123-456-7890",
             location: "123 Main St",
-            latitude: 47.6062,
-            longitude: -122.3321
+            latitude: 48.8566,
+            longitude: 2.3522
         },
         {
             id: 2,
@@ -38,8 +38,8 @@ export default function HomeScreen({ navigation }) {
             image: 'https://placeholder.com/150x100',
             phoneNumber: '+33987654321',
             location: '456 Rue de la Concorde, Paris, France',
-            latitude: -33.8688,
-            longitude: 151.2093
+            latitude: 43.7102,
+            longitude: 7.2620
         },
         {
             id: 3,
@@ -49,8 +49,8 @@ export default function HomeScreen({ navigation }) {
             image: 'https://placeholder.com/150x100',
             phoneNumber: '+33987654321',
             location: '789 Rue de la Ferme, Paris, France',
-            latitude: 48.8566,
-            longitude: 2.3522
+            latitude: 45.7640,
+            longitude: 4.8357
         },
         {
             id: 4,
@@ -60,8 +60,8 @@ export default function HomeScreen({ navigation }) {
             image: 'https://placeholder.com/150x100',
             phoneNumber: '+33123456789',
             location: '123 Rue de la Paix, Paris, France',
-            latitude : 34.0522,
-            longitude : -118.2437
+            latitude : 44.8378,
+            longitude : -0.5792
         },
         {
             id: 5,
@@ -71,8 +71,8 @@ export default function HomeScreen({ navigation }) {
             image: 'https://placeholder.com/150x100',
             phoneNumber: '+33123456789',
             location: '456 Rue de la Concorde, Paris, France',
-            latitude: 46.8139,
-            longitude: -71.2082
+            latitude: 48.3904,
+            longitude: -4.4861
         }
     ];
 
