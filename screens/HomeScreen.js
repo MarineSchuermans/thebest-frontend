@@ -18,9 +18,10 @@ export default function HomeScreen({ navigation }) {
 
     useEffect(() => {
         const getRestaurants = async () => {
+        const getRestaurants = async () => {
             try {
             
-                const response = await fetch(`${backendAdress}/findNearbyRestaurants`);
+                const response = await fetch('https://the-best-backend.vercel.app/findNearbyRestaurants');
                 const restaurantData = await response.json();
     
           
@@ -30,7 +31,7 @@ export default function HomeScreen({ navigation }) {
                     location: place.address,
                     description: "Ici, bientôt une description",
                     rating: place.rating,
-                    image: place.photo, 
+                    image: [place.photo], 
                     phoneNumber: place.phoneNumber,
                 }));
     
@@ -40,6 +41,7 @@ export default function HomeScreen({ navigation }) {
             }
         };
     
+        getRestaurants();
         getRestaurants();
     }, []);
 
@@ -144,61 +146,63 @@ export default function HomeScreen({ navigation }) {
     }
 
     const RenderRestaurantItem = ({ item }) => (
-<TouchableOpacity key={item.id}
-        onPress={() => navigation.navigate('Resto', {
-            title: item.title,
-            description: item.description,
-            rating: item.rating,
-            image: item.image,
-            phoneNumber: item.phoneNumber,
-            location: item.location,
-            type : item.type
-        })} 
-        style={styles.restaurantCard}
-    >            
+        <TouchableOpacity
+            onPress={() => navigation.navigate('Resto', {
+                title: item.title,
+                description: item.description,
+                rating: item.rating,
+                image: item.image,
+                phoneNumber: item.phoneNumber,
+                location: item.location,
+            })}
+            style={styles.restaurantCard}
+        >
+        
+            {item.image !== 'placeholder_url' ? (
+                <Image
+                    source={{ uri: item.image[0] }}
+                    style={styles.restaurantImage}
+                />
+            ) : (
+                <View style={styles.placeholderImage}>
+                    <View style={styles.placeholderInner} />
+                </View>
+            )}
 
-                {item.id === 1 ? (
-                    <Image
-                        source={{ uri: item.image[0] }}
-                        style={styles.restaurantImage}
-                    />
-                ) : (
-                    <View style={styles.placeholderImage}>
-                        <View style={styles.placeholderInner} />
-                    </View>
-                )}
-                <View style={styles.restaurantInfo}>
-                    <View style={styles.restaurantHeader}>
-                        <Text style={styles.restaurantTitle}>{item.title}</Text>
-                        <TouchableOpacity style={styles.heart} onPress={() => {
-                            handleFavorite(item)
-                            // const newFavorites = new Set(favorites);
-                            // favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
-                            // setFavorites(newFavorites);
-                        }}>
+            <View style={styles.restaurantInfo}>
+         
+                <View style={styles.restaurantHeader}>
+                    <Text style={styles.restaurantTitle}>{item.title}</Text>
+                    <TouchableOpacity onPress={() => {
+                        handleFavorite(item);
+                        const newFavorites = new Set(favorites);
+                        favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
+                        setFavorites(newFavorites);
+                    }}>
+                        <Feather
+                            name="heart"
+                            size={20}
+                            color={favorites.has(item.id) ? "#FF0000" : "#9CA3AF"}
+                        />
+                    </TouchableOpacity>
+                </View>
 
-                            {/* {heartColor} */}
-                            <Feather
-                                name="heart"
-                                size={20}
-                                color={user.favorites?.some((data) => item.id === data.id) ? "#FF0000" : "#9CA3AF"} //Changement de couleur si un resto de la liste favoris est supprimé 
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <Text style={styles.description}>{item.description}</Text>
-                    <View style={styles.restaurantFooter}>
-                        <Feather name="phone" size={16} />
-                        <Feather name="map-pin" size={16} style={styles.footerIcon} />
-                        <View style={styles.rating}>
-                            <Text>{'★'.repeat(Math.floor(item.rating))}</Text>
-                            <Text>{'☆'.repeat(5 - Math.floor(item.rating))}</Text>
-                            <Text style={styles.ratingText}>({item.rating})</Text>
-                        </View>
+          
+                <Text style={styles.description}>{item.description}</Text>
+
+           
+                <View style={styles.restaurantFooter}>
+                    <Feather name="phone" size={16} />
+                    <Feather name="map-pin" size={16} style={styles.footerIcon} />
+                    <View style={styles.rating}>
+                        <Text>{'★'.repeat(Math.floor(item.rating))}</Text>
+                        <Text>{'☆'.repeat(5 - Math.floor(item.rating))}</Text>
+                        <Text style={styles.ratingText}>({item.rating})</Text>
                     </View>
                 </View>
-            
+            </View>
         </TouchableOpacity>
-    );
+    )
 
     useEffect(() => {
         (async () => {
@@ -249,9 +253,9 @@ export default function HomeScreen({ navigation }) {
             </View>
                 
             <View style={styles.restaurantList}>
-                    {restaurants.map((restaurant) => (
-                        <RenderRestaurantItem item={restaurant}/>
-                    ))}
+                {restaurants.map((restaurant) => (
+                    <RenderRestaurantItem key={restaurant.id} item={restaurant} />
+                ))}
             </View>
 
 
