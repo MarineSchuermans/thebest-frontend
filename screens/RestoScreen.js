@@ -4,16 +4,16 @@ import { Feather } from '@expo/vector-icons';
 import { CameraView, Camera } from 'expo-camera';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FontAwesome } from '@expo/vector-icons'; 
-import { KeyboardAvoidingView, Platform} from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
-    
+
 
     const handleSubmit = () => {
         onSubmit({ rating, comment, photo });
@@ -37,7 +37,7 @@ const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
                     <Text style={styles.modalTitle}>Add a Review</Text>
                     {photo && <Image source={{ uri: photo }} style={styles.reviewPhoto} />}
                     <View style={styles.ratingContainer}>
-                    {[...Array(5)].map((_, index) => (
+                        {[...Array(5)].map((_, index) => (
                             <TouchableOpacity key={index} onPress={() => setRating(index + 1)}>
                                 <FontAwesome
                                     name={index < rating ? "star" : "star-o"}
@@ -66,7 +66,7 @@ const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
 };
 
 export default function RestoScreen({ route }) {
-    const { title, description, rating, image, phoneNumber, location } = route.params;
+    const { title, description, rating, image, phoneNumber, location, type } = route.params;
     const [hasPermission, setHasPermission] = useState(false);
     const [isCameraVisible, setIsCameraVisible] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -78,6 +78,21 @@ export default function RestoScreen({ route }) {
     const [userReview, setUserReview] = useState(null);
     const screenWidth = Dimensions.get('window').width;
     const navigation = useNavigation();
+
+    const getTypeIcon = () => {
+        switch (type) {
+            case 'family':
+                return { icon: 'users', text: 'Famille' };
+            case 'date':
+                return { icon: 'heart', text: 'Rendez-vous' };
+            case 'couple':
+                return { icon: 'user-plus', text: 'Couple' };
+            default:
+                return { icon: 'cutlery', text: 'Restaurant' };
+        }
+    };
+
+    const { icon, text } = getTypeIcon();
 
     useEffect(() => {
         (async () => {
@@ -171,9 +186,9 @@ export default function RestoScreen({ route }) {
                             <FlatList
                                 data={image}
                                 renderItem={({ item }) => (
-                                    <Image 
-                                        source={{ uri: item }} 
-                                        style={[styles.image, { width: screenWidth }]} 
+                                    <Image
+                                        source={{ uri: item }}
+                                        style={[styles.image, { width: screenWidth }]}
                                     />
                                 )}
                                 keyExtractor={(item, index) => index.toString()}
@@ -181,14 +196,15 @@ export default function RestoScreen({ route }) {
                                 pagingEnabled
                                 showsHorizontalScrollIndicator={false}
                             />
-    <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
-        <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
-    </TouchableOpacity>
-    <View style={styles.imageOverlay}>
-        <Text style={styles.overlayTitle}>{title}</Text>
-        <Text style={styles.overlayLocation}>{location}</Text>
-    </View>
-</View>
+                            <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
+                                <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
+                            </TouchableOpacity>
+                            <View style={styles.imageOverlay}>
+                                <Text style={styles.overlayTitle}>{title}</Text>
+                                <Text style={styles.overlayLocation}>{location}</Text>
+                                <FontAwesome name={icon} size={18} color="#FFFFFF" />
+                            </View>
+                        </View>
                         <View style={styles.contentContainer}>
                             <View style={styles.buttonContainer}>
                                 <TouchableOpacity style={styles.actionButton} onPress={() => setIsCameraVisible(true)}>
@@ -204,13 +220,13 @@ export default function RestoScreen({ route }) {
                                     <Text style={styles.actionButtonText}>Avis</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.actionButton} onPress={navigateToMap}>
-                <Feather name="map" size={20} color="#FFFFFF" />
-                <Text style={styles.actionButtonText}>Carte</Text>
-            </TouchableOpacity>
-                            <TouchableOpacity style={styles.actionButton} onPress={openGPS}>
-                                <Feather name="navigation" size={20} color="#FFFFFF" />
-                                <Text style={styles.actionButtonText}>GPS</Text>
-                            </TouchableOpacity>
+                                    <Feather name="map" size={20} color="#FFFFFF" />
+                                    <Text style={styles.actionButtonText}>Carte</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.actionButton} onPress={openGPS}>
+                                    <Feather name="navigation" size={20} color="#FFFFFF" />
+                                    <Text style={styles.actionButtonText}>GPS</Text>
+                                </TouchableOpacity>
                             </View>
                             <Text style={styles.description}>{description}</Text>
                             <View style={styles.ratingContainer}>
@@ -238,7 +254,7 @@ export default function RestoScreen({ route }) {
                     <View style={styles.reviewItem}>
                         {item.photo && <Image source={{ uri: item.photo }} style={styles.reviewPhoto} />}
                         <View style={styles.reviewRating}>
-                        {[...Array(5)].map((_, index) => (
+                            {[...Array(5)].map((_, index) => (
                                 <FontAwesome
                                     key={index}
                                     name={index < item.rating ? "star" : "star-o"}
@@ -253,13 +269,13 @@ export default function RestoScreen({ route }) {
                         </Text>
                         {item.isUserReview && (
                             <View>
-                            <TouchableOpacity onPress={handleEditReview}>
-                                <Text style={styles.editReview}>Edit</Text>
-                            </TouchableOpacity>
+                                <TouchableOpacity onPress={handleEditReview}>
+                                    <Text style={styles.editReview}>Edit</Text>
+                                </TouchableOpacity>
 
-                            <TouchableOpacity onPress={handleDeleteReview}>
-                                <Text style={styles.deleteReview}>Delete</Text>
-                            </TouchableOpacity>
+                                <TouchableOpacity onPress={handleDeleteReview}>
+                                    <Text style={styles.deleteReview}>Delete</Text>
+                                </TouchableOpacity>
                             </View>
                         )}
                     </View>
