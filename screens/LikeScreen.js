@@ -19,25 +19,6 @@ export default function LikeScreen({ navigation }) {
         dispatch(removeFavoritesToStore({id: data}))
     }
 
-    // const FlatListItem = ({ item }) => {
-
-    //     return (
-    //         <GestureDetector>
-    //             <Animated.View style={{ width: 100, height: 100, backgroundColor: 'red' }} />
-    //         </GestureDetector>
-    //     )
-    // }
-
-    // const SwipeableFlatList = () => {
-    //     return (
-    //         <View style={styles.container}>
-    //             <Text style={styles.heading}>Swipe to Delete</Text>
-    //             <FlatList style={styles.flatlistStyle}
-    //                 data={[1, 2, 3, 4, 5]} renderItem={({ item }) => <FlatListItem item={item} />} />
-    //         </View>
-    //     )
-
-    // }
     const favoriteListe = user.favorites.map((data, i) => {
         console.log(data)
         return (
@@ -64,12 +45,11 @@ export default function LikeScreen({ navigation }) {
                 <View style={styles.restaurantInfo}>
                     <View style={styles.restaurantHeader}>
                         <Text style={styles.restaurantTitle}>{data.title}</Text>
-                        <TouchableOpacity onPress={() => handleRemoveFavorite(data.id)}>
+                        <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data.id)}>
 
                             <Entypo
                                 name="cross"
                                 size={30}
-                            // color={favorites.has(.id) ? "#FF0000" : "#9CA3AF"}
                             />
                         </TouchableOpacity>
                     </View>
@@ -162,6 +142,10 @@ const styles = StyleSheet.create({
     },
     categoriesContainer: {
         paddingHorizontal: 16,
+    },
+    cross: {
+        height: 50,
+        width:50
     },
     categoryButton: {
         backgroundColor: '#F3F4F6',
