@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, Alert} from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSelector } from 'react-redux';
@@ -11,6 +11,7 @@ export default function MapScreen({ route, navigation }) {
     const [userLocation, setUserLocation] = useState(null);
     const [mapRegion, setMapRegion] = useState(null);
     const [routeCoordinates, setRouteCoordinates] = useState([]);
+    const [selectedRestaurant, setSelectedRestaurant] = useState(null);
 
     // Récupérer les restaurants depuis la HomeScreen
     const restaurants = [
@@ -74,88 +75,98 @@ export default function MapScreen({ route, navigation }) {
         }
     ];
 
-    useEffect(() => {
-        (async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                console.error('Permission to access location was denied');
-                return;
-            }
+    const fetchRoute = async (origin, destination) => {
+      const apiKey = 'SJvsfAsLwymsiRh9mxc5C4KbU4R3hN5aPj9fb3eiPrezkpl8z2cq5ukdqZzH026e';
+      const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${apiKey}`;
 
-            let location = await Location.getCurrentPositionAsync({});
-            setUserLocation(location.coords);
+      try {
+          const response = await fetch(url);
+          const data = await response.json();
+          if (data.status === 'OK') {
+              // Pour cet exemple, nous utilisons simplement une ligne droite entre les points
+              // Dans une implémentation réelle, vous devriez utiliser les données de l'API pour tracer un itinéraire précis
+              setRouteCoordinates([origin, destination]);
+              Alert.alert('Distance', `La distance est de ${data.rows[0].elements[0].distance.text}`);
+          } else {
+              console.error('Erreur lors de la récupération');
+          }
+      } catch (error) {
+          console.error('Erreur', error);
+      }
+  };
 
-            if (restaurantLocation) {
-                // Mode navigation vers un restaurant spécifique
-                setMapRegion({
-                    latitude: (location.coords.latitude + restaurantLocation.latitude) / 2,
-                    longitude: (location.coords.longitude + restaurantLocation.longitude) / 2,
-                    latitudeDelta: Math.abs(location.coords.latitude - restaurantLocation.latitude) * 2,
-                    longitudeDelta: Math.abs(location.coords.longitude - restaurantLocation.longitude) * 2,
-                });
-                setRouteCoordinates([
-                    { latitude: location.coords.latitude, longitude: location.coords.longitude },
-                    restaurantLocation
-                ]);
-            } else {
-                // Mode affichage de tous les restaurants
-                setMapRegion({
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                });
-            }
-        })();
-    }, [restaurantLocation]);
+  useEffect(() => {
+      (async () => {
+          let { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') {
+              console.error('Permission to access location was denied');
+              return;
+          }
 
-    return (
-        <View style={styles.container}>
-            {mapRegion && (
-                <MapView
-                    style={styles.map}
-                    region={mapRegion}
-                >
-                    {userLocation && (
-                        <Marker
-                            coordinate={userLocation}
-                            title="Votre position"
-                            pinColor="#4285F4"
-                        />
-                    )}
-                    {restaurantLocation ? (
-                        <>
-                            <Marker
-                                coordinate={restaurantLocation}
-                                title="Restaurant"
-                                pinColor="#C44949"
-                            />
-                            <Polyline
-                                coordinates={routeCoordinates}
-                                strokeColor="#000"
-                                strokeWidth={2}
-                            />
-                        </>
-                    ) : (
-                        restaurants.map((restaurant) => (
-                            <Marker
-                                key={restaurant.id}
-                                coordinate={{ latitude: restaurant.latitude, longitude: restaurant.longitude }}
-                                title={restaurant.title}
-                                pinColor="#C44949"
-                            />
-                        ))
-                    )}
-                </MapView>
-            )}
-            <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-            >
-                <Feather name="arrow-left" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-        </View>
-    );
+          let location = await Location.getCurrentPositionAsync({});
+          setUserLocation(location.coords);
+
+          if (restaurantLocation) {
+              setSelectedRestaurant(restaurantLocation);
+              fetchRoute(location.coords, restaurantLocation);
+          }
+
+          setMapRegion({
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+          });
+      })();
+  }, [restaurantLocation]);
+
+  const handleMarkerPress = (restaurant) => {
+      setSelectedRestaurant(restaurant);
+      if (userLocation) {
+          fetchRoute(userLocation, { latitude: restaurant.latitude, longitude: restaurant.longitude });
+      }
+  };
+
+  return (
+      <View style={styles.container}>
+          {mapRegion && (
+              <MapView
+                  style={styles.map}
+                  region={mapRegion}
+              >
+                  {userLocation && (
+                      <Marker
+                          coordinate={userLocation}
+                          title="Votre position"
+                          pinColor="#4285F4"
+                      />
+                  )}
+                  {restaurants.map((restaurant) => (
+                      <Marker
+                          key={restaurant.id}
+                          coordinate={{ latitude: restaurant.latitude, longitude: restaurant.longitude }}
+                          title={restaurant.title}
+                          pinColor="#C44949"
+                          onPress={() => handleMarkerPress(restaurant)}
+                      />
+                  ))}
+                  {routeCoordinates.length > 0 && (
+                      <Polyline
+                          coordinates={routeCoordinates}
+                          strokeColor="#000"
+                          strokeWidth={2}
+                      />
+                  )}
+              </MapView>
+          )}
+          <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+          >
+              <Feather name="arrow-left" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+      </View>
+  );
 }
 
 const styles = StyleSheet.create({
