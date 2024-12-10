@@ -6,10 +6,11 @@ import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons'; 
 import { KeyboardAvoidingView, Platform} from 'react-native';
-
+import { Dimensions } from 'react-native';
 const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
+    
 
     const handleSubmit = () => {
         onSubmit({ rating, comment, photo });
@@ -72,7 +73,8 @@ export default function RestoScreen({ route, navigation }) {
     const isFocused = useIsFocused();
     const [photoUri, setPhotoUri] = useState(null);
     const [userReview, setUserReview] = useState(null);
-
+    const screenWidth = Dimensions.get('window').width;
+    
     useEffect(() => {
         (async () => {
             const result = await Camera.requestCameraPermissionsAsync();
@@ -161,13 +163,19 @@ export default function RestoScreen({ route, navigation }) {
                 ListHeaderComponent={
                     <View>
                         <View style={styles.imageContainer}>
-    <ScrollView horizontal pagingEnabled style={styles.imageScrollView}>
-        {image.map((img, index) => (
-            <View key={index} style={styles.imageWrapper}>
-                <Image source={{ uri: img }} style={styles.image} />
-            </View>
-        ))}
-    </ScrollView>
+                            <FlatList
+                                data={image}
+                                renderItem={({ item }) => (
+                                    <Image 
+                                        source={{ uri: item }} 
+                                        style={[styles.image, { width: screenWidth }]} 
+                                    />
+                                )}
+                                keyExtractor={(item, index) => index.toString()}
+                                horizontal
+                                pagingEnabled
+                                showsHorizontalScrollIndicator={false}
+                            />
     <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
         <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
     </TouchableOpacity>
@@ -498,13 +506,12 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingHorizontal: 100,
     },
-    imageScrollView: {
-        height: 300,
+    imageContainer: {
+        position: 'relative',
+        height: 300, // Ajustez cette valeur selon vos besoins
     },
     image: {
-        width: '100%',
-        height: 300,
+        height: 300, // Assurez-vous que cette valeur correspond à celle de imageContainer
         resizeMode: 'cover',
-        borderRadius: 10,
     },
 });
