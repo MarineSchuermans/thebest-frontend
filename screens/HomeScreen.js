@@ -17,7 +17,7 @@ export default function HomeScreen({ navigation }) {
     // console.log(user.favorite)
 
     useEffect(() => {
-        const getRestaurants = async () => {
+
         const getRestaurants = async () => {
             try {
             
@@ -41,7 +41,6 @@ export default function HomeScreen({ navigation }) {
             }
         };
     
-        getRestaurants();
         getRestaurants();
     }, []);
 

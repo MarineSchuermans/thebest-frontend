@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, Alert} from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 export default function MapScreen({ route, navigation }) {
     const user = useSelector((state) => state.user.value);
@@ -12,180 +13,163 @@ export default function MapScreen({ route, navigation }) {
     const [mapRegion, setMapRegion] = useState(null);
     const [routeCoordinates, setRouteCoordinates] = useState([]);
     const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+    const [parkings, setParkings] = useState([]);
+    const mapRef = useRef(null);
 
-    // Récupérer les restaurants depuis la HomeScreen
-    const restaurants = [
-        {
-            id: 1,
-            title: "Le Gourmet",
-            description: "Fine dining experience",
-            rating: 4.5,
-            image: [
-                "https://www.aixenprovencetourism.com/wp-content/uploads/2013/07/ou_manger-1920x1080.jpg",
-                "https://placeholder.com/150x100"
-            ],
-            phoneNumber: "123-456-7890",
-            location: "123 Main St",
-            latitude: 48.8566,
-            longitude: 2.3522
-        },
-        {
-            id: 2,
-            title: "Saveurs d'Asie",
-            description: 'Description duis aute irure dolor in reprehenderit in volup...',
-            rating: 4.9,
-            image: 'https://placeholder.com/150x100',
-            phoneNumber: '+33987654321',
-            location: '456 Rue de la Concorde, Paris, France',
-            latitude: 43.7102,
-            longitude: 7.2620
-        },
-        {
-            id: 3,
-            title: 'Pizza Roma',
-            description: 'Description duis aute irure dolor in reprehenderit in v...',
-            rating: 4.9,
-            image: 'https://placeholder.com/150x100',
-            phoneNumber: '+33987654321',
-            location: '789 Rue de la Ferme, Paris, France',
-            latitude: 45.7640,
-            longitude: 4.8357
-        },
-        {
-            id: 4,
-            title: 'Le Bistrot',
-            description: 'Description duis aute irure dolor in reprehenderit in v...',
-            rating: 4.8,
-            image: 'https://placeholder.com/150x100',
-            phoneNumber: '+33123456789',
-            location: '123 Rue de la Paix, Paris, France',
-            latitude : 44.8378,
-            longitude : -0.5792
-        },
-        {
-            id: 5,
-            title: 'Sushi Master',
-            description: 'Description duis aute irure dolor in reprehenderit in v...',
-            rating: 4.0,
-            image: 'https://placeholder.com/150x100',
-            phoneNumber: '+33123456789',
-            location: '456 Rue de la Concorde, Paris, France',
-            latitude: 48.3904,
-            longitude: -4.4861
+    // Récupération des données des parkings
+    const fetchParkings = async () => {
+        try {
+            // Remplace l'URL avec une source valide si nécessaire
+            const response = await fetch(
+                'https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json'
+            );
+            const data = await response.json();
+            setParkings(data.features);
+        } catch (error) {
+            console.error('Erreur lors de la récupération des parkings:', error);
         }
-    ];
+    };
 
-    const fetchRoute = async (origin, destination) => {
-      const apiKey = 'SJvsfAsLwymsiRh9mxc5C4KbU4R3hN5aPj9fb3eiPrezkpl8z2cq5ukdqZzH026e';
-      const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${apiKey}`;
+    // Gestion de la couleur des marqueurs de parkings
+    const getParkingColor = (freeSpaces, totalSpaces) => {
+        const percentage = (freeSpaces / totalSpaces) * 100;
+        if (percentage <= 33) {
+            return '#FF0000'; // Rouge : parking presque plein
+        } else if (percentage <= 66) {
+            return '#FFA500'; // Orange : parking moyennement occupé
+        } else {
+            return '#00FF00'; // Vert : parking peu occupé
+        }
+    };
 
-      try {
-          const response = await fetch(url);
-          const data = await response.json();
-          if (data.status === 'OK') {
-              // Pour cet exemple, nous utilisons simplement une ligne droite entre les points
-              // Dans une implémentation réelle, vous devriez utiliser les données de l'API pour tracer un itinéraire précis
-              setRouteCoordinates([origin, destination]);
-              Alert.alert('Distance', `La distance est de ${data.rows[0].elements[0].distance.text}`);
-          } else {
-              console.error('Erreur lors de la récupération');
-          }
-      } catch (error) {
-          console.error('Erreur', error);
-      }
-  };
+    // Composant pour le marqueur de parking
+    const ParkingMarker = ({ freeSpaces, totalSpaces }) => {
+        const percentage = (freeSpaces / totalSpaces) * 100;
+        const gaugeColor = getParkingColor(freeSpaces, totalSpaces);
 
-  useEffect(() => {
-      (async () => {
-          let { status } = await Location.requestForegroundPermissionsAsync();
-          if (status !== 'granted') {
-              console.error('Permission to access location was denied');
-              return;
-          }
+        return (
+            <View style={styles.parkingMarkerContainer}>
+                <View style={styles.gaugeContainer}>
+                    <View style={[styles.gauge, { width: `${percentage}%`, backgroundColor: gaugeColor }]} />
+                </View>
+            </View>
+        );
+    };
 
-          let location = await Location.getCurrentPositionAsync({});
-          setUserLocation(location.coords);
+    // Gestion de l'itinéraire
+    // const fetchRoute = async (origin, destination) => {
+    //     const apiKey = 'SJvsfAsLwymsiRh9mxc5C4KbU4R3hN5aPj9fb3eiPrezkpl8z2cq5ukdqZzH026e';
+    //     const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${apiKey}`;
 
-          if (restaurantLocation) {
-              setSelectedRestaurant(restaurantLocation);
-              fetchRoute(location.coords, restaurantLocation);
-          }
+    //     try {
+    //         const response = await fetch(url);
+    //         const data = await response.json();
+    //         if (data.status === 'OK') {
+    //             setRouteCoordinates([origin, destination]);
+    //             Alert.alert('Distance', `La distance est de ${data.rows[0].elements[0].distance.text}`);
+    //         } else {
+    //             console.error('Erreur lors de la récupération de l’itinéraire');
+    //         }
+    //     } catch (error) {
+    //         console.error('Erreur', error);
+    //     }
+    // };
 
-          setMapRegion({
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-          });
-      })();
-  }, [restaurantLocation]);
+    useEffect(() => {
+        (async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                console.error('Permission de localisation refusée');
+                return;
+            }
 
-  const handleMarkerPress = (restaurant) => {
-      setSelectedRestaurant(restaurant);
-      if (userLocation) {
-          fetchRoute(userLocation, { latitude: restaurant.latitude, longitude: restaurant.longitude });
-      }
-  };
+            let location = await Location.getCurrentPositionAsync({});
+            setUserLocation(location.coords);
 
-  const favoriteMarkers = user.favorites.map((data, i) => {
-    return <Marker
-    key={i}
-    coordinate={{ latitude: data.latitude, longitude: data.longitude }}
-    title={data.title}>
-        <Image source={require('../assets/Icone_Favoris.png')} style={styles.favoriteMarker}/>
-    </Marker>
-  })
+            if (restaurantLocation) {
+                setSelectedRestaurant(restaurantLocation);
+                fetchRoute(location.coords, restaurantLocation);
+            }
 
-  return (
-      <View style={styles.container}>
-          {mapRegion && (
-              <MapView
-                  style={styles.map}
-                  region={mapRegion}
-              >
-                  {userLocation && (
-                      <Marker
-                          coordinate={userLocation}
-                          title="Votre position"
-                          pinColor="#4285F4"
-                      />
-                  )}
-                  {favoriteMarkers}
-                  {restaurants.map((restaurant) => (
-                      <Marker
-                          key={restaurant.id}
-                          coordinate={{ latitude: restaurant.latitude, longitude: restaurant.longitude }}
-                          title={restaurant.title}
-                          pinColor="#C44949"
-                          onPress={() => handleMarkerPress(restaurant)}
-                      />
-                  ))}
-                  {routeCoordinates.length > 0 && (
-                      <Polyline
-                          coordinates={routeCoordinates}
-                          strokeColor="#000"
-                          strokeWidth={2}
-                      />
-                  )}
-              </MapView>
-          )}
-          <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-          >
-              <Feather name="arrow-left" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-      </View>
-  );
+            setMapRegion({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            });
+            fetchParkings();
+        })();
+    }, [restaurantLocation]);
+
+    const handleMarkerPress = (restaurant) => {
+        setSelectedRestaurant(restaurant);
+        if (userLocation) {
+            fetchRoute(userLocation, { latitude: restaurant.latitude, longitude: restaurant.longitude });
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            {mapRegion && (
+                <MapView
+                    ref={mapRef}
+                    style={styles.map}
+                    region={mapRegion}
+                    showsUserLocation={true}
+                >
+                    {userLocation && (
+                        <Marker
+                            coordinate={userLocation}
+                            title="Votre position"
+                            pinColor="#4285F4"
+                        />
+                    )}
+                    {parkings && parkings.map((parking, index) => (
+                        <Marker
+                        coordinate={{
+                                latitude: parking.properties.latitude,
+                                longitude: parking.properties.longitude,
+                            }}
+                            image={require('../assets/favicon.png')}
+                         title={parking.properties.nom}
+                         description={`Places libres: ${parking.properties.nbr_libre}/${parking.properties.nbr_total}`}
+                        >
+                            <ParkingMarker
+                                freeSpaces={parking.properties.nbr_libre}
+                                totalSpaces={parking.properties.nbr_total}
+                            />
+{/* <View style={{ height: 30, width: 30, position: "relative" }}>
+                            <View style={{ position: "absolute", top: 35, width: 100 }}>
+                                <Text>hahahahahh</Text>
+                            </View>
+                        </View> */}
+                        </Marker>
+                    ))}
+                    <Marker
+                        coordinate={{ latitude: 37.78825, longitude: -122.4324 }}
+                        image={require("../assets/favicon.png")}
+                    >
+                        <View style={{ height: 30, width: 30, position: "relative" }}>
+                            <View style={{ position: "absolute", top: 35, width: 100 }}>
+                                <Text>hahahahahah</Text>
+                            </View>
+                        </View>
+                    </Marker>
+                </MapView>
+            )}
+            <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+            >
+                <Feather name="arrow-left" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    favoriteMarker: {
-        height: 60,
-        width: 60
     },
     map: {
         flex: 1,
@@ -197,5 +181,22 @@ const styles = StyleSheet.create({
         backgroundColor: '#C44949',
         padding: 10,
         borderRadius: 30,
+    },
+    parkingMarkerContainer: {
+        height: 30,
+        width: 30,
+        position: 'relative',
+    },
+    gaugeContainer: {
+        width: 30,
+        height: 5,
+        backgroundColor: '#E0E0E0',
+        borderRadius: 2,
+        overflow: 'hidden',
+        marginTop: 5,
+        position: 'absolute',
+    },
+    gauge: {
+        height: '100%',
     },
 });
