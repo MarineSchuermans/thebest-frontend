@@ -14,7 +14,7 @@ export default function HomeScreen({ navigation }) {
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value)
 
-    console.log(restaurants)
+    // console.log(user.favorite)
 
     useEffect(() => {
         const getRestaurants = async () => {
@@ -23,7 +23,7 @@ export default function HomeScreen({ navigation }) {
             
                 const response = await fetch('https://the-best-backend.vercel.app/findNearbyRestaurants');
                 const restaurantData = await response.json();
-    
+                
           
                 const formattedRestaurants = restaurantData.map((place, index) => ({
                     id: index + 1,
