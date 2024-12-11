@@ -18,7 +18,6 @@ export default function HomeScreen({ navigation }) {
 
     useEffect(() => {
         const getRestaurants = async () => {
-        const getRestaurants = async () => {
             try {
             
                 const response = await fetch('https://the-best-backend.vercel.app/findNearbyRestaurants');
@@ -41,7 +40,6 @@ export default function HomeScreen({ navigation }) {
             }
         };
     
-        getRestaurants();
         getRestaurants();
     }, []);
 
@@ -173,7 +171,8 @@ export default function HomeScreen({ navigation }) {
          
                 <View style={styles.restaurantHeader}>
                     <Text style={styles.restaurantTitle}>{item.title}</Text>
-                    <TouchableOpacity onPress={() => {
+                    <TouchableOpacity style={styles.heart}
+                    onPress={() => {
                         handleFavorite(item);
                         const newFavorites = new Set(favorites);
                         favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);

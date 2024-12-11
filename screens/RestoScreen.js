@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { ApifyClient } from 'apify-client';
 
 const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
     const [rating, setRating] = useState(0);
@@ -82,6 +83,9 @@ export default function RestoScreen({ route }) {
     const navigation = useNavigation();
     const [distance, setDistance] = useState(null);
     const [userLocation, setUserLocation] = useState(null);
+    const [photoPlaces, setPhotoPlaces] = useState([])
+
+    console.log(photoPlaces.displayUrl)
 
     useEffect(() => {
         (async () => {
@@ -95,6 +99,48 @@ export default function RestoScreen({ route }) {
             setUserLocation(location.coords);
         })();
     }, []);
+
+    const photosFromApi = []
+    const videoFromApi = []
+
+    // useEffect(() => {
+
+
+    //     // Initialize the ApifyClient with API token
+    //     const client = new ApifyClient({
+    //         token: 'apify_api_aQEbQtJvzhWHS48o1P5oq9elYbGsmn2lFuAU',
+    //     });
+
+    //     // Prepare Actor input
+    //     const input = {
+    //         "directUrls": [
+    //             "https://www.instagram.com/meltingpot_restaurant_lille/"
+    //         ],
+    //         "resultsType": "posts",
+    //         "resultsLimit": 5,
+    //         "searchType": "hashtag",
+    //         "searchLimit": 1,
+    //         "addParentData": false
+    //     };
+
+    //     (async () => {
+    //         // Run the Actor and wait for it to finish
+    //         const run = await client.actor("shu8hvrXbJbY3Eb9W").call(input);
+
+    //         // Fetch and print Actor results from the run's dataset (if any)
+    //         console.log('Results from dataset');
+    //         const { items } = await client.dataset(run.defaultDatasetId).listItems();
+    //         items.forEach((item) => {
+    //             console.dir(item);
+
+    //             setPhotoPlaces(...photoPlaces, item)
+
+    //             console.log(item)
+    //         });
+    //     })();
+    // }, [])
+
+
 
     const fetchRoute = async (origin, destination) => {
         const apiKey = 'SJvsfAsLwymsiRh9mxc5C4KbU4R3hN5aPj9fb3eiPrezkpl8z2cq5ukdqZzH026e';
@@ -222,15 +268,15 @@ export default function RestoScreen({ route }) {
             return null;
         }
     };
-    
+
     // Modify the map preview to use geocoded coordinates
     const MapPreview = async () => {
         const coordinates = await getCoordinatesFromAddress(location);
-    
+
         if (!coordinates) {
             return <View><Text>Unable to get location</Text></View>;
         }
-    
+
         return (
             <View style={styles.mapPreview}>
                 <MapView
