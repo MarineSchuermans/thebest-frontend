@@ -13,15 +13,15 @@ export default function HomeScreen({ navigation }) {
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value)
 
-    console.log(user.favorite)
+    // console.log(user.favorite)
 
     useEffect(() => {
         const restaurants = async () => {
             try {
             
-                const response = await fetch('http://192.168.1.13:3000/findNearbyRestaurants');
+                const response = await fetch('http://10.1.3.144:3000/findNearbyRestaurants');
                 const restaurantData = await response.json();
-    
+                
           
                 const formattedRestaurants = restaurantData.map((place, index) => ({
                     id: index + 1,

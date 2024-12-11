@@ -36,6 +36,7 @@ export default function UserScreen({ navigation }) {
   const [email, setEmail] = useState(""); // Utilisé uniquement pour Sign-up
 
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
+  const validateUsername = (username) => username.lenght >=3;
   const validatePassword = (password) => password.length >= 8;
 
   const toggleSignUp = () => setIsSignUp(!isSignUp);
@@ -50,6 +51,10 @@ export default function UserScreen({ navigation }) {
         "Weak password",
         "Password must be at least 8 characters long."
       );
+      return;
+    }
+    if (!validateUsername(username)){
+      Alert.alert("Invalid username", "Username must be at least 3 characters long.");
       return;
     }
 
@@ -130,8 +135,8 @@ export default function UserScreen({ navigation }) {
             style={styles.avatar}
           />
           {/* <View style={styles.logoutSection}> */}
-          <Text>Welcome {user.username} / </Text>
-          <Button title="Logout" onPress={handleLogout} />
+          <Text>Bienvenu, Bester {user.username} / </Text>
+          <Button title="Ce Deconneter" onPress={handleLogout} />
         </View>
       ) : (
         <TouchableOpacity onPress={toggleModal} style={styles.userIcon}>
@@ -160,22 +165,25 @@ export default function UserScreen({ navigation }) {
 
                 {isSignUp ? (
                   <>
-                    <Text>Sign-up</Text>
+                    <Text style={styles.titleText}>S'inscrire</Text>
+                    <Text style={styles.inputLabel}>Username</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="Username"
+                      placeholder="Entrer votre Username"
                       onChangeText={setUsername}
                       value={username}
                     />
+                    <Text style={styles.inputLabel}>Email</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="Email"
+                      placeholder="Entrer votre Email"
                       onChangeText={setEmail}
                       value={email}
                     />
+                    <Text style={styles.inputLabel}>Password</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="Password"
+                      placeholder="Entrer votre Password"
                       secureTextEntry
                       onChangeText={setPassword}
                       value={password}
@@ -185,33 +193,36 @@ export default function UserScreen({ navigation }) {
                       onPress={() =>
                         handleSignUp() + navigation.navigate("Home")
                       }
+                      color="#000" // Texte noir
                     />
                     <TouchableOpacity onPress={toggleSignUp}>
                       <Text style={styles.toggleText}>
-                        Already have an account? Sign in
+                      Vous avez déjà un compte ? S'identifier
                       </Text>
                     </TouchableOpacity>
                   </>
                 ) : (
                   <>
-                    <Text>Sign-in</Text>
+                    <Text style={styles.titleText}>S'identifier</Text>
+                    <Text style={styles.inputLabel}>username</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="Username"
+                      placeholder="Entrer votre Username"
                       onChangeText={setUsername}
                       value={username}
                     />
+                    <Text style={styles.inputLabel}>Password</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="Password"
+                      placeholder="Entrer votre Password"
                       secureTextEntry
                       onChangeText={setPassword}
                       value={password}
                     />
-                    <Button title="Connect" onPress={handleSignIn} />
+                    <Button title="Connect" onPress={handleSignIn} color = '#000' />
                     <TouchableOpacity onPress={toggleSignUp}>
-                      <Text style={styles.toggleText}>
-                        Don't have an account? Sign up
+                      <Text style={styles.toggleText} >
+                      Vous n'avez pas de compte ? S'inscrire
                       </Text>
                     </TouchableOpacity>
                   </>
@@ -226,6 +237,19 @@ export default function UserScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20, // Espace sous le titre
+    color: "#333",
+  },
+  inputLabel: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: "#555",
+    fontWeight: "500",
+  },
   avatar: {
     margin: 10,
     width: 150,
@@ -234,7 +258,7 @@ const styles = StyleSheet.create({
   // Vos styles d'origine + ajout d'un style pour `toggleText`
   toggleText: {
     marginTop: 10,
-    color: "#007BFF",
+    color: "#000",
     textAlign: "center",
     fontWeight: "600",
   },
@@ -338,9 +362,9 @@ const styles = StyleSheet.create({
     borderColor: "#C44949",
     alignItems: "center",
   },
-    btnRegisterText: {
-      color: '#C44949',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
+  btnRegisterText: {
+    color: "#C44949",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
