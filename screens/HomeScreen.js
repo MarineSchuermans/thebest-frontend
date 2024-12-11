@@ -172,7 +172,8 @@ export default function HomeScreen({ navigation }) {
          
                 <View style={styles.restaurantHeader}>
                     <Text style={styles.restaurantTitle}>{item.title}</Text>
-                    <TouchableOpacity onPress={() => {
+                    <TouchableOpacity style={styles.heart}
+                    onPress={() => {
                         handleFavorite(item);
                         const newFavorites = new Set(favorites);
                         favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);

@@ -51,6 +51,7 @@ export default function App() {
             let iconName = '';
             const user = useSelector((state) => state.user.value)
             console.log(user.avatarUrl)
+            // const avatarUser = require(`./assets/avatars/${user.avatarUrl}`)
 
             let isConnected = false
             if (user.token?.length > 0 ){
@@ -71,7 +72,7 @@ export default function App() {
             } else if (route.name === 'User' && isConnected) {
               // fontName = FontAwesome
               // iconName = 'user';
-              return <Image source={require(`./assets/avatars/avatar2.png`)} style={styles.userImage}/>
+              return <Image source={require('./assets/avatars/avatar1.png')} style={styles.userImage}/>
             } else if (route.name === 'Like') {
               fontName = FontAwesome
               iconName = 'heart';

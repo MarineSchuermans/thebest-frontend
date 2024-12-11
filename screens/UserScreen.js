@@ -36,7 +36,7 @@ export default function UserScreen({ navigation }) {
   const [email, setEmail] = useState(""); // Utilisé uniquement pour Sign-up
 
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
-  const validateUsername = (username) => username.lenght >=3;
+  const validateUsername = (username) => username.length >=3;
   const validatePassword = (password) => password.length >= 8;
 
   const toggleSignUp = () => setIsSignUp(!isSignUp);
