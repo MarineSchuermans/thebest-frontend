@@ -138,11 +138,6 @@ export default function MapScreen({ route, navigation }) {
                                 freeSpaces={parking.properties.nbr_libre}
                                 totalSpaces={parking.properties.nbr_total}
                             />
-{/* <View style={{ height: 30, width: 30, position: "relative" }}>
-                            <View style={{ position: "absolute", top: 35, width: 100 }}>
-                                <Text>hahahahahh</Text>
-                            </View>
-                        </View> */}
                         </Marker>
                     ))}
                     <Marker
