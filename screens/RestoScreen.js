@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { ApifyClient } from 'apify-client';
+// import { ApifyClient } from 'apify-client';
 
 const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
     const [rating, setRating] = useState(0);
@@ -313,24 +313,45 @@ export default function RestoScreen({ route }) {
             </View>
         );
     };
+    // return (
+    //     <SafeAreaView style={styles.container}>
+    //         <FlatList
+    //             ListHeaderComponent={
+    //                 <View>
+    //                     <View style={styles.imageContainer}>
+    //                         <FlatList
+    //                             data={image}
+    //                             renderItem={({ item }) => (
+    //                                 <Image
+    //                                     source={{ uri: item }}
+    //                                     style={[styles.image, { width: screenWidth }]}
+    //                                 />
+    //                             )}
+    //                             keyExtractor={(item, index) => index.toString()}
+    //                             horizontal
+    //                             pagingEnabled
+    //                             showsHorizontalScrollIndicator={false}
+    //                         />
+    //                         <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
+    //                             <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
+    //                         </TouchableOpacity>
+    //                         <View style={styles.imageOverlay}>
+    //                             <Text style={styles.overlayTitle}>{title}</Text>
+    //                             <Text style={styles.overlayLocation}>{location}</Text>
+    //                             <FontAwesome name={icon} size={18} color="#FFFFFF" />
+    //                         </View>
+    //                     </View>
+
+
     return (
         <SafeAreaView style={styles.container}>
             <FlatList
                 ListHeaderComponent={
                     <View>
                         <View style={styles.imageContainer}>
-                            <FlatList
-                                data={image}
-                                renderItem={({ item }) => (
-                                    <Image
-                                        source={{ uri: item }}
-                                        style={[styles.image, { width: screenWidth }]}
-                                    />
-                                )}
-                                keyExtractor={(item, index) => index.toString()}
-                                horizontal
-                                pagingEnabled
-                                showsHorizontalScrollIndicator={false}
+                            <Image
+                                source={{ uri: image }}
+                                style={[styles.image, { width: screenWidth }]}
                             />
                             <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
                                 <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
@@ -702,10 +723,10 @@ const styles = StyleSheet.create({
     },
     imageContainer: {
         position: 'relative',
-        height: 300, // Ajustez cette valeur selon vos besoins
+        height: 300, 
     },
     image: {
-        height: 300, // Assurez-vous que cette valeur correspond à celle de imageContainer
+        height: 300, 
         resizeMode: 'cover',
     },
     mapPreview: {

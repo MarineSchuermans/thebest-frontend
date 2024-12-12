@@ -17,23 +17,30 @@ export default function HomeScreen({ navigation }) {
     // console.log(user.favorite)
 
     useEffect(() => {
+    
 
         const getRestaurants = async () => {
             try {
             
-                const response = await fetch('https://the-best-backend.vercel.app/findNearbyRestaurants');
+                const response = await fetch(backendAdress+"/findNearbyRestaurants"); //ON N UTILISE PAS VERCEL A CAUSE DU TIMEOUT
                 const restaurantData = await response.json();
                 
-          
-                const formattedRestaurants = restaurantData.map((place, index) => ({
-                    id: index + 1,
+          console.log('Raw restaurant:', restaurantData)
+                const formattedRestaurants = restaurantData.map((place, index) => {
+                    console.log('Processing place:', place);
+                    return {
+
+              
+                    id: place.id,
                     title: place.name,
                     location: place.address,
                     description: "Ici, bientôt une description",
                     rating: place.rating,
-                    image: [place.photo], 
+                    image: place.photo, 
                     phoneNumber: place.phoneNumber,
-                }));
+                    openingHours : place.openingHours
+                    };
+                });
     
                 setRestaurants(formattedRestaurants);
             } catch (error) {
@@ -157,9 +164,9 @@ export default function HomeScreen({ navigation }) {
             style={styles.restaurantCard}
         >
         
-            {item.image !== 'placeholder_url' ? (
+            {item.image && item.image!== 'placeholder_url' ? (
                 <Image
-                    source={{ uri: item.image[0] }}
+                    source={{ uri: item.image }}
                     style={styles.restaurantImage}
                 />
             ) : (
