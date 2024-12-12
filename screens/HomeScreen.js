@@ -23,13 +23,14 @@ import { backendAdress } from "../config";
 import LikeIcon from "../components/LikeIcon";
 
 export default function HomeScreen({ navigation }) {
-  const dispatch = useDispatch();
-  const [favorites, setFavorites] = useState(new Set());
-  const [restaurants, setRestaurants] = useState([]);
-  const categories = ["Fast food", "Italien", "Asiatique", "Gastronomique"];
-  const user = useSelector((state) => state.user.value);
+    const dispatch = useDispatch()
+    const [favorites, setFavorites] = useState(new Set());
+    const [restaurants, setRestaurants] = useState([]);
+    const [isFavorite, setIsFavorite] = useState([])
+    const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
+    const user = useSelector((state) => state.user.value)
 
-  //console.log(user.favorite)
+    console.log(user)
 
     useEffect(() => {
     
@@ -40,13 +41,10 @@ export default function HomeScreen({ navigation }) {
                 const response = await fetch(backendAdress+"/findNearbyRestaurants"); //ON N UTILISE PAS VERCEL A CAUSE DU TIMEOUT
                 const restaurantData = await response.json();
                 
-          console.log('Raw restaurant:', restaurantData)
-                const formattedRestaurants = restaurantData.map((place, index) => {
-                    console.log('Processing place:', place);
-                    return {
-
-              
-                    id: place.id,
+          
+                const formattedRestaurants = restaurantData.map((place, index) => ({
+                    _id: place._id,
+                    id: index + 1,
                     title: place.name,
                     location: place.address,
                     description: "Ici, bientôt une description",
@@ -144,37 +142,47 @@ export default function HomeScreen({ navigation }) {
   //     }
   // ];
 
-  // Verifier si le user est connecté via la présence ou non d'un token
-  let isConnected = false;
-  if (user.token?.length > 0) {
-    isConnected = true;
-  }
+    // Verifier si le user est connecté via la présence ou non d'un token
+    let isConnected = false
+    if (user.token?.length > 0 ){
+        isConnected = true
+    } 
 
-  //envoyer les favoris dans le reducer user au click sur le coeur
-  const handleFavorite = (item) => {
-    if (!isConnected) {
-      return navigation.navigate("User"); //Au press sur le coeur, si le user n'est pas connecté il est renvoyé sur la page log-in
-    }
-    const isFavorite = user.favorites.some((user) => user.id === item.id);
-    console.log(isFavorite);
-    if (!isFavorite) {
-      console.log("Add Favorite");
-      dispatch(
-        addFavoritesToStore({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          rating: item.rating,
-          latitude: item.latitude,
-          longitude: item.longitude,
-          isFavorite: true,
+    
+     
+    //envoyer les favoris dans le reducer user au click sur le coeur
+    const handleFavorite = (item) => {
+        if (!isConnected){
+            return navigation.navigate('User') //Au press sur le coeur, si le user n'est pas connecté il est renvoyé sur la page log-in
+        }
+
+        const infos = {
+            token: user.token,
+            obj_id: item._id
+        }
+        
+        fetch('https://the-best-backend.vercel.app/users/favorites', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(infos)
         })
-      );
-    } else if (isFavorite) {
-      console.log("Favorite deleted");
-      dispatch(removeFavoritesToStore({ id: item.id }));
+        .then(response => response.json())
+        .then (data => {
+            console.log(data)
+            if (data.result){
+                setIsFavorite([...isFavorite, item._id])
+                dispatch(addFavoritesToStore({id: item._id}))
+                // console.log(item)
+            } else {
+                setIsFavorite(a => a.filter(e => e !== item._id ))
+                dispatch(removeFavoritesToStore({id: item._id}))
+            }
+            // console.log(isFavorite)
+        })
+        .catch(error => {
+            console.error('Erreur de la requête:', error)
+        })
     }
-  };
 
     const RenderRestaurantItem = ({ item }) => (
         <TouchableOpacity
@@ -230,6 +238,38 @@ export default function HomeScreen({ navigation }) {
       </View>
     </TouchableOpacity>
   );
+            <View style={styles.restaurantInfo}>
+         
+                <View style={styles.restaurantHeader}>
+                    <Text style={styles.restaurantTitle}>{item.title}</Text>
+                    <TouchableOpacity style={styles.heart}
+                    onPress={() => {
+                        handleFavorite(item);
+                    }}>
+                        <Feather
+                            name="heart"
+                            size={20}
+                            color={isFavorite.some(data => item._id == data) ? "#FF0000" : "#9CA3AF"}
+                        />
+                    </TouchableOpacity>
+                </View>
+
+          
+                <Text style={styles.description}>{item.description}</Text>
+
+           
+                <View style={styles.restaurantFooter}>
+                    <Feather name="phone" size={16} />
+                    <Feather name="map-pin" size={16} style={styles.footerIcon} />
+                    <View style={styles.rating}>
+                        <Text>{'★'.repeat(Math.floor(item.rating))}</Text>
+                        <Text>{'☆'.repeat(5 - Math.floor(item.rating))}</Text>
+                        <Text style={styles.ratingText}>({item.rating})</Text>
+                    </View>
+                </View>
+            </View>
+        </TouchableOpacity>
+    )
 
   useEffect(() => {
     (async () => {
