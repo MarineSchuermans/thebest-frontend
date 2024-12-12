@@ -11,10 +11,11 @@ export default function HomeScreen({ navigation }) {
     const dispatch = useDispatch()
     const [favorites, setFavorites] = useState(new Set());
     const [restaurants, setRestaurants] = useState([]);
+    const [isFavorite, setIsFavorite] = useState([])
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value)
 
-    // console.log(user.favorite)
+    console.log(user)
 
     useEffect(() => {
 
@@ -26,6 +27,7 @@ export default function HomeScreen({ navigation }) {
                 
           
                 const formattedRestaurants = restaurantData.map((place, index) => ({
+                    _id: place._id,
                     id: index + 1,
                     title: place.name,
                     location: place.address,
@@ -44,104 +46,46 @@ export default function HomeScreen({ navigation }) {
         getRestaurants();
     }, []);
 
-    // const restaurants = [
-    //     {
-    //         id: 1,
-    //         title: "Le Gourmet",
-    //         description: "Fine dining experience",
-    //         rating: 4.5,
-    //         image: [
-    //             "https://www.aixenprovencetourism.com/wp-content/uploads/2013/07/ou_manger-1920x1080.jpg",
-    //             "https://placeholder.com/150x100"
-    //         ],
-    //         phoneNumber: "123-456-7890",
-    //         location: "123 Main St",
-    //         latitude: 48.8566,
-    //         longitude: 2.3522,
-    //         type : 'family'
-    //     },
-    //     {
-    //         id: 2,
-    //         title: "Saveurs d'Asie",
-    //         description: 'Description duis aute irure dolor in reprehenderit in volup...',
-    //         rating: 4.9,
-    //         image: [
-    //             "https://www.aixenprovencetourism.com/wp-content/uploads/2013/07/ou_manger-1920x1080.jpg",
-    //             "https://placeholder.com/150x100"
-    //         ],
-    //         phoneNumber: '+33987654321',
-    //         location: '456 Rue de la Concorde, Paris, France',
-    //         latitude: 43.7102,
-    //         longitude: 7.2620,
-    //         type : 'date'
-    //     },
-    //     {
-    //         id: 3,
-    //         title: 'Pizza Roma',
-    //         description: 'Description duis aute irure dolor in reprehenderit in v...',
-    //         rating: 4.9,
-    //         image: [
-    //             "https://www.aixenprovencetourism.com/wp-content/uploads/2013/07/ou_manger-1920x1080.jpg",
-    //             "https://placeholder.com/150x100"
-    //         ],
-    //         phoneNumber: '+33987654321',
-    //         location: '789 Rue de la Ferme, Paris, France',
-    //         latitude: 45.7640,
-    //         longitude: 4.8357,
-    //         type : 'couple'
-    //     },
-    //     {
-    //         id: 4,
-    //         title: 'Le Bistrot',
-    //         description: 'Description duis aute irure dolor in reprehenderit in v...',
-    //         rating: 4.8,
-    //         image: [
-    //             "https://www.aixenprovencetourism.com/wp-content/uploads/2013/07/ou_manger-1920x1080.jpg",
-    //             "https://placeholder.com/150x100"
-    //         ],
-    //         phoneNumber: '+33123456789',
-    //         location: '123 Rue de la Paix, Paris, France',
-    //         latitude : 44.8378,
-    //         longitude : -0.5792,
-    //         type : 'date'
-    //     },
-    //     {
-    //         id: 5,
-    //         title: 'Sushi Master',
-    //         description: 'Description duis aute irure dolor in reprehenderit in v...',
-    //         rating: 4.0,
-    //         image: [
-    //             "https://www.aixenprovencetourism.com/wp-content/uploads/2013/07/ou_manger-1920x1080.jpg",
-    //             "https://placeholder.com/150x100"
-    //         ],
-    //         phoneNumber: '+33123456789',
-    //         location: '456 Rue de la Concorde, Paris, France',
-    //         latitude: 48.3904,
-    //         longitude: -4.4861,
-    //         type : 'couple'
-    //     }
-    // ];
-
     // Verifier si le user est connecté via la présence ou non d'un token
     let isConnected = false
     if (user.token?.length > 0 ){
         isConnected = true
     } 
+
+    
      
     //envoyer les favoris dans le reducer user au click sur le coeur
     const handleFavorite = (item) => {
         if (!isConnected){
             return navigation.navigate('User') //Au press sur le coeur, si le user n'est pas connecté il est renvoyé sur la page log-in
         }
-        const isFavorite = user.favorites.some(user => user.id === item.id);
-        console.log(isFavorite)
-        if (!isFavorite){
-            console.log('Add Favorite') 
-            dispatch(addFavoritesToStore({id: item.id, title: item.title, description: item.description, rating: item.rating, latitude: item.latitude, longitude: item.longitude, isFavorite: true}))
-        } else if (isFavorite){
-            console.log('Favorite deleted')
-            dispatch(removeFavoritesToStore({id: item.id}))
+
+        const infos = {
+            token: user.token,
+            obj_id: item._id
         }
+        
+        fetch('https://the-best-backend.vercel.app/users/favorites', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(infos)
+        })
+        .then(response => response.json())
+        .then (data => {
+            console.log(data)
+            if (data.result){
+                setIsFavorite([...isFavorite, item._id])
+                dispatch(addFavoritesToStore({id: item._id}))
+                // console.log(item)
+            } else {
+                setIsFavorite(a => a.filter(e => e !== item._id ))
+                dispatch(removeFavoritesToStore({id: item._id}))
+            }
+            // console.log(isFavorite)
+        })
+        .catch(error => {
+            console.error('Erreur de la requête:', error)
+        })
     }
 
     const RenderRestaurantItem = ({ item }) => (
@@ -175,14 +119,11 @@ export default function HomeScreen({ navigation }) {
                     <TouchableOpacity style={styles.heart}
                     onPress={() => {
                         handleFavorite(item);
-                        const newFavorites = new Set(favorites);
-                        favorites.has(item.id) ? newFavorites.delete(item.id) : newFavorites.add(item.id);
-                        setFavorites(newFavorites);
                     }}>
                         <Feather
                             name="heart"
                             size={20}
-                            color={favorites.has(item.id) ? "#FF0000" : "#9CA3AF"}
+                            color={isFavorite.some(data => item._id == data) ? "#FF0000" : "#9CA3AF"}
                         />
                     </TouchableOpacity>
                 </View>
@@ -257,32 +198,11 @@ export default function HomeScreen({ navigation }) {
                     <RenderRestaurantItem key={restaurant.id} item={restaurant} />
                 ))}
             </View>
-
-
-            {/* <FlatList
-                data={restaurants}
-                renderItem={renderRestaurantItem}
-                keyExtractor={item => item.id.toString()}
-                style={styles.restaurantList}
-            /> */}
         </SafeAreaView>
-
-        // <View style={styles.container}>
-        //     <Text> Home Screen </Text>
-        //     <Button title = 'Go to Reso'
-        //     onPress={() => navigation.navigate('Resto')}/>
-        // </View>
     )
 }
 
 const styles = StyleSheet.create({
-    // container: {
-    //   flex: 1,
-    //   backgroundColor: '#fff',
-    //   alignItems: 'center',
-    //   justifyContent: 'center',
-    // },
-    // const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F9FAFB',
