@@ -150,11 +150,12 @@ export default function LikeScreen({ navigation }) {
             <View style={styles.header}>
                 <Feather name="map-pin" size={24} />
                 <View style={styles.searchContainer}>
-                    <Feather name="search" size={16} style={styles.searchIcon} />
+                    <Text style={styles.title}>Tes Best of The Best ♥</Text>
+                    {/* <Feather name="search" size={16} style={styles.searchIcon} />
                     <TextInput
                         placeholder="Search"
                         style={styles.searchInput}
-                    />
+                    /> */}
                 </View>
                 <FontAwesome6 name="bars" size={24} />
             </View>
@@ -198,7 +199,12 @@ const styles = StyleSheet.create({
     searchContainer: {
         flex: 1,
         marginHorizontal: 16,
-        position: 'relative',
+        alignItems: 'center',
+        position: 'center',
+    },
+    title: {
+        fontSize: 23,
+        fontWeight: 'bold',
     },
     searchInput: {
         backgroundColor: '#F3F4F6',
