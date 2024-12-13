@@ -16,93 +16,83 @@ export default function LikeScreen({ navigation }) {
     const user = useSelector((state) => state.user.value)
     const id_places = user.favorites
 
-    console.log(id_places)
-    console.log(likePlaces)
+    let isConnected = false
+    if (user.token?.length > 0) {
+        isConnected = true
+    }
 
-   useEffect(() => {
-    fetch(`${backendAdress}/places`)
-        .then(response => response.json())
-        .then(data => {
+    // console.log(id_places.length)
+    console.log(isConnected)
 
-            // if (data.places.some(place => place._id === id_places))
-            // const infoPlaces = data.find(place => id_places.some(idPlace => idPlace.id === place._id))
-            // console.log(infoPlaces)
-            // setLikePlaces()
-            const updateLikes = []
-            for (let i=0 ; i < id_places.length ; i++) {
-                if (data.places.some(place => place._id === id_places[i].id)){
-                    const infoPlace = data.places.find(placeLike => placeLike._id === id_places[i].id)
-                    // console.log(infoPlace)
-                    updateLikes.push(infoPlace)
-                    // setLikePlaces([...likePlaces, infoPlace])
-                } else {
-                    console.log(false)
+    useEffect(() => {
+        fetch(`${backendAdress}/places`)
+            .then(response => response.json())
+            .then(data => {
+
+                // if (data.places.some(place => place._id === id_places))
+                // const infoPlaces = data.find(place => id_places.some(idPlace => idPlace.id === place._id))
+                // console.log(infoPlaces)
+                // setLikePlaces()
+                const updateLikes = []
+                for (let i = 0; i < id_places.length; i++) {
+                    if (data.places.some(place => place._id === id_places[i])) {
+                        const infoPlace = data.places.find(placeLike => placeLike._id === id_places[i])
+                        // console.log(infoPlace)
+                        updateLikes.push(infoPlace)
+                        // setLikePlaces([...likePlaces, infoPlace])
+                    } else {
+                        console.log(false)
+                    }
                 }
-            }
-            setLikePlaces([...updateLikes])
-        })
+                // console.log(updateLikes)
+                setLikePlaces([...updateLikes])
+            })
 
-   }, [id_places.length])
+    }, [id_places.length])
 
-    const handleRemoveFavorite = (data) => {
+    //    console.log(likePlaces)
+
+    const handleRemoveFavorite = (item) => {
+
+        console.log(item)
+        const infos = {
+            token: user.token,
+            obj_id: item
+        }
         console.log('remove favorite')
-        dispatch(removeFavoritesToStore({id: data}))
+        fetch('https://the-best-backend.vercel.app/users/favorites', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(infos)
+        })
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data)
+                if (data.result) {
+                    // setIsFavorite([...isFavorite, item._id])
+                    dispatch(addFavoritesToStore(item))
+                    // console.log(item)
+                } else {
+                    // setIsFavorite(a => a.filter(e => e !== item._id))
+                    dispatch(removeFavoritesToStore(item))
+                }
+                // console.log(isFavorite)
+            })
+            .catch(error => {
+                console.error('Erreur de la requête:', error)
+            })
+
+        // dispatch(removeFavoritesToStore({ id: data }))
     }
 
     let favoriteListe
 
-    if (likePlaces.length === 0){
+    if (likePlaces.length === 0 || !isConnected) {
         favoriteListe = <Text> No favorite</Text>
-    // }else if (likePlaces.length === 1){
-    //     favoriteListe = (
-    //         <TouchableOpacity
-    //         onPress={() => navigation.navigate('Resto', {
-    //             key: { i },
-    //             title: likePlaces.name,
-    //             description: likePlaces.description,
-    //             rating: likePlaces.rating,
-    //             image: likePlaces.photo_reference,
-    //             phoneNumber: likePlaces.phone,
-    //             location: likePlaces.address,
-    //         })}
-    //         style={styles.restaurantCard}
-    //     >
-
-
-    //         <Image
-    //             source={{ uri: likePlaces.photo_reference }}
-    //             style={styles.restaurantImage}
-    //         />
-    //         <View style={styles.restaurantInfo}>
-    //             <View style={styles.restaurantHeader}>
-    //                 <Text style={styles.restaurantTitle}>{likePlaces.name}</Text>
-    //                 <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(likePlaces.id)}>
-
-    //                     <Entypo
-    //                         name="cross"
-    //                         size={30}
-    //                     />
-    //                 </TouchableOpacity>
-    //             </View>
-    //             <Text style={styles.description}>{likePlaces.description}</Text>
-    //             <View style={styles.restaurantFooter}>
-    //                 <Feather name="phone" size={16} />
-    //                 <Feather name="map-pin" size={16} style={styles.footerIcon} />
-    //                 <View style={styles.rating}>
-    //                     <Text>{'★'.repeat(Math.floor(likePlaces.rating))}</Text>
-    //                     <Text>{'☆'.repeat(5 - Math.floor(likePlaces.rating))}</Text>
-    //                     <Text style={styles.ratingText}>({likePlaces.rating})</Text>
-    //                 </View>
-    //             </View>
-    //         </View>
-
-    //     </TouchableOpacity>
-    //     )
     } else {
         favoriteListe = likePlaces.map((data, i) => {
-            console.log(data.photo_reference)
             return (
-    
+
                 <TouchableOpacity
                     onPress={() => navigation.navigate('Resto', {
                         key: { i },
@@ -111,12 +101,12 @@ export default function LikeScreen({ navigation }) {
                         rating: data.rating,
                         image: data.photo,
                         phoneNumber: data.phone,
-                        // location: data?.location,
+                        location: data?.location,
                     })}
                     style={styles.restaurantCard}
                 >
-    
-    
+
+
                     <Image
                         source={{ uri: data.photo_reference }}
                         style={styles.restaurantImage}
@@ -124,8 +114,8 @@ export default function LikeScreen({ navigation }) {
                     <View style={styles.restaurantInfo}>
                         <View style={styles.restaurantHeader}>
                             <Text style={styles.restaurantTitle}>{data.name}</Text>
-                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data.id)}>
-    
+                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data._id)}>
+
                                 <Entypo
                                     name="cross"
                                     size={30}
@@ -143,14 +133,14 @@ export default function LikeScreen({ navigation }) {
                             </View>
                         </View>
                     </View>
-    
+
                 </TouchableOpacity>
-    
+
             )
         })
     }
 
-    
+
 
 
 
@@ -170,13 +160,16 @@ export default function LikeScreen({ navigation }) {
             </View>
 
 
+
             <View style={styles.restaurantList}>
-                {favoriteListe}
-                {/* <FlatListItem /> */}
-                {/* {restaurants.map((restaurant) => (
-                    <RenderRestaurantItem item={restaurant} />
-                ))} */}
+                <ScrollView>
+                    {favoriteListe}
+                </ScrollView>
+
             </View>
+
+
+
 
 
 
@@ -224,7 +217,7 @@ const styles = StyleSheet.create({
     },
     cross: {
         height: 50,
-        width:50
+        width: 50
     },
     categoryButton: {
         backgroundColor: '#F3F4F6',

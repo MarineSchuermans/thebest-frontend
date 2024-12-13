@@ -85,10 +85,10 @@ export default function RestoScreen({ route }) {
     const [userReview, setUserReview] = useState(null);
     const screenWidth = Dimensions.get('window').width;
     const navigation = useNavigation();
-const [userLocation, setUserLocation] = useState(null);
+    const [userLocation, setUserLocation] = useState(null);
     const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
     const [nearestParking, setNearestParking] = useState(null);
-const [distances, setDistances] = useState({
+    const [distances, setDistances] = useState({
         toUser: null,
         toParking: null
     });
@@ -192,7 +192,7 @@ const [distances, setDistances] = useState({
     //     })();
     // }, [])
 
-   
+
 
     const getTypeIcon = () => {
         switch (type) {
@@ -295,95 +295,95 @@ const [distances, setDistances] = useState({
     //         return null;
     //     }
     // };
-    
-        const calculateDistances = async () => {
-            // Distance to user
-            const userDistanceResult = await fetchRouteDistance(
-                { latitude: userLocation.latitude, longitude: userLocation.longitude },
-                { latitude: location.latitude, longitude: location.longitude }
-            );
-    
-            // Find nearest parking
-            const nearestParkingLocation = findNearestParking();
-            const parkingDistanceResult = nearestParkingLocation 
-                ? await fetchRouteDistance(
-                    { latitude: location.latitude, longitude: location.longitude },
-                    { latitude: nearestParkingLocation.latitude, longitude: nearestParkingLocation.longitude }
-                )
+
+    const calculateDistances = async () => {
+        // Distance to user
+        const userDistanceResult = await fetchRouteDistance(
+            { latitude: userLocation.latitude, longitude: userLocation.longitude },
+            { latitude: location.latitude, longitude: location.longitude }
+        );
+
+        // Find nearest parking
+        const nearestParkingLocation = findNearestParking();
+        const parkingDistanceResult = nearestParkingLocation
+            ? await fetchRouteDistance(
+                { latitude: location.latitude, longitude: location.longitude },
+                { latitude: nearestParkingLocation.latitude, longitude: nearestParkingLocation.longitude }
+            )
+            : null;
+
+        setDistances({
+            toUser: userDistanceResult,
+            toParking: parkingDistanceResult
+        });
+        setNearestParking(nearestParkingLocation);
+    };
+
+    const fetchRouteDistance = async (origin, destination) => {
+        const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${DISTANCE_MATRIX_API_KEY}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.status === 'OK'
+                ? data.rows[0].elements[0].distance.text
                 : null;
-    
-            setDistances({
-                toUser: userDistanceResult,
-                toParking: parkingDistanceResult
-            });
-            setNearestParking(nearestParkingLocation);
-        };
-    
-        const fetchRouteDistance = async (origin, destination) => {
-            const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${DISTANCE_MATRIX_API_KEY}`;
-    
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                return data.status === 'OK' 
-                    ? data.rows[0].elements[0].distance.text 
-                    : null;
-            } catch (error) {
-                console.error('Distance calculation error:', error);
-                return null;
-            }
-        };
-    
-        const findNearestParking = () => {
-            if (!userLocation || !parkings.length) return null;
-    
-            const nearestParking = parkings.reduce((nearest, parking) => {
-                const parkingCoords = {
-                    latitude: parking.properties.latitude,
-                    longitude: parking.properties.longitude,
-                };
-    
-                const distance = calculateHaversineDistance(userLocation, parkingCoords);
-    
-                return (!nearest || distance < nearest.distance) 
-                    ? { ...parkingCoords, distance, details: parking.properties }
-                    : nearest;
-            }, null);
-    
-            return nearestParking;
-        };
-    
-        const calculateHaversineDistance = (point1, point2) => {
-            const R = 6371; // Earth's radius in kilometers
-            const dLat = toRadians(point2.latitude - point1.latitude);
-            const dLon = toRadians(point2.longitude - point1.longitude);
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(toRadians(point1.latitude)) * Math.cos(toRadians(point2.latitude)) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        };
-    
-        const toRadians = (degrees) => degrees * (Math.PI/180);
-    
-        const getParkingProximityColor = (distance) => {
-            if (!distance) return 'gray';
-            return distance < 0.5 ? 'green' : distance < 1 ? 'orange' : 'red';
-        };
-    
-        const navigateToMap = () => {
-            navigation.navigate('Map', {
-                restaurants: [{ 
-                    id: title, 
-                    latitude: parseFloat(location.latitude), 
-                    longitude: parseFloat(location.longitude), 
-                    title, 
-                    description 
-                }],
-            });
-        };
-      
+        } catch (error) {
+            console.error('Distance calculation error:', error);
+            return null;
+        }
+    };
+
+    const findNearestParking = () => {
+        if (!userLocation || !parkings.length) return null;
+
+        const nearestParking = parkings.reduce((nearest, parking) => {
+            const parkingCoords = {
+                latitude: parking.properties.latitude,
+                longitude: parking.properties.longitude,
+            };
+
+            const distance = calculateHaversineDistance(userLocation, parkingCoords);
+
+            return (!nearest || distance < nearest.distance)
+                ? { ...parkingCoords, distance, details: parking.properties }
+                : nearest;
+        }, null);
+
+        return nearestParking;
+    };
+
+    const calculateHaversineDistance = (point1, point2) => {
+        const R = 6371; // Earth's radius in kilometers
+        const dLat = toRadians(point2.latitude - point1.latitude);
+        const dLon = toRadians(point2.longitude - point1.longitude);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRadians(point1.latitude)) * Math.cos(toRadians(point2.latitude)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+
+    const getParkingProximityColor = (distance) => {
+        if (!distance) return 'gray';
+        return distance < 0.5 ? 'green' : distance < 1 ? 'orange' : 'red';
+    };
+
+    const navigateToMap = () => {
+        navigation.navigate('Map', {
+            restaurants: [{
+                id: title,
+                latitude: parseFloat(location.latitude),
+                longitude: parseFloat(location.longitude),
+                title,
+                description
+            }],
+        });
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <FlatList
@@ -424,76 +424,76 @@ const [distances, setDistances] = useState({
                             </View>
                             <Text style={styles.description}>{description}</Text>
                             <View style={styles.mapPreview}>
-                            <MapView
-                                style={styles.map}
-                                region={{
-                                    latitude: parseFloat(location.latitude),
-                                    longitude: parseFloat(location.longitude),
-                                    latitudeDelta: 0.01,
-                                    longitudeDelta: 0.01,
-                                }}
-                                onPress={navigateToMap}
-                            >
-                                {/* Restaurant Marker */}
-                                {nearbyRestaurants.map((restaurant) => (
-    <Marker
-        key={restaurant.id}
-        coordinate={{
-            latitude: restaurant.location.coordinates[1],
-            longitude: restaurant.location.coordinates[0],
-        }}
-        title={restaurant.name}
-        description={`Rating: ${restaurant.rating}`}
-        onPress={() => handleMarkerPress(restaurant)}
-    >
-        <View style={styles.restaurantMarker}>
-            <FontAwesome5 name="utensils" size={20} color="#C44949" />
-            <View style={styles.ratingBadge}>
-                <Text style={styles.ratingText}>{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
-            </View>
-        </View>
-    </Marker>
-))}
+                                <MapView
+                                    style={styles.map}
+                                    region={{
+                                        latitude: parseFloat(location.latitude),
+                                        longitude: parseFloat(location.longitude),
+                                        latitudeDelta: 0.01,
+                                        longitudeDelta: 0.01,
+                                    }}
+                                    onPress={navigateToMap}
+                                >
+                                    {/* Restaurant Marker */}
+                                    {nearbyRestaurants.map((restaurant) => (
+                                        <Marker
+                                            key={restaurant.id}
+                                            coordinate={{
+                                                latitude: restaurant.location.coordinates[1],
+                                                longitude: restaurant.location.coordinates[0],
+                                            }}
+                                            title={restaurant.name}
+                                            description={`Rating: ${restaurant.rating}`}
+                                            onPress={() => handleMarkerPress(restaurant)}
+                                        >
+                                            <View style={styles.restaurantMarker}>
+                                                <FontAwesome5 name="utensils" size={20} color="#C44949" />
+                                                <View style={styles.ratingBadge}>
+                                                    <Text style={styles.ratingText}>{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
+                                                </View>
+                                            </View>
+                                        </Marker>
+                                    ))}
 
-                                {/* User Location Marker */}
-                                {userLocation && (
-                                    <Marker
-                                        coordinate={{
-                                            latitude: userLocation.latitude,
-                                            longitude: userLocation.longitude,
-                                        }}
-                                        pinColor="#4285F4"
-                                        title="Votre position"
-                                    />
+                                    {/* User Location Marker */}
+                                    {userLocation && (
+                                        <Marker
+                                            coordinate={{
+                                                latitude: userLocation.latitude,
+                                                longitude: userLocation.longitude,
+                                            }}
+                                            pinColor="#4285F4"
+                                            title="Votre position"
+                                        />
+                                    )}
+                                </MapView>
+                            </View>
+
+                            {/* Distance Information */}
+                            <View style={styles.distanceContainer}>
+                                <Text style={styles.distanceText}>
+                                    Distance to you: {distances.toUser || 'Calculating...'}
+                                </Text>
+                                {nearestParking && (
+                                    <View style={styles.parkingDistanceContainer}>
+                                        <Text style={styles.distanceText}>
+                                            Distance to nearest parking:
+                                        </Text>
+                                        <Text
+                                            style={[
+                                                styles.distanceText,
+                                                {
+                                                    color: getParkingProximityColor(
+                                                        parseFloat(distances.toParking)
+                                                    )
+                                                }
+                                            ]}
+                                        >
+                                            {distances.toParking || 'Calculating...'}
+                                        </Text>
+                                    </View>
                                 )}
-                            </MapView>
-                        </View>
-
-                        {/* Distance Information */}
-                        <View style={styles.distanceContainer}>
-                            <Text style={styles.distanceText}>
-                                Distance to you: {distances.toUser || 'Calculating...'}
-                            </Text>
-                            {nearestParking && (
-                                <View style={styles.parkingDistanceContainer}>
-                                    <Text style={styles.distanceText}>
-                                        Distance to nearest parking:
-                                    </Text>
-                                    <Text 
-                                        style={[
-                                            styles.distanceText, 
-                                            { 
-                                                color: getParkingProximityColor(
-                                                    parseFloat(distances.toParking)
-                                                ) 
-                                            }
-                                        ]}
-                                    >
-                                        {distances.toParking || 'Calculating...'}
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
+                            </View>
                             <View style={styles.ratingContainer}>
                                 {[...Array(5)].map((_, index) => (
                                     <FontAwesome
@@ -794,10 +794,10 @@ const styles = StyleSheet.create({
     },
     imageContainer: {
         position: 'relative',
-        height: 300, 
+        height: 300,
     },
     image: {
-        height: 300, 
+        height: 300,
         resizeMode: 'cover',
     },
     mapPreview: {

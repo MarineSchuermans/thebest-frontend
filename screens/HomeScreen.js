@@ -30,6 +30,11 @@ export default function HomeScreen({ navigation }) {
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value)
 
+
+    useEffect(() => {
+        setIsFavorite([...user.favorites])
+    }, [user.favorites.length])
+
     console.log(user)
 
     useEffect(() => {
@@ -166,7 +171,9 @@ export default function HomeScreen({ navigation }) {
     }
 
 
+useEffect(() => {
 
+}, [])
     //envoyer les favoris dans le reducer user au click sur le coeur
     const handleFavorite = (item) => {
         if (!isConnected) {
@@ -187,12 +194,12 @@ export default function HomeScreen({ navigation }) {
             .then(data => {
                 console.log(data)
                 if (data.result) {
-                    setIsFavorite([...isFavorite, item._id])
-                    dispatch(addFavoritesToStore({ id: item._id }))
+                    // setIsFavorite([...isFavorite, item._id])
+                    dispatch(addFavoritesToStore(item._id))
                     // console.log(item)
                 } else {
-                    setIsFavorite(a => a.filter(e => e !== item._id))
-                    dispatch(removeFavoritesToStore({ id: item._id }))
+                    // setIsFavorite(a => a.filter(e => e !== item._id))
+                    dispatch(removeFavoritesToStore(item._id ))
                 }
                 // console.log(isFavorite)
             })
@@ -202,6 +209,7 @@ export default function HomeScreen({ navigation }) {
     }
 
     const RenderRestaurantItem = ({ item }) => (
+
         <TouchableOpacity
             onPress={() => navigation.navigate('Resto', {
                 title: item.title,
@@ -230,7 +238,7 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.restaurantTitle}>{item.title}</Text>
                     <LikeIcon
                         onClickIcon={() => handleFavorite(item)}
-                        color={isFavorite.some(data => item._id == data) ? "#FF0000" : "#9CA3AF"}
+                        color={isConnected && isFavorite.some(data => item._id == data) ? "#FF0000" : "#9CA3AF"}
                     />
                 </View>
 

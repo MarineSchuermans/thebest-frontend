@@ -107,7 +107,11 @@ export default function Modal() {
           dispatch(
             login({ username, token: data.token, avatarUrl: data.avatarUrl })
           );
-          dispatch(addFavoritesToStore({...data.favorite}))
+          data.favorites.forEach(favorite => {
+            dispatch(addFavoritesToStore(favorite))
+
+          })
+          
           // fetch(`${backendAdress}/users/favorites`, {
           //   method: 'GET',
           //   headers: { "Content-Type": "application/json" },
