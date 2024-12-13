@@ -153,7 +153,7 @@ export default function MapScreen({ route, navigation }) {
         key={restaurant.id}
         coordinate={{
             latitude: restaurant.location.coordinates[1],
-            longitude: restaurant.location.coordinates[0]
+            longitude: restaurant.location.coordinates[0],
         }}
         title={restaurant.name}
         description={`Rating: ${restaurant.rating}`}

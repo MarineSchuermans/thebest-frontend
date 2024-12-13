@@ -11,8 +11,12 @@ import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-// import { ApifyClient } from 'apify-client';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { backendAdress } from "../config";
 
+// import { ApifyClient } from 'apify-client';
+const DISTANCE_MATRIX_API_KEY = 'SJvsfAsLwymsiRh9mxc5C4KbU4R3hN5aPj9fb3eiPrezkpl8z2cq5ukdqZzH026e';
+const PARKING_DATA_URL = 'https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json';
 const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
@@ -81,11 +85,59 @@ export default function RestoScreen({ route }) {
     const [userReview, setUserReview] = useState(null);
     const screenWidth = Dimensions.get('window').width;
     const navigation = useNavigation();
-    const [distance, setDistance] = useState(null);
-    const [userLocation, setUserLocation] = useState(null);
-    const [photoPlaces, setPhotoPlaces] = useState([])
+const [userLocation, setUserLocation] = useState(null);
+    const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
+    const [nearestParking, setNearestParking] = useState(null);
+const [distances, setDistances] = useState({
+        toUser: null,
+        toParking: null
+    });
+    const [parkings, setParkings] = useState([]);
+    const [photoPlaces, setPhotoPlaces] = useState([]);
 
     console.log(photoPlaces.displayUrl)
+
+    const fetchParkings = async () => {
+        try {
+            const response = await fetch(PARKING_DATA_URL);
+            const data = await response.json();
+            setParkings(data.features);
+        } catch (error) {
+            console.error('Erreur lors de la récupération des parkings:', error);
+        }
+    };
+    useEffect(() => {
+        fetchUserLocation();
+        fetchNearbyRestaurants();
+        fetchParkings();
+    }, []);
+
+    useEffect(() => {
+        if (userLocation && location) {
+            calculateDistances();
+        }
+    }, [userLocation, parkings]);
+
+    const fetchUserLocation = async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            console.error('Location permission denied');
+            return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        setUserLocation(location.coords);
+    };
+
+    const fetchNearbyRestaurants = async () => {
+        try {
+            const response = await fetch(`${backendAdress}/findNearbyRestaurants`);
+            const data = await response.json();
+            setNearbyRestaurants(data);
+        } catch (error) {
+            console.error('Error fetching nearby restaurants:', error);
+        }
+    };
 
     useEffect(() => {
         (async () => {
@@ -140,26 +192,7 @@ export default function RestoScreen({ route }) {
     //     })();
     // }, [])
 
-
-
-    const fetchRoute = async (origin, destination) => {
-        const apiKey = 'SJvsfAsLwymsiRh9mxc5C4KbU4R3hN5aPj9fb3eiPrezkpl8z2cq5ukdqZzH026e';
-        const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${apiKey}`;
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.status === 'OK') {
-                return data.rows[0].elements[0].distance.text;
-            } else {
-                console.error('Erreur lors de la récupération de la distance');
-                return null;
-            }
-        } catch (error) {
-            console.error('Erreur lors de l\'appel à l\'API:', error);
-            return null;
-        }
-    };
+   
 
     const getTypeIcon = () => {
         switch (type) {
@@ -191,12 +224,6 @@ export default function RestoScreen({ route }) {
             setModalVisible(true);
         }
     };
-
-    const navigateToMap = () => {
-        navigation.navigate('Map', {
-            restaurants: [{ id: title, latitude: parseFloat(location.latitude), longitude: parseFloat(location.longitude), title, description }],
-        });
-    }
 
 
     const openGPS = () => {
@@ -255,94 +282,108 @@ export default function RestoScreen({ route }) {
     if (!hasPermission || !isFocused) {
         return <View />;
     }
-    const getCoordinatesFromAddress = async (address) => {
-        try {
-            const json = await Geocoder.from(address);
-            const location = json.results[0].geometry.location;
-            return {
-                latitude: location.lat,
-                longitude: location.lng,
-            };
-        } catch (error) {
-            console.error('Error getting coordinates:', error);
-            return null;
-        }
-    };
-
-    // Modify the map preview to use geocoded coordinates
-    const MapPreview = async () => {
-        const coordinates = await getCoordinatesFromAddress(location);
-
-        if (!coordinates) {
-            return <View><Text>Unable to get location</Text></View>;
-        }
-
-        return (
-            <View style={styles.mapPreview}>
-                <MapView
-                    style={styles.map}
-                    region={{
-                        latitude: coordinates.latitude,
-                        longitude: coordinates.longitude,
-                        latitudeDelta: 0.0922,
-                        longitudeDelta: 0.0421,
-                    }}
-                    onPress={navigateToMap}
-                >
-                    <Marker
-                        coordinate={coordinates}
-                        title={title}
-                    />
-                    {userLocation && (
-                        <Marker
-                            coordinate={userLocation}
-                            title="Votre position"
-                            pinColor="#4285F4"
-                        />
-                    )}
-                    {restaurants.map((restaurant) => (
-                        <Marker
-                            key={restaurant.id}
-                            coordinate={{ latitude: restaurant.latitude, longitude: restaurant.longitude }}
-                            title={restaurant.title}
-                            pinColor="#C44949"
-                            onPress={() => handleMarkerPress(restaurant)}
-                        />
-                    ))}
-                </MapView>
-            </View>
-        );
-    };
-    // return (
-    //     <SafeAreaView style={styles.container}>
-    //         <FlatList
-    //             ListHeaderComponent={
-    //                 <View>
-    //                     <View style={styles.imageContainer}>
-    //                         <FlatList
-    //                             data={image}
-    //                             renderItem={({ item }) => (
-    //                                 <Image
-    //                                     source={{ uri: item }}
-    //                                     style={[styles.image, { width: screenWidth }]}
-    //                                 />
-    //                             )}
-    //                             keyExtractor={(item, index) => index.toString()}
-    //                             horizontal
-    //                             pagingEnabled
-    //                             showsHorizontalScrollIndicator={false}
-    //                         />
-    //                         <TouchableOpacity style={styles.favoriteIcon} onPress={() => setIsFavorite(!isFavorite)}>
-    //                             <Feather name="heart" size={24} color={isFavorite ? "#FF0000" : "#FFFFFF"} />
-    //                         </TouchableOpacity>
-    //                         <View style={styles.imageOverlay}>
-    //                             <Text style={styles.overlayTitle}>{title}</Text>
-    //                             <Text style={styles.overlayLocation}>{location}</Text>
-    //                             <FontAwesome name={icon} size={18} color="#FFFFFF" />
-    //                         </View>
-    //                     </View>
-
-
+    // const getCoordinatesFromAddress = async (address) => {
+    //     try {
+    //         const json = await Geocoder.from(address);
+    //         const location = json.results[0].geometry.location;
+    //         return {
+    //             latitude: location.lat,
+    //             longitude: location.lng,
+    //         };
+    //     } catch (error) {
+    //         console.error('Error getting coordinates:', error);
+    //         return null;
+    //     }
+    // };
+    
+        const calculateDistances = async () => {
+            // Distance to user
+            const userDistanceResult = await fetchRouteDistance(
+                { latitude: userLocation.latitude, longitude: userLocation.longitude },
+                { latitude: location.latitude, longitude: location.longitude }
+            );
+    
+            // Find nearest parking
+            const nearestParkingLocation = findNearestParking();
+            const parkingDistanceResult = nearestParkingLocation 
+                ? await fetchRouteDistance(
+                    { latitude: location.latitude, longitude: location.longitude },
+                    { latitude: nearestParkingLocation.latitude, longitude: nearestParkingLocation.longitude }
+                )
+                : null;
+    
+            setDistances({
+                toUser: userDistanceResult,
+                toParking: parkingDistanceResult
+            });
+            setNearestParking(nearestParkingLocation);
+        };
+    
+        const fetchRouteDistance = async (origin, destination) => {
+            const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${DISTANCE_MATRIX_API_KEY}`;
+    
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.status === 'OK' 
+                    ? data.rows[0].elements[0].distance.text 
+                    : null;
+            } catch (error) {
+                console.error('Distance calculation error:', error);
+                return null;
+            }
+        };
+    
+        const findNearestParking = () => {
+            if (!userLocation || !parkings.length) return null;
+    
+            const nearestParking = parkings.reduce((nearest, parking) => {
+                const parkingCoords = {
+                    latitude: parking.geometry.coordinates[1],
+                    longitude: parking.geometry.coordinates[0]
+                };
+    
+                const distance = calculateHaversineDistance(userLocation, parkingCoords);
+    
+                return (!nearest || distance < nearest.distance) 
+                    ? { ...parkingCoords, distance, details: parking.properties }
+                    : nearest;
+            }, null);
+    
+            return nearestParking;
+        };
+    
+        const calculateHaversineDistance = (point1, point2) => {
+            const R = 6371; // Earth's radius in kilometers
+            const dLat = toRadians(point2.latitude - point1.latitude);
+            const dLon = toRadians(point2.longitude - point1.longitude);
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(toRadians(point1.latitude)) * Math.cos(toRadians(point2.latitude)) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        };
+    
+        const toRadians = (degrees) => degrees * (Math.PI/180);
+    
+        const getParkingProximityColor = (distance) => {
+            if (!distance) return 'gray';
+            return distance < 0.5 ? 'green' : distance < 1 ? 'orange' : 'red';
+        };
+    
+        const navigateToMap = () => {
+            navigation.navigate('Map', {
+                restaurants: [{ 
+                    id: title, 
+                    latitude: parseFloat(location.latitude), 
+                    longitude: parseFloat(location.longitude), 
+                    title, 
+                    description 
+                }],
+            });
+        };
+      
     return (
         <SafeAreaView style={styles.container}>
             <FlatList
@@ -376,53 +417,83 @@ export default function RestoScreen({ route }) {
                                     <Feather name="edit" size={20} color="#FFFFFF" />
                                     <Text style={styles.actionButtonText}>Avis</Text>
                                 </TouchableOpacity>
-                                {/* <TouchableOpacity style={styles.actionButton} onPress={navigateToMap}>
-                                    <Feather name="map" size={20} color="#FFFFFF" />
-                                    <Text style={styles.actionButtonText}>Carte</Text>
-                                </TouchableOpacity> */}
                                 <TouchableOpacity style={styles.actionButton} onPress={openGPS}>
                                     <Feather name="navigation" size={20} color="#FFFFFF" />
                                     <Text style={styles.actionButtonText}>GPS</Text>
                                 </TouchableOpacity>
                             </View>
-                            {distance && <Text style={styles.distance}>Distance: {distance}</Text>}
                             <Text style={styles.description}>{description}</Text>
-                            {/* <View style={styles.mapPreview}>
-                                <MapView
-                                    style={styles.map}
-                                    region={{
-                                        latitude: parseFloat(location.latitude),
-                                        longitude: parseFloat(location.longitude),
-                                        latitudeDelta: 0.0922,
-                                        longitudeDelta: 0.0421,
-                                    }}
-                                    onPress={navigateToMap}
-                                >
+                            <View style={styles.mapPreview}>
+                            <MapView
+                                style={styles.map}
+                                region={{
+                                    latitude: parseFloat(location.latitude),
+                                    longitude: parseFloat(location.longitude),
+                                    latitudeDelta: 0.01,
+                                    longitudeDelta: 0.01,
+                                }}
+                                onPress={navigateToMap}
+                            >
+                                {/* Restaurant Marker */}
+                                {nearbyRestaurants.map((restaurant) => (
+    <Marker
+        key={restaurant.id}
+        coordinate={{
+            latitude: restaurant.location.coordinates[1],
+            longitude: restaurant.location.coordinates[0],
+        }}
+        title={restaurant.name}
+        description={`Rating: ${restaurant.rating}`}
+        onPress={() => handleMarkerPress(restaurant)}
+    >
+        <View style={styles.restaurantMarker}>
+            <FontAwesome5 name="utensils" size={20} color="#C44949" />
+            <View style={styles.ratingBadge}>
+                <Text style={styles.ratingText}>{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
+            </View>
+        </View>
+    </Marker>
+))}
+
+                                {/* User Location Marker */}
+                                {userLocation && (
                                     <Marker
                                         coordinate={{
-                                            latitude: parseFloat(location.latitude),
-                                            longitude: parseFloat(location.longitude),
+                                            latitude: userLocation.latitude,
+                                            longitude: userLocation.longitude,
                                         }}
-                                        title={title}
+                                        pinColor="#4285F4"
+                                        title="Votre position"
                                     />
-                                    {userLocation && (
-                                        <Marker
-                                            coordinate={userLocation}
-                                            title="Votre position"
-                                            pinColor="#4285F4"
-                                        />
-                                    )}
-                                    {restaurants.map((restaurant) => (
-                      <Marker
-                          key={restaurant.id}
-                          coordinate={{ latitude: restaurant.latitude, longitude: restaurant.longitude }}
-                          title={restaurant.title}
-                          pinColor="#C44949"
-                          onPress={() => handleMarkerPress(restaurant)}
-                      />
-                  ))}
-                                </MapView>
-                            </View> */}
+                                )}
+                            </MapView>
+                        </View>
+
+                        {/* Distance Information */}
+                        <View style={styles.distanceContainer}>
+                            <Text style={styles.distanceText}>
+                                Distance to you: {distances.toUser || 'Calculating...'}
+                            </Text>
+                            {nearestParking && (
+                                <View style={styles.parkingDistanceContainer}>
+                                    <Text style={styles.distanceText}>
+                                        Distance to nearest parking:
+                                    </Text>
+                                    <Text 
+                                        style={[
+                                            styles.distanceText, 
+                                            { 
+                                                color: getParkingProximityColor(
+                                                    parseFloat(distances.toParking)
+                                                ) 
+                                            }
+                                        ]}
+                                    >
+                                        {distances.toParking || 'Calculating...'}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
                             <View style={styles.ratingContainer}>
                                 {[...Array(5)].map((_, index) => (
                                     <FontAwesome
@@ -737,9 +808,17 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         borderRadius: 11,
     },
-    distance: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginVertical: 10,
+    distanceContainer: {
+        padding: 10,
+        backgroundColor: '#F4F4F4',
     },
-});
+    distanceText: {
+        fontSize: 14,
+        marginBottom: 5,
+    },
+    parkingDistanceContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+}
+);
