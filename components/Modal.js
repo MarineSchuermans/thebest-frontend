@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { login, toggleModal } from "../reducers/user";
+import { login, toggleModal, addFavoritesToStore } from "../reducers/user";
 import {
   View,
   Alert,
@@ -101,11 +101,23 @@ export default function Modal() {
       .then((response) => response.json())
       .then((data) => {
         if (data.result) {
+          console.log(data)
           console.log("Server Response:", data);
           _toggleModal();
           dispatch(
             login({ username, token: data.token, avatarUrl: data.avatarUrl })
           );
+          dispatch(addFavoritesToStore({...data.favorite}))
+          // fetch(`${backendAdress}/users/favorites`, {
+          //   method: 'GET',
+          //   headers: { "Content-Type": "application/json" },
+          //   body: JSON.stringify({token: data })
+
+          // })
+          //   .then(response => response.json())
+          //   .then (fav => {
+          //     console.log(fav)
+          //   })
           setUsername("");
           setPassword("");
           navigation.navigate("Home");
