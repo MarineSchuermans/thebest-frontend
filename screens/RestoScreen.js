@@ -339,8 +339,8 @@ const [distances, setDistances] = useState({
     
             const nearestParking = parkings.reduce((nearest, parking) => {
                 const parkingCoords = {
-                    latitude: parking.geometry.coordinates[1],
-                    longitude: parking.geometry.coordinates[0]
+                    latitude: parking.properties.latitude,
+                    longitude: parking.properties.longitude,
                 };
     
                 const distance = calculateHaversineDistance(userLocation, parkingCoords);

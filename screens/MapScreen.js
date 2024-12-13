@@ -138,10 +138,13 @@ export default function MapScreen({ route, navigation }) {
                                 latitude: parking.properties.latitude,
                                 longitude: parking.properties.longitude,
                             }}
-                            image={require('../assets/favicon.png')}
                          title={parking.properties.nom}
                          description={`Places libres: ${parking.properties.nbr_libre}/${parking.properties.nbr_total}`}
                         >
+                            <Image
+                                source={require('../assets/IMG_0028.jpeg')}
+                                style={{ width: 30, height: 30 }}
+                            />
                             <ParkingMarker
                                 freeSpaces={parking.properties.nbr_libre}
                                 totalSpaces={parking.properties.nbr_total}
