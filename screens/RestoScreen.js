@@ -89,7 +89,7 @@ const [userLocation, setUserLocation] = useState(null);
 const [mapRegion, setMapRegion] = useState(null);
     const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
     const [nearestParking, setNearestParking] = useState(null);
-const [distances, setDistances] = useState({
+    const [distances, setDistances] = useState({
         toUser: null,
         toParking: null
     });
@@ -238,7 +238,7 @@ const [distances, setDistances] = useState({
     //     })();
     // }, [])
 
-   
+
 
     const getTypeIcon = () => {
         switch (type) {
@@ -491,19 +491,19 @@ const [distances, setDistances] = useState({
         </View>
     </Marker>
 
-                                {/* User Location Marker */}
-                                {userLocation && (
-                                    <Marker
-                                        coordinate={{
-                                            latitude: userLocation.latitude,
-                                            longitude: userLocation.longitude,
-                                        }}
-                                        pinColor="#4285F4"
-                                        title="Votre position"
-                                    />
-                                )}
-                            </MapView>
-                        </View>
+                                    {/* User Location Marker */}
+                                    {userLocation && (
+                                        <Marker
+                                            coordinate={{
+                                                latitude: userLocation.latitude,
+                                                longitude: userLocation.longitude,
+                                            }}
+                                            pinColor="#4285F4"
+                                            title="Votre position"
+                                        />
+                                    )}
+                                </MapView>
+                            </View>
 
                         {/* Distance Information */}
                         <View style={styles.distanceContainer}>
@@ -829,10 +829,10 @@ const styles = StyleSheet.create({
     },
     imageContainer: {
         position: 'relative',
-        height: 300, 
+        height: 300,
     },
     image: {
-        height: 300, 
+        height: 300,
         resizeMode: 'cover',
     },
     mapPreview: {

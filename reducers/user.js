@@ -25,7 +25,7 @@ export const userSlice = createSlice({
     },
     removeFavoritesToStore: (state, action) => {
       state.value.favorites = state.value.favorites.filter(
-        (favorite) => favorite.id !== action.payload.id
+        (favorite) => favorite !== action.payload
       );
     },
     login: (state, action) => {
