@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-
+import { useState, useRef, useEffect} from 'react';
+import { backendAdress } from "../config";
 export default function MapScreen({ route, navigation }) {
     const user = useSelector((state) => state.user.value);
     const { restaurantLocation } = route.params || {};
@@ -15,6 +15,18 @@ export default function MapScreen({ route, navigation }) {
     const [selectedRestaurant, setSelectedRestaurant] = useState(null);
     const [parkings, setParkings] = useState([]);
     const mapRef = useRef(null);
+    const [restaurants, setRestaurants] = useState([]);
+
+    const fetchRestaurants = async () => {
+        try {
+            const response = await fetch(backendAdress + "/findNearbyRestaurants");
+            const data = await response.json();
+            setRestaurants(data);
+        } catch (error) {
+            console.error('Error fetching restaurants:', error);
+        }
+    };
+
 
     // Récupération des données des parkings
     const fetchParkings = async () => {
@@ -86,27 +98,23 @@ export default function MapScreen({ route, navigation }) {
             let location = await Location.getCurrentPositionAsync({});
             setUserLocation(location.coords);
 
-            if (restaurantLocation) {
-                setSelectedRestaurant(restaurantLocation);
-                fetchRoute(location.coords, restaurantLocation);
-            }
-
             setMapRegion({
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             });
-            fetchParkings();
+
+            await fetchParkings();
+            fetchRestaurants();
         })();
-    }, [restaurantLocation]);
+    }, []);
+
 
     const handleMarkerPress = (restaurant) => {
         setSelectedRestaurant(restaurant);
-        if (userLocation) {
-            fetchRoute(userLocation, { latitude: restaurant.latitude, longitude: restaurant.longitude });
-        }
     };
+
 
     return (
         <View style={styles.container}>
@@ -124,7 +132,7 @@ export default function MapScreen({ route, navigation }) {
                             pinColor="#4285F4"
                         />
                     )}
-                    {parkings && parkings.map((parking, index) => (
+                    {parkings.map((parking, index) => (
                         <Marker
                         coordinate={{
                                 latitude: parking.properties.latitude,
@@ -140,16 +148,26 @@ export default function MapScreen({ route, navigation }) {
                             />
                         </Marker>
                     ))}
-                    <Marker
-                        coordinate={{ latitude: 37.78825, longitude: -122.4324 }}
-                        image={require("../assets/favicon.png")}
-                    >
-                        <View style={{ height: 30, width: 30, position: "relative" }}>
-                            <View style={{ position: "absolute", top: 35, width: 100 }}>
-                                <Text>hahahahahah</Text>
-                            </View>
-                        </View>
-                    </Marker>
+                    {restaurants.map((restaurant) => (
+    <Marker
+        key={restaurant.id}
+        coordinate={{
+            latitude: restaurant.location.coordinates[1],
+            longitude: restaurant.location.coordinates[0]
+        }}
+        title={restaurant.name}
+        description={`Rating: ${restaurant.rating}`}
+        onPress={() => handleMarkerPress(restaurant)}
+    >
+        <View style={styles.restaurantMarker}>
+            <FontAwesome5 name="utensils" size={20} color="#C44949" />
+            <View style={styles.ratingBadge}>
+                <Text style={styles.ratingText}>{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
+            </View>
+        </View>
+    </Marker>
+))}
+
                 </MapView>
             )}
             <TouchableOpacity
