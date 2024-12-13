@@ -42,7 +42,6 @@ export const userSlice = createSlice({
         if (state.value.token) {
             return
         }
-
         // la valeur de isModaleVisible s'inverse ex : (connecter => true => alors false => reste fermer|| connecter => false => alors true => isModalVisible)
         state.value.isModalVisible = !state.value.isModalVisible;
     }
