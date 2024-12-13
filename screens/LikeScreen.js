@@ -1,77 +1,155 @@
 import { Button, Text, View, StyleSheet, SafeAreaView, TextInput, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo'
 import { FlatList, PanGestureHandler } from 'react-native-gesture-handler';
 import { removeFavoritesToStore } from '../reducers/user'
+import { backendAdress } from "../config"
 
 
 
 export default function LikeScreen({ navigation }) {
     const dispatch = useDispatch()
+    const [likePlaces, setLikePlaces] = useState([])
     const user = useSelector((state) => state.user.value)
+    const id_places = user.favorites
 
-    console.log(user)
+    console.log(id_places)
+
+   useEffect(() => {
+    fetch(`${backendAdress}/places`)
+        .then(response => response.json())
+        .then(data => {
+
+            // if (data.places.some(place => place._id === id_places))
+            // const infoPlaces = data.find(place => id_places.some(idPlace => idPlace.id === place._id))
+            // console.log(infoPlaces)
+            // setLikePlaces()
+            const updateLikes = []
+            for (let i=0 ; i < id_places.length ; i++) {
+                if (data.places.some(place => place._id === id_places[i].id)){
+                    const infoPlace = data.places.find(placeLike => placeLike._id === id_places[i].id)
+                    // console.log(infoPlace)
+                    updateLikes.push(infoPlace)
+                    // setLikePlaces([...likePlaces, infoPlace])
+                } else {
+                    console.log(false)
+                }
+                setLikePlaces([...likePlaces, updateLikes])
+            }
+        })
+
+   }, [id_places])
 
     const handleRemoveFavorite = (data) => {
         console.log('remove favorite')
         dispatch(removeFavoritesToStore({id: data}))
     }
 
-    const favoriteListe = user.favorites.map((data, i) => {
-        console.log(data)
-        return (
+    let favoriteListe
+
+    if (likePlaces.length === 0){
+        favoriteListe = <Text> No favorite</Text>
+    // }else if (likePlaces.length === 1){
+    //     favoriteListe = (
+    //         <TouchableOpacity
+    //         onPress={() => navigation.navigate('Resto', {
+    //             key: { i },
+    //             title: likePlaces.name,
+    //             description: likePlaces.description,
+    //             rating: likePlaces.rating,
+    //             image: likePlaces.photo_reference,
+    //             phoneNumber: likePlaces.phone,
+    //             location: likePlaces.address,
+    //         })}
+    //         style={styles.restaurantCard}
+    //     >
 
 
-            <TouchableOpacity
-                onPress={() => navigation.navigate('Resto', {
-                    key: { i },
-                    title: data.title,
-                    description: data.description,
-                    rating: data.rating,
-                    image: data.image,
-                    phoneNumber: data?.phoneNumber,
-                    location: data?.location,
-                })}
-                style={styles.restaurantCard}
-            >
+    //         <Image
+    //             source={{ uri: likePlaces.photo_reference }}
+    //             style={styles.restaurantImage}
+    //         />
+    //         <View style={styles.restaurantInfo}>
+    //             <View style={styles.restaurantHeader}>
+    //                 <Text style={styles.restaurantTitle}>{likePlaces.name}</Text>
+    //                 <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(likePlaces.id)}>
 
+    //                     <Entypo
+    //                         name="cross"
+    //                         size={30}
+    //                     />
+    //                 </TouchableOpacity>
+    //             </View>
+    //             <Text style={styles.description}>{likePlaces.description}</Text>
+    //             <View style={styles.restaurantFooter}>
+    //                 <Feather name="phone" size={16} />
+    //                 <Feather name="map-pin" size={16} style={styles.footerIcon} />
+    //                 <View style={styles.rating}>
+    //                     <Text>{'★'.repeat(Math.floor(likePlaces.rating))}</Text>
+    //                     <Text>{'☆'.repeat(5 - Math.floor(likePlaces.rating))}</Text>
+    //                     <Text style={styles.ratingText}>({likePlaces.rating})</Text>
+    //                 </View>
+    //             </View>
+    //         </View>
 
-                <Image
-                    source={{ uri: data.image }}
-                    style={styles.restaurantImage}
-                />
-                <View style={styles.restaurantInfo}>
-                    <View style={styles.restaurantHeader}>
-                        <Text style={styles.restaurantTitle}>{data.title}</Text>
-                        <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data.id)}>
-
-                            <Entypo
-                                name="cross"
-                                size={30}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <Text style={styles.description}>{data.description}</Text>
-                    <View style={styles.restaurantFooter}>
-                        <Feather name="phone" size={16} />
-                        <Feather name="map-pin" size={16} style={styles.footerIcon} />
-                        <View style={styles.rating}>
-                            <Text>{'★'.repeat(Math.floor(data.rating))}</Text>
-                            <Text>{'☆'.repeat(5 - Math.floor(data.rating))}</Text>
-                            <Text style={styles.ratingText}>({data.rating})</Text>
+    //     </TouchableOpacity>
+    //     )
+    } else {
+        favoriteListe = likePlaces.map((data, i) => {
+            console.log(data.photo_reference)
+            return (
+    
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('Resto', {
+                        key: { i },
+                        title: data.name,
+                        description: data.description,
+                        rating: data.rating,
+                        image: data.photo,
+                        phoneNumber: data.phone,
+                        // location: data?.location,
+                    })}
+                    style={styles.restaurantCard}
+                >
+    
+    
+                    <Image
+                        source={{ uri: data.photo_reference }}
+                        style={styles.restaurantImage}
+                    />
+                    <View style={styles.restaurantInfo}>
+                        <View style={styles.restaurantHeader}>
+                            <Text style={styles.restaurantTitle}>{data.name}</Text>
+                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data.id)}>
+    
+                                <Entypo
+                                    name="cross"
+                                    size={30}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <Text style={styles.description}>{data.description}</Text>
+                        <View style={styles.restaurantFooter}>
+                            <Feather name="phone" size={16} />
+                            <Feather name="map-pin" size={16} style={styles.footerIcon} />
+                            <View style={styles.rating}>
+                                <Text>{'★'.repeat(Math.floor(data.rating))}</Text>
+                                <Text>{'☆'.repeat(5 - Math.floor(data.rating))}</Text>
+                                <Text style={styles.ratingText}>({data.rating})</Text>
+                            </View>
                         </View>
                     </View>
-                </View>
+    
+                </TouchableOpacity>
+    
+            )
+        })
+    }
 
-            </TouchableOpacity>
-
-
-
-
-        )
-    })
+    
 
 
 
