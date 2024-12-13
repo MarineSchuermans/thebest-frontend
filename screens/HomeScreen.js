@@ -31,6 +31,7 @@ export default function HomeScreen({ navigation }) {
     const user = useSelector((state) => state.user.value)
 
 
+<<<<<<< HEAD
     useEffect(() => {
         setIsFavorite([...user.favorites])
     }, [user.favorites.length])
@@ -68,6 +69,37 @@ export default function HomeScreen({ navigation }) {
 
         getRestaurants();
     }, []);
+=======
+  useEffect(() => {
+    const getRestaurants = async () => {
+      try {
+        const response = await fetch(backendAdress + "/findNearbyRestaurants"); //ON N UTILISE PAS VERCEL A CAUSE DU TIMEOUT
+        const restaurantData = await response.json();
+
+        console.log("Raw restaurant:", restaurantData);
+        const formattedRestaurants = restaurantData.map((place, index) => {
+          console.log("Processing place:", place);
+          return {
+            id: place.id,
+            title: place.name,
+            location: place.address,
+            description: "Ici, bientôt une description",
+            rating: place.rating,
+            image: place.photo,
+            phoneNumber: place.phoneNumber,
+            openingHours: place.openingHours,
+          };
+        });
+
+        setRestaurants(formattedRestaurants);
+      } catch (error) {
+        console.error("Error fetching restaurants:", error);
+      }
+    };
+
+    getRestaurants();
+  }, []);
+>>>>>>> bester-fron
 
     useEffect(() => {
         (async () => {
@@ -132,6 +164,7 @@ useEffect(() => {
             })
     }
 
+<<<<<<< HEAD
     const RenderRestaurantItem = ({ item }) => (
 
         <TouchableOpacity
@@ -157,6 +190,29 @@ useEffect(() => {
                     <View style={styles.placeholderInner} />
                 </View>
             )}
+=======
+  const RenderRestaurantItem = ({ item }) => (
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate("Resto", {
+          title: item.title,
+          description: item.description,
+          rating: item.rating,
+          image: item.image,
+          phoneNumber: item.phoneNumber,
+          location: item.location,
+        })
+      }
+      style={styles.restaurantCard}
+    >
+      {item.image && item.image !== "placeholder_url" ? (
+        <Image source={{ uri: item.image }} style={styles.restaurantImage} />
+      ) : (
+        <View style={styles.placeholderImage}>
+          <View style={styles.placeholderInner} />
+        </View>
+      )}
+>>>>>>> bester-fron
 
             <View style={styles.restaurantInfo}>
                 <View style={styles.restaurantHeader}>

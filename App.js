@@ -1,6 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, Image } from "react-native";
-
+import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -15,16 +14,15 @@ import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-// import { toggleModal } from "../reducers/user";
+import { toggleModal } from "./reducers/user";
 import user from "./reducers/user";
-
 import Modal from "./components/Modal";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Feather from "react-native-vector-icons/Feather";
-import { Header } from "react-native/Libraries/NewAppScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
+// import { TouchableOpacity } from "react-native-gesture-handler";
 
 const store = configureStore({
   reducer: { user },
@@ -41,82 +39,77 @@ const StackNavigator = () => {
   );
 };
 
+function InnerApp() {
+  const user = useSelector((state) => state.user.value);
+  const dispatch = useDispatch();
+  const isConnected = user?.token?.length > 0; // Vérifier la connexion de l'utilisateur
+
+  return (
+    <NavigationContainer>
+      <Modal />
+
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ color, size }) => {
+            let iconName = "";
+
+            if (route.name === "Home") {
+              iconName = "home";
+              return <FontAwesome name={iconName} size={size} color={color} />;
+            } else if (route.name === "User" && !isConnected) {
+              iconName = "user";
+              return <FontAwesome name={iconName} size={size} color={color} />;
+            } else if (route.name === "User" && isConnected) {
+              const avatarMap = {
+                "map-pin-yellow": require(`./assets/map-pin-yellow.png`),
+                avatar1: require(`./assets/avatars/avatar1.png`),
+                avatar2: require(`./assets/avatars/avatar2.png`),
+                avatar3: require(`./assets/avatars/avatar3.png`),
+              };
+              return (
+                <Image
+                  source={avatarMap[user.avatarUrl]}
+                  style={styles.userImage}
+                />
+              );
+            } else if (route.name === "Like") {
+              iconName = "heart";
+
+              return <FontAwesome name={iconName} size={size} color={color} />;
+            } else if (route.name === "Map") {
+              iconName = "map-pin";
+              return <Feather name={iconName} size={size} color={color} />;
+            }
+          },
+          tabBarActiveTintColor: "#C44949",
+          tabBarInactiveTintColor: "grey",
+          headerShown: false,
+        })}
+      >
+        <Tab.Screen name="Home" component={StackNavigator} />
+        <Tab.Screen name="Map" component={MapScreen} />
+        <Tab.Screen
+          name="Like"
+          component={LikeScreen}
+          listeners={{
+            tabPress: (e) => {
+              if (!isConnected) {
+                e.preventDefault(); // Empêche l'accès à l'onglet
+                dispatch(toggleModal(true)); // Affiche le modal
+              }
+            },
+          }}
+        />
+        <Tab.Screen name="User" component={UserScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
+
 export default function App() {
   return (
     <Provider store={store}>
-
-      <NavigationContainer>
-          <Modal />
-        <Tab.Navigator
-          screenOptions={({ route }) => ({
-            tabBarIcon: ({ color, size }) => {
-              let iconName = "";
-              const user = useSelector((state) => state.user.value);
-              console.log(user.avatarUrl);
-
-              let isConnected = false;
-              if (user.token?.length > 0) {
-                isConnected = true;
-              }
-
-              if (route.name === "Home") {
-                fontName = FontAwesome;
-                iconName = "home";
-                return (
-                  <FontAwesome name={iconName} size={size} color={color} />
-                );
-              } else if (route.name === "User" && !isConnected) {
-                fontName = FontAwesome;
-                iconName = "user";
-                return (
-                  <FontAwesome name={iconName} size={size} color={color} />
-                );
-              } else if (route.name === "User" && isConnected) {
-                const avatarMap = {
-                  "map-pin-yellow": require(`./assets/map-pin-yellow.png`),
-                  avatar1: require(`./assets/avatars/avatar1.png`),
-                  avatar2: require(`./assets/avatars/avatar2.png`),
-                  avatar3: require(`./assets/avatars/avatar3.png`),
-                };
-                return (
-                  <Image
-                    // source={{uri: (`../assets/${user.avatarUrl}.png`)}}
-                    source={avatarMap[user.avatarUrl]}
-                    style={styles.userImage}
-                  />
-                );
-              } // Si l'utilisateur est connecté, on affiche l'icône "Like"
-              if (route.name === "Like") {
-                fontName = FontAwesome;
-                iconName = "heart";
-                return (
-                  <FontAwesome name={iconName} size={size} color={color} />
-                );
-              } else if (route.name === "Map") {
-                fontName = Feather;
-                iconName = "map-pin";
-                return <Feather name={iconName} size={size} color={color} />;
-              }
-
-              // return <fontName name={iconName} size={size} color={color} />
-
-              // return <Entypo name={iconName} size={size} color={color} />
-            },
-            tabBarActiveTintColor: "#C44949",
-            tabBarInactiveTintColor: "grey",
-            headerShown: false,
-          })}
-        >
-          <Tab.Screen name="Home" component={StackNavigator} />
-          <Tab.Screen name="Map" component={MapScreen} />
-          <Tab.Screen name="Like" component={LikeScreen} />
-          <Tab.Screen name="User" component={UserScreen} />
-          {/* <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View> */}
-        </Tab.Navigator>
-      </NavigationContainer>
+      <InnerApp />
     </Provider>
   );
 }
