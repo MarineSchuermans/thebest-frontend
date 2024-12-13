@@ -163,7 +163,10 @@ export default function MapScreen({ route, navigation }) {
         onPress={() => handleMarkerPress(restaurant)}
     >
         <View style={styles.restaurantMarker}>
-            <FontAwesome5 name="utensils" size={20} color="#C44949" />
+        <Image
+                                source={require('../assets/IMG_0029.jpeg')}
+                                style={{ width: 30, height: 30 }}
+                            />
             <View style={styles.ratingBadge}>
                 <Text style={styles.ratingText}>{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
             </View>

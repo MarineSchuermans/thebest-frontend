@@ -73,7 +73,7 @@ const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
 };
 
 export default function RestoScreen({ route }) {
-    const { title, description, rating, image, phoneNumber, location, type } = route.params;
+    const { title, description, rating, image, phoneNumber, location, type, address } = route.params;
     const [hasPermission, setHasPermission] = useState(false);
     const [isCameraVisible, setIsCameraVisible] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -86,6 +86,7 @@ export default function RestoScreen({ route }) {
     const screenWidth = Dimensions.get('window').width;
     const navigation = useNavigation();
 const [userLocation, setUserLocation] = useState(null);
+const [mapRegion, setMapRegion] = useState(null);
     const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
     const [nearestParking, setNearestParking] = useState(null);
 const [distances, setDistances] = useState({
@@ -94,8 +95,6 @@ const [distances, setDistances] = useState({
     });
     const [parkings, setParkings] = useState([]);
     const [photoPlaces, setPhotoPlaces] = useState([]);
-
-    console.log(photoPlaces.displayUrl)
 
     const fetchParkings = async () => {
         try {
@@ -111,6 +110,29 @@ const [distances, setDistances] = useState({
         fetchNearbyRestaurants();
         fetchParkings();
     }, []);
+
+    const calculateDistances = async () => {
+        // Distance to user
+        const userDistanceResult = await fetchRouteDistance(
+            { latitude: userLocation.latitude, longitude: userLocation.longitude },
+            { latitude: address.coordinates[1], longitude: address.coordinates[0] }
+        );
+    
+        // Find nearest parking
+        const nearestParkingLocation = findNearestParking();
+        const parkingDistanceResult = nearestParkingLocation 
+            ? await fetchRouteDistance(
+                { latitude: address.coordinates[1], longitude: address.coordinates[0] }, // Restaurant location
+                { latitude: nearestParkingLocation.latitude, longitude: nearestParkingLocation.longitude }
+            )
+            : null;
+    
+        setDistances({
+            toUser: userDistanceResult,
+            toParking: parkingDistanceResult
+        });
+        setNearestParking(nearestParkingLocation);
+    };
 
     useEffect(() => {
         if (userLocation && location) {
@@ -149,8 +171,32 @@ const [distances, setDistances] = useState({
 
             let location = await Location.getCurrentPositionAsync({});
             setUserLocation(location.coords);
+
+
         })();
     }, []);
+
+    useEffect(() => {
+        if (userLocation && address) {
+            const restaurantLat = parseFloat(address.coordinates[1]);
+            const restaurantLon = parseFloat(address.coordinates[0]);
+            
+            // Calculer le point médian
+            const midLat = (userLocation.latitude + restaurantLat) / 2;
+            const midLon = (userLocation.longitude + restaurantLon) / 2;
+
+            // Calculer la distance entre les deux points pour déterminer le zoom
+            const latDelta = Math.abs(userLocation.latitude - restaurantLat) * 2;
+            const lonDelta = Math.abs(userLocation.longitude - restaurantLon) * 2;
+
+            setMapRegion({
+                latitude: midLat,
+                longitude: midLon,
+                latitudeDelta: Math.max(latDelta, 0.02), // Minimum zoom
+                longitudeDelta: Math.max(lonDelta, 0.02), // Minimum zoom
+            });
+        }
+    }, [userLocation, address]);
 
     const photosFromApi = []
     const videoFromApi = []
@@ -295,29 +341,7 @@ const [distances, setDistances] = useState({
     //         return null;
     //     }
     // };
-    
-        const calculateDistances = async () => {
-            // Distance to user
-            const userDistanceResult = await fetchRouteDistance(
-                { latitude: userLocation.latitude, longitude: userLocation.longitude },
-                { latitude: location.latitude, longitude: location.longitude }
-            );
-    
-            // Find nearest parking
-            const nearestParkingLocation = findNearestParking();
-            const parkingDistanceResult = nearestParkingLocation 
-                ? await fetchRouteDistance(
-                    { latitude: location.latitude, longitude: location.longitude },
-                    { latitude: nearestParkingLocation.latitude, longitude: nearestParkingLocation.longitude }
-                )
-                : null;
-    
-            setDistances({
-                toUser: userDistanceResult,
-                toParking: parkingDistanceResult
-            });
-            setNearestParking(nearestParkingLocation);
-        };
+
     
         const fetchRouteDistance = async (origin, destination) => {
             const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${DISTANCE_MATRIX_API_KEY}`;
@@ -368,8 +392,23 @@ const [distances, setDistances] = useState({
         const toRadians = (degrees) => degrees * (Math.PI/180);
     
         const getParkingProximityColor = (distance) => {
-            if (!distance) return 'gray';
-            return distance < 0.5 ? 'green' : distance < 1 ? 'orange' : 'red';
+            let distanceInKm;
+        
+            if (typeof distance === 'string' && distance.includes('km')) {
+                distanceInKm = parseFloat(distance);
+            } else {
+                const distanceInMeters = parseFloat(distance);
+                distanceInKm = distanceInMeters / 1000; // Convert meters to kilometers
+            }
+        
+            // Change the color based on the distance to the nearest parking
+            if (distanceInKm < 1) {
+                return 'green';
+            } else if (distanceInKm <= 3) {
+                return 'orange';
+            } else {
+                return 'red';
+            }
         };
     
         const navigateToMap = () => {
@@ -383,6 +422,7 @@ const [distances, setDistances] = useState({
                 }],
             });
         };
+        console.log(parseFloat(distances.toParking))
       
     return (
         <SafeAreaView style={styles.container}>
@@ -426,34 +466,30 @@ const [distances, setDistances] = useState({
                             <View style={styles.mapPreview}>
                             <MapView
                                 style={styles.map}
-                                region={{
-                                    latitude: parseFloat(location.latitude),
-                                    longitude: parseFloat(location.longitude),
-                                    latitudeDelta: 0.01,
-                                    longitudeDelta: 0.01,
-                                }}
+                                region={mapRegion}
                                 onPress={navigateToMap}
+                                scrollEnabled={false}
+        zoomEnabled={false}
                             >
                                 {/* Restaurant Marker */}
-                                {nearbyRestaurants.map((restaurant) => (
     <Marker
-        key={restaurant.id}
         coordinate={{
-            latitude: restaurant.location.coordinates[1],
-            longitude: restaurant.location.coordinates[0],
+            latitude: parseFloat(address.coordinates[1]),
+            longitude: parseFloat(address.coordinates[0]),
         }}
-        title={restaurant.name}
-        description={`Rating: ${restaurant.rating}`}
-        onPress={() => handleMarkerPress(restaurant)}
+        title={title}
+        description={`Rating: ${rating}`}
     >
         <View style={styles.restaurantMarker}>
-            <FontAwesome5 name="utensils" size={20} color="#C44949" />
+            <Image
+                source={require('../assets/IMG_0029.jpeg')}
+                style={{ width: 30, height: 30 }}
+            />
             <View style={styles.ratingBadge}>
-                <Text style={styles.ratingText}>{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
+                <Text style={styles.ratingText}>{rating ? rating.toFixed(1) : 'N/A'}</Text>
             </View>
         </View>
     </Marker>
-))}
 
                                 {/* User Location Marker */}
                                 {userLocation && (
@@ -483,9 +519,8 @@ const [distances, setDistances] = useState({
                                         style={[
                                             styles.distanceText, 
                                             { 
-                                                color: getParkingProximityColor(
-                                                    parseFloat(distances.toParking)
-                                                ) 
+                                                color: getParkingProximityColor(distances.toParking)
+                                                
                                             }
                                         ]}
                                     >
