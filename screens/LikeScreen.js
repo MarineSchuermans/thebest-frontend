@@ -1,77 +1,146 @@
 import { Button, Text, View, StyleSheet, SafeAreaView, TextInput, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo'
 import { FlatList, PanGestureHandler } from 'react-native-gesture-handler';
 import { removeFavoritesToStore } from '../reducers/user'
+import { backendAdress } from "../config"
 
 
 
 export default function LikeScreen({ navigation }) {
     const dispatch = useDispatch()
+    const [likePlaces, setLikePlaces] = useState([])
     const user = useSelector((state) => state.user.value)
+    const id_places = user.favorites
 
-    console.log(user)
-
-    const handleRemoveFavorite = (data) => {
-        console.log('remove favorite')
-        dispatch(removeFavoritesToStore({id: data}))
+    let isConnected = false
+    if (user.token?.length > 0) {
+        isConnected = true
     }
 
-    const favoriteListe = user.favorites.map((data, i) => {
-        console.log(data)
-        return (
+    // console.log(id_places.length)
+    console.log(isConnected)
+
+    useEffect(() => {
+        fetch(`${backendAdress}/places`)
+            .then(response => response.json())
+            .then(data => {
+
+                // if (data.places.some(place => place._id === id_places))
+                // const infoPlaces = data.find(place => id_places.some(idPlace => idPlace.id === place._id))
+                // console.log(infoPlaces)
+                // setLikePlaces()
+                const updateLikes = []
+                for (let i = 0; i < id_places.length; i++) {
+                    if (data.places.some(place => place._id === id_places[i])) {
+                        const infoPlace = data.places.find(placeLike => placeLike._id === id_places[i])
+                        // console.log(infoPlace)
+                        updateLikes.push(infoPlace)
+                        // setLikePlaces([...likePlaces, infoPlace])
+                    } else {
+                        console.log(false)
+                    }
+                }
+                // console.log(updateLikes)
+                setLikePlaces([...updateLikes])
+            })
+
+    }, [id_places.length])
+
+    //    console.log(likePlaces)
+
+    const handleRemoveFavorite = (item) => {
+
+        console.log(item)
+        const infos = {
+            token: user.token,
+            obj_id: item
+        }
+        console.log('remove favorite')
+        fetch('https://the-best-backend.vercel.app/users/favorites', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(infos)
+        })
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data)
+                if (data.result) {
+                    // setIsFavorite([...isFavorite, item._id])
+                    dispatch(addFavoritesToStore(item))
+                    // console.log(item)
+                } else {
+                    // setIsFavorite(a => a.filter(e => e !== item._id))
+                    dispatch(removeFavoritesToStore(item))
+                }
+                // console.log(isFavorite)
+            })
+            .catch(error => {
+                console.error('Erreur de la requête:', error)
+            })
+
+        // dispatch(removeFavoritesToStore({ id: data }))
+    }
+
+    let favoriteListe
+
+    if (likePlaces.length === 0 || !isConnected) {
+        favoriteListe = <Text> No favorite</Text>
+    } else {
+        favoriteListe = likePlaces.map((data, i) => {
+            return (
+
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('Resto', {
+                        key: { i },
+                        title: data.name,
+                        description: data.description,
+                        rating: data.rating,
+                        image: data.photo,
+                        phoneNumber: data.phone,
+                        location: data?.location,
+                    })}
+                    style={styles.restaurantCard}
+                >
 
 
-            <TouchableOpacity
-                onPress={() => navigation.navigate('Resto', {
-                    key: { i },
-                    title: data.title,
-                    description: data.description,
-                    rating: data.rating,
-                    image: data.image,
-                    phoneNumber: data?.phoneNumber,
-                    location: data?.location,
-                })}
-                style={styles.restaurantCard}
-            >
+                    <Image
+                        source={{ uri: data.photo_reference }}
+                        style={styles.restaurantImage}
+                    />
+                    <View style={styles.restaurantInfo}>
+                        <View style={styles.restaurantHeader}>
+                            <Text style={styles.restaurantTitle}>{data.name}</Text>
+                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data._id)}>
 
-
-                <Image
-                    source={{ uri: data.image }}
-                    style={styles.restaurantImage}
-                />
-                <View style={styles.restaurantInfo}>
-                    <View style={styles.restaurantHeader}>
-                        <Text style={styles.restaurantTitle}>{data.title}</Text>
-                        <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data.id)}>
-
-                            <Entypo
-                                name="cross"
-                                size={30}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <Text style={styles.description}>{data.description}</Text>
-                    <View style={styles.restaurantFooter}>
-                        <Feather name="phone" size={16} />
-                        <Feather name="map-pin" size={16} style={styles.footerIcon} />
-                        <View style={styles.rating}>
-                            <Text>{'★'.repeat(Math.floor(data.rating))}</Text>
-                            <Text>{'☆'.repeat(5 - Math.floor(data.rating))}</Text>
-                            <Text style={styles.ratingText}>({data.rating})</Text>
+                                <Entypo
+                                    name="cross"
+                                    size={30}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <Text style={styles.description}>{data.description}</Text>
+                        <View style={styles.restaurantFooter}>
+                            <Feather name="phone" size={16} />
+                            <Feather name="map-pin" size={16} style={styles.footerIcon} />
+                            <View style={styles.rating}>
+                                <Text>{'★'.repeat(Math.floor(data.rating))}</Text>
+                                <Text>{'☆'.repeat(5 - Math.floor(data.rating))}</Text>
+                                <Text style={styles.ratingText}>({data.rating})</Text>
+                            </View>
                         </View>
                     </View>
-                </View>
 
-            </TouchableOpacity>
+                </TouchableOpacity>
+
+            )
+        })
+    }
 
 
-
-
-        )
-    })
 
 
 
@@ -81,23 +150,27 @@ export default function LikeScreen({ navigation }) {
             <View style={styles.header}>
                 <Feather name="map-pin" size={24} />
                 <View style={styles.searchContainer}>
-                    <Feather name="search" size={16} style={styles.searchIcon} />
+                    <Text style={styles.title}>Tes Best of The Best ♥</Text>
+                    {/* <Feather name="search" size={16} style={styles.searchIcon} />
                     <TextInput
                         placeholder="Search"
                         style={styles.searchInput}
-                    />
+                    /> */}
                 </View>
                 <FontAwesome6 name="bars" size={24} />
             </View>
 
 
+
             <View style={styles.restaurantList}>
-                {favoriteListe}
-                {/* <FlatListItem /> */}
-                {/* {restaurants.map((restaurant) => (
-                    <RenderRestaurantItem item={restaurant} />
-                ))} */}
+                <ScrollView>
+                    {favoriteListe}
+                </ScrollView>
+
             </View>
+
+
+
 
 
 
@@ -126,7 +199,12 @@ const styles = StyleSheet.create({
     searchContainer: {
         flex: 1,
         marginHorizontal: 16,
-        position: 'relative',
+        alignItems: 'center',
+        position: 'center',
+    },
+    title: {
+        fontSize: 23,
+        fontWeight: 'bold',
     },
     searchInput: {
         backgroundColor: '#F3F4F6',
@@ -145,7 +223,7 @@ const styles = StyleSheet.create({
     },
     cross: {
         height: 50,
-        width:50
+        width: 50
     },
     categoryButton: {
         backgroundColor: '#F3F4F6',
