@@ -17,6 +17,7 @@ export default function LikeScreen({ navigation }) {
     const id_places = user.favorites
 
     console.log(id_places)
+    console.log(likePlaces)
 
    useEffect(() => {
     fetch(`${backendAdress}/places`)
@@ -37,11 +38,11 @@ export default function LikeScreen({ navigation }) {
                 } else {
                     console.log(false)
                 }
-                setLikePlaces([...likePlaces, updateLikes])
             }
+            setLikePlaces([...updateLikes])
         })
 
-   }, [id_places])
+   }, [id_places.length])
 
     const handleRemoveFavorite = (data) => {
         console.log('remove favorite')
