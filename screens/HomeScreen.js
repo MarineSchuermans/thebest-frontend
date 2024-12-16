@@ -151,10 +151,10 @@ useEffect(() => {
         try {
             // Première étape : recherche générale
             const generalResponse = await Location.geocodeAsync(text);
-            if (generalResponse.length > 0) {
-                const { latitude, longitude } = generalResponse[0];
-                fetchRestaurantsForLocation(latitude, longitude);
-            }
+            // if (generalResponse.length > 0) {
+            //     const { latitude, longitude } = generalResponse[0];
+            //     getRestaurants(latitude, longitude);
+            // }
             
             // Deuxième étape : recherche détaillée pour chaque résultat général
             const detailedResults = await Promise.all(generalResponse.map(async (item) => {
