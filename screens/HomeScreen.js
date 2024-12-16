@@ -14,15 +14,38 @@ export default function HomeScreen({ navigation }) {
     const [restaurants, setRestaurants] = useState([]);
     const [isFavorite, setIsFavorite] = useState([])
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
-    const user = useSelector((state) => state.user.value)
+    const user = useSelector((state) => state.user.value);
+    const [currentLocation, setCurrentLocation] = useState("Rechercher un lieu...");
+    const [searchText, setSearchText] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
     
-    console.log(user)
+    useEffect(() => {
+        getCurrentLocation();
+    }, []);
+
+    const getCurrentLocation = async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            console.log('Permission to access location was denied');
+            return;
+        }
+    
+        let location = await Location.getCurrentPositionAsync({});
+        let address = await Location.reverseGeocodeAsync(location.coords);
+        if (address[0]) {
+            const fullAddress = [
+                address[0].name,
+                address[0].street,
+                address[0].city,
+            ].filter(Boolean).join(', ');
+            setCurrentLocation(fullAddress);
+            setSearchText(fullAddress);
+        }
+    };
 
     useEffect(() => {
         setIsFavorite([...user.favorites])
     }, [user.favorites.length])
-
-    console.log(user)
 
     useEffect(() => {
 
@@ -31,9 +54,7 @@ export default function HomeScreen({ navigation }) {
             try {
 
                 const response = await fetch(backendAdress + "/findNearbyRestaurants"); //ON N UTILISE PAS VERCEL A CAUSE DU TIMEOUT
-                const restaurantData = await response.json();
-
-                // console.log(JSON.stringify(restaurantData, null, 2))
+                const restaurantData = await response.json()
 
 
                 const formattedRestaurants = restaurantData.map((place, index) => ({
@@ -65,7 +86,7 @@ export default function HomeScreen({ navigation }) {
 
             if (status === "granted") {
                 Location.watchPositionAsync({ distanceInterval: 10 }, (location) => {
-                    console.log(location);
+                   
                     dispatch(
                         addLocationToStore({
                             latitude: location.coords.latitude,
@@ -99,8 +120,6 @@ useEffect(() => {
             obj_id: item.place_id
         }
 
-        console.log(item.place_id)
-
         fetch('https://the-best-backend.vercel.app/users/favorites', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -125,6 +144,91 @@ useEffect(() => {
                 console.error('Erreur de la requête:', error)
             })
     }
+
+  const handleSearch = async (text) => {
+    setSearchText(text);
+    if (text.length > 2) {
+        try {
+            // Première étape : recherche générale
+            const generalResponse = await Location.geocodeAsync(text);
+            if (generalResponse.length > 0) {
+                const { latitude, longitude } = generalResponse[0];
+                fetchRestaurantsForLocation(latitude, longitude);
+            }
+            
+            // Deuxième étape : recherche détaillée pour chaque résultat général
+            const detailedResults = await Promise.all(generalResponse.map(async (item) => {
+                const detailedResponse = await Location.geocodeAsync(`${item.latitude},${item.longitude}`);
+                return detailedResponse;
+            }));
+
+            // Aplatir et filtrer les résultats
+            const allResults = detailedResults.flat().filter(Boolean);
+
+            // Limiter à 10 résultats uniques
+            const uniqueResults = Array.from(new Set(allResults.map(a => JSON.stringify(a))))
+                .map(item => JSON.parse(item))
+                .slice(0, 10);
+
+            const suggestions = await Promise.all(uniqueResults.map(async (item) => {
+                const address = await Location.reverseGeocodeAsync({
+                    latitude: item.latitude,
+                    longitude: item.longitude
+                });
+                return {
+                    fullAddress: address[0] ? 
+                        `${address[0].name || ''} ${address[0].street || ''}, ${address[0].city || ''}, ${address[0].country || ''}`.trim() : 
+                        'Adresse inconnue',
+                    accuracy: item.accuracy,
+                    latitude: item.latitude,
+                    longitude: item.longitude
+                };
+            }));
+
+            // Filtrer les adresses vides et trier par précision (accuracy)
+            const sortedSuggestions = suggestions
+                .filter(suggestion => suggestion.fullAddress !== 'Adresse inconnue')
+                .sort((a, b) => b.accuracy - a.accuracy);
+
+            setSearchResults(sortedSuggestions);
+            console.log("Résultats de recherche:", sortedSuggestions);
+        } catch (error) {
+            console.error("Erreur lors de la recherche d'adresses:", error);
+        }
+    } else {
+        setSearchResults([]);
+    }
+};
+
+// const fetchRestaurantsForLocation = async (latitude, longitude) => {
+//     try {
+//         const response = await fetch(`${backendAdress}/findNearbyRestaurants?lat=${latitude}&lng=${longitude}`);
+//         const restaurantData = await response.json();
+
+//         const formattedRestaurants = restaurantData.map((place, index) => ({
+//             _id: place._id,
+//             place_id: place.place_id,
+//             id: index + 1,
+//             title: place.name,
+//             location: place.address,
+//             address: place.location,
+//             description: "Ici, bientôt une description",
+//             rating: place.rating,
+//             image: place.photo,
+//             phoneNumber: place.phoneNumber,
+//             openingHours: place.openingHours
+//         }));
+
+//         setRestaurants(formattedRestaurants);
+//     } catch (error) {
+//         console.error("Error fetching restaurants:", error);
+//     }
+// };
+    
+    const clearSearch = () => {
+        setSearchText('');
+        setSearchResults([]);
+    };
 
   const RenderRestaurantItem = ({ item }) => (
     <TouchableOpacity
@@ -177,14 +281,41 @@ useEffect(() => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Feather name="map-pin" size={24} style={styles.bar} />
                 <View style={styles.searchContainer}>
-                    <Feather name="search" size={16} style={styles.searchIcon} />
-                    <TextInput placeholder="Search" style={styles.searchInput} />
+                <TextInput 
+                        placeholder={currentLocation}
+                        value={searchText}
+                        onChangeText={handleSearch}
+                        style={styles.searchInput}
+                    />
+                    {searchText !== '' && (
+                        <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+                            <Feather name="x" size={20} color="#9CA3AF" />
+                        </TouchableOpacity>
+                    )}
                 </View>
                 <FontAwesome6 name="bars" size={24} style={styles.bar} />
             </View>
-
+            {searchResults.length > 0 && (
+    <FlatList
+        data={searchResults}
+        renderItem={({ item }) => (
+            <TouchableOpacity 
+                style={styles.suggestionItem}
+                onPress={() => {
+                    setSearchText(item.fullAddress);
+                    setCurrentLocation(item.fullAddress);
+                    setSearchResults([]);
+                    // Vous pouvez ajouter ici une logique pour mettre à jour la carte ou effectuer d'autres actions
+                }}
+            >
+                <Text>{item.fullAddress}</Text>
+            </TouchableOpacity>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+        style={styles.suggestionList}
+    />
+)}
             <View style={{ height: 50 }}>
                 <ScrollView
                     horizontal
@@ -241,12 +372,34 @@ const styles = StyleSheet.create({
         flex: 1,
         marginHorizontal: 16,
         position: "relative",
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     searchInput: {
-        backgroundColor: "#F3F4F6",
+        flex: 1,
+        backgroundColor: "#FFFFFF",
         borderRadius: 20,
-        paddingHorizontal: 40,
         paddingVertical: 8,
+        paddingHorizontal: 12,
+        fontSize: 16,
+        color: "#000000",
+    },
+    clearButton: {
+        position: 'absolute',
+        right: 12,
+        top: '50%',
+        transform: [{ translateY: -10 }],
+    },
+    suggestionList: {
+        maxHeight: 200,
+        backgroundColor: 'white',
+        borderRadius: 5,
+        marginTop: 5,
+    },
+    suggestionItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
     },
     searchIcon: {
         position: "absolute",
