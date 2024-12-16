@@ -4,7 +4,7 @@ import * as Location from 'expo-location';
 import { useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useState, useRef, useEffect} from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { backendAdress } from "../config";
 import { useNavigation } from '@react-navigation/native';
 
@@ -78,40 +78,8 @@ export default function MapScreen({ route, navigation }) {
         );
     };
 
-    // {restaurants.map((restaurant) => (
-    //     <Marker
-    //         key={restaurant.id}
-    //         coordinate={{
-    //             latitude: restaurant.location.coordinates[1],
-    //             longitude: restaurant.location.coordinates[0],
-    //         }})
 
-
-//     <Marker
-//     key={restaurant.id}
-//     coordinate={{
-//         latitude: restaurant.location.coordinates[1],
-//         longitude: restaurant.location.coordinates[0],
-//     }}
-//     title={restaurant.name}
-//     description={`Rating: ${restaurant.rating}`}
-//     onPress={() => handleMarkerPress(restaurant)}
-//     onCalloutPress={() => handleTextePress(restaurant)}
-// >
-//     <View style={styles.restaurantMarker}>
-//     <Image
-//                             source={require('../assets/IMG_0029.png')}
-//                             style={{ width: 30, height: 30 }}
-//                         />
-//         <View style={styles.ratingBadge}>
-//             <Text style={styles.ratingText} >{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
-//         </View>
-//     </View>
-// </Marker>   
-
-
-
-    //Markers des favoris HENRI NE PAS EFFECER STP !!!!!!
+    //Markers des favoris et restos HENRI NE PAS EFFECER STP !!!!!!
     const favoritesOrNotMarkers = restaurants.map((data, i) => {
         console.log(data.place_id)
         const isItFavorite = resto.some(place => place.id === data.place_id)
@@ -119,45 +87,38 @@ export default function MapScreen({ route, navigation }) {
 
         console.log(dataFavorite)
 
-        if (!isConnected || !isItFavorite){
+        if (!isConnected || !isItFavorite) {
             return (
-                <Marker key = { i }
-                coordinate={{latitude: data.location.coordinates[1], longitude: data.location.coordinates[0]}}
-                title={data.name}
-                description={`Rating: ${data.rating}`}
-                onPress={() => handleMarkerPress(data)}
-                onCalloutPress={() => handleTextePress(data)}>
+                <Marker key={i}
+                    coordinate={{ latitude: data.location.coordinates[1], longitude: data.location.coordinates[0] }}
+                    title={data.name}
+                    description={`Rating: ${data.rating}`}
+                    onPress={() => handleMarkerPress(data)}
+                    onCalloutPress={() => handleTextePress(data)}>
                     <View style={styles.restaurantMarker}>
-                    <Image source={require('../assets/IMG_0029.png')} style={{ width: 40, height: 40 }} />
+                        <Image source={require('../assets/IMG_0029.png')} style={{ width: 40, height: 40 }} />
                     </View>
                 </Marker>
             )
-        } else if (isItFavorite){
+        } else if (isItFavorite) {
             return (
-            <Marker key={ i } 
-            coordinate={{latitude: dataFavorite.location.coordinates[1], longitude: dataFavorite.location.coordinates[0]}}
-            title= {dataFavorite.name}
-            description={`Rating: ${dataFavorite.rating}`}
-            onPress={() => handleMarkerPress(data)}
-            onCalloutPress={() => handleTextePress(data)}>
-                <View style={styles.restaurantMarker}>
-                <Image 
-                source={require('../assets/Icone_Favoris.png')} 
-                style={{ width: 50, height: 50 }} />
-                </View>
-            </Marker>
+                <Marker key={i}
+                    coordinate={{ latitude: dataFavorite.location.coordinates[1], longitude: dataFavorite.location.coordinates[0] }}
+                    title={dataFavorite.name}
+                    description={`Rating: ${dataFavorite.rating}`}
+                    onPress={() => handleMarkerPress(data)}
+                    onCalloutPress={() => handleTextePress(data)}>
+                    <View style={styles.restaurantMarker}>
+                        <Image
+                            source={require('../assets/Icone_Favoris.png')}
+                            style={{ width: 50, height: 50 }} />
+                    </View>
+                </Marker>
             )
 
         }
-        // console.log(resto)  
-        // console.log(isItFavorite)
-        
-        // console.log(isItFavorite)
-        // console.log(data.location.coordinates)
-        
     })
 
-    // console.log(favoritesOrNotMarkers)
 
 
     // Gestion de l'itinéraire
@@ -243,13 +204,13 @@ export default function MapScreen({ route, navigation }) {
                     )}
                     {parkings.map((parking, index) => (
                         <Marker
-                        key={index}
-                        coordinate={{
+                            key={index}
+                            coordinate={{
                                 latitude: parking.properties.latitude,
                                 longitude: parking.properties.longitude,
                             }}
-                         title={parking.properties.nom}
-                         description={`Places libres: ${parking.properties.nbr_libre}/${parking.properties.nbr_total}`}
+                            title={parking.properties.nom}
+                            description={`Places libres: ${parking.properties.nbr_libre}/${parking.properties.nbr_total}`}
                         >
                             <Image
                                 source={require('../assets/IMG_0028.jpeg')}
@@ -284,8 +245,7 @@ export default function MapScreen({ route, navigation }) {
         </View>
     </Marker>
 ))} */}
-{/* {favoritesMarkers} */}
-{favoritesOrNotMarkers}
+                    {favoritesOrNotMarkers}
 
                 </MapView>
             )}

@@ -6,7 +6,7 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo'
 import { FlatList, PanGestureHandler } from 'react-native-gesture-handler';
 import { removeFavoritesToStore, addFavoritesToStore } from '../reducers/user'
-import { addRestoToStore, initializeRestoToStore  } from '../reducers/resto';
+import { addRestoToStore, initializeRestoToStore } from '../reducers/resto';
 import { backendAdress } from "../config"
 
 
@@ -45,9 +45,9 @@ export default function LikeScreen({ navigation }) {
                     } else {
                         console.log(false)
                     }
-                } 
+                }
 
-                for (let i = 0; i < updateLikes.length; i++){
+                for (let i = 0; i < updateLikes.length; i++) {
                     dispatch(addRestoToStore(updateLikes[i]))
 
                 }
