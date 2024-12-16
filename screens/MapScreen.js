@@ -85,7 +85,7 @@ export default function MapScreen({ route, navigation }) {
         const isItFavorite = resto.some(place => place.id === data.place_id)
         const dataFavorite = resto.find(placeInfo => placeInfo.id === data.place_id)
 
-        console.log(dataFavorite)
+        // console.log(dataFavorite)
 
         if (!isConnected || !isItFavorite) {
             return (

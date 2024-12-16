@@ -26,6 +26,7 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { backendAdress } from "../config";
+import { addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
 
 import { toggleModal } from "../reducers/user"; //ismael rajout
 
@@ -112,7 +113,7 @@ export default function RestoScreen({ route }) {
   const [isCameraVisible, setIsCameraVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [reviews, setReviews] = useState([]);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState([]);
   const cameraRef = useRef(null);
   const isFocused = useIsFocused();
   const [photoUri, setPhotoUri] = useState(null);
@@ -129,6 +130,9 @@ export default function RestoScreen({ route }) {
   });
   const [parkings, setParkings] = useState([]);
   const [photoPlaces, setPhotoPlaces] = useState([]);
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.value);
+  const isConnected = user?.token;
 
   const fetchParkings = async () => {
     try {
@@ -215,6 +219,10 @@ export default function RestoScreen({ route }) {
   }, []);
 
   useEffect(() => {
+    setIsFavorite([...user.favorites])
+}, [user.favorites.length])
+
+  useEffect(() => {
     if (userLocation && address) {
       const restaurantLat = parseFloat(address.coordinates[1]);
       const restaurantLon = parseFloat(address.coordinates[0]);
@@ -297,9 +305,6 @@ export default function RestoScreen({ route }) {
     })();
   }, []);
 
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.value);
-  const isConnected = user?.token;
 
   const takePicture = async () => {
     if (cameraRef.current) {
@@ -323,6 +328,40 @@ export default function RestoScreen({ route }) {
       Linking.openURL(url);
     }
   };
+
+console.log(isFavorite)
+
+  const handleFavorite = (item) => {
+    if (!isConnected) {
+        return navigation.navigate('User')
+    }
+
+
+    const infos = {
+        token: user.token,
+        obj_id: nearbyRestaurants[0].place_id
+    }
+
+    fetch('https://the-best-backend.vercel.app/users/favorites', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(infos)
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            if (data.result) {
+                console.log(data.result)
+                dispatch(addFavoritesToStore(infos.obj_id))
+            } else {
+                console.log(data.result)
+                dispatch(removeFavoritesToStore(infos.obj_id))
+            }
+        })
+        .catch(error => {
+            console.error('Erreur de la requête:', error)
+        })
+  }
 
   const handleAddReview = (review) => {
     
@@ -505,12 +544,14 @@ export default function RestoScreen({ route }) {
               />
               <TouchableOpacity
                 style={styles.favoriteIcon}
-                onPress={() =>  {isConnected ? setIsFavorite(!isFavorite): dispatch(toggleModal())}}
+                onPress={() => {handleFavorite()}
+                    // {isConnected ? setIsFavorite(!isFavorite): dispatch(toggleModal())}
+                }
                 >
                 <Feather
                   name="heart"
                   size={24}
-                  color={isFavorite ? "#FF0000" : "#FFFFFF"}
+                  color={isFavorite.some(data => nearbyRestaurants[0].place_id === data) ? "#FF0000" : "#FFFFFF"}
                 />
               </TouchableOpacity>
               <View style={styles.imageOverlay}>
