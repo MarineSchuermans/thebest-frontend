@@ -30,6 +30,7 @@ export default function HomeScreen({ navigation }) {
             id: place.id,
             title: place.name,
             location: place.address,
+            address: place.location,
             description: "Ici, bientôt une description",
             rating: place.rating,
             image: place.photo,
@@ -110,31 +111,28 @@ useEffect(() => {
             })
     }
 
-    const RenderRestaurantItem = ({ item }) => (
-
-        <TouchableOpacity
-            onPress={() => navigation.navigate('Resto', {
-                title: item.title,
-                description: item.description,
-                rating: item.rating,
-                image: item.image,
-                phoneNumber: item.phoneNumber,
-                location: item.location,
-                address: item.address,
-            })}
-            style={styles.restaurantCard}
-        >
-
-            {item.image && item.image !== 'placeholder_url' ? (
-                <Image
-                    source={{ uri: item.image }}
-                    style={styles.restaurantImage}
-                />
-            ) : (
-                <View style={styles.placeholderImage}>
-                    <View style={styles.placeholderInner} />
-                </View>
-            )}
+  const RenderRestaurantItem = ({ item }) => (
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate("Resto", {
+          title: item.title,
+          description: item.description,
+          rating: item.rating,
+          image: item.image,
+          phoneNumber: item.phoneNumber,
+          location: item.location,
+          address: item.address,
+        })
+      }
+      style={styles.restaurantCard}
+    >
+      {item.image && item.image !== "placeholder_url" ? (
+        <Image source={{ uri: item.image }} style={styles.restaurantImage} />
+      ) : (
+        <View style={styles.placeholderImage}>
+          <View style={styles.placeholderInner} />
+        </View>
+      )}
 
             <View style={styles.restaurantInfo}>
                 <View style={styles.restaurantHeader}>

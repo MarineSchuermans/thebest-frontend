@@ -6,6 +6,8 @@ import { Feather } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useState, useRef, useEffect} from 'react';
 import { backendAdress } from "../config";
+import { useNavigation } from '@react-navigation/native';
+
 export default function MapScreen({ route, navigation }) {
     const user = useSelector((state) => state.user.value);
     const { restaurantLocation } = route.params || {};
@@ -110,11 +112,27 @@ export default function MapScreen({ route, navigation }) {
         })();
     }, []);
 
-
     const handleMarkerPress = (restaurant) => {
         setSelectedRestaurant(restaurant);
     };
 
+    const handleTextePress = (restaurant) => {
+        navigation.navigate('Resto', {
+            title: restaurant.name,
+            description: restaurant.description,
+            rating: restaurant.rating,
+            image: restaurant.photo,
+            phoneNumber: restaurant.phoneNumber,
+            location: restaurant.address,
+            address: restaurant.location,
+        });
+    };
+
+    useEffect(() => {
+        if (route.params?.restaurant) {
+            setSelectedRestaurant(route.params.restaurant);
+        }
+    }, [route.params?.restaurant]);
 
     return (
         <View style={styles.container}>
@@ -124,6 +142,7 @@ export default function MapScreen({ route, navigation }) {
                     style={styles.map}
                     region={mapRegion}
                     showsUserLocation={true}
+
                 >
                     {userLocation && (
                         <Marker
@@ -134,6 +153,7 @@ export default function MapScreen({ route, navigation }) {
                     )}
                     {parkings.map((parking, index) => (
                         <Marker
+                        key={index}
                         coordinate={{
                                 latitude: parking.properties.latitude,
                                 longitude: parking.properties.longitude,
@@ -161,14 +181,15 @@ export default function MapScreen({ route, navigation }) {
         title={restaurant.name}
         description={`Rating: ${restaurant.rating}`}
         onPress={() => handleMarkerPress(restaurant)}
+        onCalloutPress={() => handleTextePress(restaurant)}
     >
         <View style={styles.restaurantMarker}>
         <Image
-                                source={require('../assets/IMG_0029.jpeg')}
+                                source={require('../assets/IMG_0029.png')}
                                 style={{ width: 30, height: 30 }}
                             />
             <View style={styles.ratingBadge}>
-                <Text style={styles.ratingText}>{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
+                <Text style={styles.ratingText} >{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
             </View>
         </View>
     </Marker>
