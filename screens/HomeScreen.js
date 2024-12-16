@@ -151,6 +151,10 @@ useEffect(() => {
         try {
             // Première étape : recherche générale
             const generalResponse = await Location.geocodeAsync(text);
+            if (generalResponse.length > 0) {
+                const { latitude, longitude } = generalResponse[0];
+                fetchRestaurantsForLocation(latitude, longitude);
+            }
             
             // Deuxième étape : recherche détaillée pour chaque résultat général
             const detailedResults = await Promise.all(generalResponse.map(async (item) => {
@@ -195,6 +199,31 @@ useEffect(() => {
         setSearchResults([]);
     }
 };
+
+// const fetchRestaurantsForLocation = async (latitude, longitude) => {
+//     try {
+//         const response = await fetch(`${backendAdress}/findNearbyRestaurants?lat=${latitude}&lng=${longitude}`);
+//         const restaurantData = await response.json();
+
+//         const formattedRestaurants = restaurantData.map((place, index) => ({
+//             _id: place._id,
+//             place_id: place.place_id,
+//             id: index + 1,
+//             title: place.name,
+//             location: place.address,
+//             address: place.location,
+//             description: "Ici, bientôt une description",
+//             rating: place.rating,
+//             image: place.photo,
+//             phoneNumber: place.phoneNumber,
+//             openingHours: place.openingHours
+//         }));
+
+//         setRestaurants(formattedRestaurants);
+//     } catch (error) {
+//         console.error("Error fetching restaurants:", error);
+//     }
+// };
     
     const clearSearch = () => {
         setSearchText('');
