@@ -1,22 +1,8 @@
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TextInput,
-    TouchableOpacity,
-    Image,
-    SafeAreaView,
-    FlatList,
-} from "react-native";
+import {View,Text,StyleSheet,ScrollView, TextInput,TouchableOpacity,Image,SafeAreaView,FlatList,} from "react-native";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-    addLocationToStore,
-    addFavoritesToStore,
-    removeFavoritesToStore,
-} from "../reducers/user";
+import {addLocationToStore,addFavoritesToStore,removeFavoritesToStore,} from "../reducers/user";
 import Feather from "react-native-vector-icons/Feather";
 import FontAwesome6 from "react-native-vector-icons/FontAwesome";
 import { backendAdress } from "../config";
@@ -31,49 +17,10 @@ export default function HomeScreen({ navigation }) {
     const user = useSelector((state) => state.user.value)
 
 
-<<<<<<< HEAD
-    useEffect(() => {
-        setIsFavorite([...user.favorites])
-    }, [user.favorites.length])
-
-    console.log(user)
-
-    useEffect(() => {
-
-
-        const getRestaurants = async () => {
-            try {
-
-                const response = await fetch(backendAdress + "/findNearbyRestaurants"); //ON N UTILISE PAS VERCEL A CAUSE DU TIMEOUT
-                const restaurantData = await response.json();
-
-
-                const formattedRestaurants = restaurantData.map((place, index) => ({
-                    _id: place._id,
-                    id: index + 1,
-                    title: place.name,
-                    location: place.address,
-                    address: place.location,
-                    description: "Ici, bientôt une description",
-                    rating: place.rating,
-                    image: place.photo,
-                    phoneNumber: place.phoneNumber,
-                    openingHours: place.openingHours
-                }));
-
-                setRestaurants(formattedRestaurants);
-            } catch (error) {
-                console.error('Error fetching restaurants:', error);
-            }
-        };
-
-        getRestaurants();
-    }, []);
-=======
   useEffect(() => {
     const getRestaurants = async () => {
       try {
-        const response = await fetch(backendAdress + "/findNearbyRestaurants"); //ON N UTILISE PAS VERCEL A CAUSE DU TIMEOUT
+        const response = await fetch(backendAdress + "/findNearbyRestaurants");
         const restaurantData = await response.json();
 
         console.log("Raw restaurant:", restaurantData);
@@ -99,7 +46,6 @@ export default function HomeScreen({ navigation }) {
 
     getRestaurants();
   }, []);
->>>>>>> bester-fron
 
     useEffect(() => {
         (async () => {
@@ -164,7 +110,6 @@ useEffect(() => {
             })
     }
 
-<<<<<<< HEAD
     const RenderRestaurantItem = ({ item }) => (
 
         <TouchableOpacity
@@ -190,29 +135,6 @@ useEffect(() => {
                     <View style={styles.placeholderInner} />
                 </View>
             )}
-=======
-  const RenderRestaurantItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() =>
-        navigation.navigate("Resto", {
-          title: item.title,
-          description: item.description,
-          rating: item.rating,
-          image: item.image,
-          phoneNumber: item.phoneNumber,
-          location: item.location,
-        })
-      }
-      style={styles.restaurantCard}
-    >
-      {item.image && item.image !== "placeholder_url" ? (
-        <Image source={{ uri: item.image }} style={styles.restaurantImage} />
-      ) : (
-        <View style={styles.placeholderImage}>
-          <View style={styles.placeholderInner} />
-        </View>
-      )}
->>>>>>> bester-fron
 
             <View style={styles.restaurantInfo}>
                 <View style={styles.restaurantHeader}>
@@ -287,14 +209,8 @@ useEffect(() => {
 }
 
 const styles = StyleSheet.create({
-    // container: {
-    //   flex: 1,
-    //   backgroundColor: '#fff',
-    //   alignItems: 'center',
-    //   justifyContent: 'center',
-    // },
-    // const styles = StyleSheet.create({
-    container: {
+
+    container : {
         flex: 1,
         backgroundColor: "#F9FAFB",
     },
