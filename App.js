@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { toggleModal } from "./reducers/user";
 import user from "./reducers/user";
+import resto from "./reducers/resto"
 import Modal from "./components/Modal";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -25,7 +26,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 // import { TouchableOpacity } from "react-native-gesture-handler";
 
 const store = configureStore({
-  reducer: { user },
+  reducer: { user, resto },
 });
 
 const Tab = createBottomTabNavigator();

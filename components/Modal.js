@@ -107,7 +107,9 @@ export default function Modal() {
             login({ username, token: data.token, avatarUrl: data.avatarUrl })
           );
           data.favorites.forEach(favorite => {
-            if (user.favorites.findOne(favorite) === false){
+            if (user.favorites.length === 0){
+              dispatch(addFavoritesToStore(favorite))
+            } else if (user.favorites.findOne(favorite) === false){
               console.log(false)
               dispatch(addFavoritesToStore(favorite))
             }
