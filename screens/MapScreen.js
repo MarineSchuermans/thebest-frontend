@@ -10,6 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function MapScreen({ route, navigation }) {
     const user = useSelector((state) => state.user.value);
+    const resto = useSelector((state) => state.resto.value);
     const { restaurantLocation } = route.params || {};
     const [userLocation, setUserLocation] = useState(null);
     const [mapRegion, setMapRegion] = useState(null);
@@ -18,6 +19,11 @@ export default function MapScreen({ route, navigation }) {
     const [parkings, setParkings] = useState([]);
     const mapRef = useRef(null);
     const [restaurants, setRestaurants] = useState([]);
+
+    let isConnected = false
+    if (user.token?.length > 0) {
+        isConnected = true
+    }
 
     const fetchRestaurants = async () => {
         try {
@@ -28,6 +34,8 @@ export default function MapScreen({ route, navigation }) {
             console.error('Error fetching restaurants:', error);
         }
     };
+
+
 
 
     // Récupération des données des parkings
@@ -69,6 +77,88 @@ export default function MapScreen({ route, navigation }) {
             </View>
         );
     };
+
+    // {restaurants.map((restaurant) => (
+    //     <Marker
+    //         key={restaurant.id}
+    //         coordinate={{
+    //             latitude: restaurant.location.coordinates[1],
+    //             longitude: restaurant.location.coordinates[0],
+    //         }})
+
+
+//     <Marker
+//     key={restaurant.id}
+//     coordinate={{
+//         latitude: restaurant.location.coordinates[1],
+//         longitude: restaurant.location.coordinates[0],
+//     }}
+//     title={restaurant.name}
+//     description={`Rating: ${restaurant.rating}`}
+//     onPress={() => handleMarkerPress(restaurant)}
+//     onCalloutPress={() => handleTextePress(restaurant)}
+// >
+//     <View style={styles.restaurantMarker}>
+//     <Image
+//                             source={require('../assets/IMG_0029.png')}
+//                             style={{ width: 30, height: 30 }}
+//                         />
+//         <View style={styles.ratingBadge}>
+//             <Text style={styles.ratingText} >{restaurant.rating ? restaurant.rating.toFixed(1) : 'N/A'}</Text>
+//         </View>
+//     </View>
+// </Marker>   
+
+
+
+    //Markers des favoris HENRI NE PAS EFFECER STP !!!!!!
+    const favoritesOrNotMarkers = restaurants.map((data, i) => {
+        console.log(data.place_id)
+        const isItFavorite = resto.some(place => place.id === data.place_id)
+        const dataFavorite = resto.find(placeInfo => placeInfo.id === data.place_id)
+
+        console.log(dataFavorite)
+
+        if (!isConnected || !isItFavorite){
+            return (
+                <Marker key = { i }
+                coordinate={{latitude: data.location.coordinates[1], longitude: data.location.coordinates[0]}}
+                title={data.name}
+                description={`Rating: ${data.rating}`}
+                onPress={() => handleMarkerPress(data)}
+                onCalloutPress={() => handleTextePress(data)}>
+                    <View style={styles.restaurantMarker}>
+                    <Image source={require('../assets/IMG_0029.png')} style={{ width: 40, height: 40 }} />
+                    </View>
+                </Marker>
+            )
+        } else if (isItFavorite){
+            return (
+            <Marker key={ i } 
+            coordinate={{latitude: dataFavorite.location.coordinates[1], longitude: dataFavorite.location.coordinates[0]}}
+            title= {dataFavorite.name}
+            description={`Rating: ${dataFavorite.rating}`}
+            onPress={() => handleMarkerPress(data)}
+            onCalloutPress={() => handleTextePress(data)}>
+                <View style={styles.restaurantMarker}>
+                <Image 
+                source={require('../assets/Icone_Favoris.png')} 
+                style={{ width: 50, height: 50 }} />
+                </View>
+            </Marker>
+            )
+
+        }
+        // console.log(resto)  
+        // console.log(isItFavorite)
+        
+        // console.log(isItFavorite)
+        // console.log(data.location.coordinates)
+        
+    })
+
+    // console.log(favoritesOrNotMarkers)
+
 
     // Gestion de l'itinéraire
     // const fetchRoute = async (origin, destination) => {
@@ -171,7 +261,7 @@ export default function MapScreen({ route, navigation }) {
                             />
                         </Marker>
                     ))}
-                    {restaurants.map((restaurant) => (
+                    {/* {restaurants.map((restaurant) => (
     <Marker
         key={restaurant.id}
         coordinate={{
@@ -193,7 +283,9 @@ export default function MapScreen({ route, navigation }) {
             </View>
         </View>
     </Marker>
-))}
+))} */}
+{/* {favoritesMarkers} */}
+{favoritesOrNotMarkers}
 
                 </MapView>
             )}
