@@ -15,29 +15,40 @@ export default function HomeScreen({ navigation }) {
     const [isFavorite, setIsFavorite] = useState([])
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value)
+    
+    console.log(user)
+
+    useEffect(() => {
+        setIsFavorite([...user.favorites])
+    }, [user.favorites.length])
+
+    console.log(user)
+
+    useEffect(() => {
 
 
-  useEffect(() => {
-    const getRestaurants = async () => {
-      try {
-        const response = await fetch(backendAdress + "/findNearbyRestaurants");
-        const restaurantData = await response.json();
+        const getRestaurants = async () => {
+            try {
 
-        console.log("Raw restaurant:", restaurantData);
-        const formattedRestaurants = restaurantData.map((place, index) => {
-          console.log("Processing place:", place);
-          return {
-            id: place.id,
-            title: place.name,
-            location: place.address,
-            address: place.location,
-            description: "Ici, bientôt une description",
-            rating: place.rating,
-            image: place.photo,
-            phoneNumber: place.phoneNumber,
-            openingHours: place.openingHours,
-          };
-        });
+                const response = await fetch(backendAdress + "/findNearbyRestaurants"); //ON N UTILISE PAS VERCEL A CAUSE DU TIMEOUT
+                const restaurantData = await response.json();
+
+                // console.log(JSON.stringify(restaurantData, null, 2))
+
+
+                const formattedRestaurants = restaurantData.map((place, index) => ({
+                    _id: place._id,
+                    place_id: place.place_id,
+                    id: index + 1,
+                    title: place.name,
+                    location: place.address,
+                    address: place.location,
+                    description: "Ici, bientôt une description",
+                    rating: place.rating,
+                    image: place.photo,
+                    phoneNumber: place.phoneNumber,
+                    openingHours: place.openingHours
+                }));
 
         setRestaurants(formattedRestaurants);
       } catch (error) {
@@ -85,8 +96,10 @@ useEffect(() => {
 
         const infos = {
             token: user.token,
-            obj_id: item._id
+            obj_id: item.place_id
         }
+
+        console.log(item.place_id)
 
         fetch('https://the-best-backend.vercel.app/users/favorites', {
             method: 'PUT',
@@ -97,12 +110,14 @@ useEffect(() => {
             .then(data => {
                 console.log(data)
                 if (data.result) {
+                    console.log(data.result)
                     // setIsFavorite([...isFavorite, item._id])
-                    dispatch(addFavoritesToStore(item._id))
+                    dispatch(addFavoritesToStore(item.place_id))
                     // console.log(item)
                 } else {
+                    console.log(data.result)
                     // setIsFavorite(a => a.filter(e => e !== item._id))
-                    dispatch(removeFavoritesToStore(item._id ))
+                    dispatch(removeFavoritesToStore(item.place_id))
                 }
                 // console.log(isFavorite)
             })
@@ -139,7 +154,7 @@ useEffect(() => {
                     <Text style={styles.restaurantTitle}>{item.title}</Text>
                     <LikeIcon
                         onClickIcon={() => handleFavorite(item)}
-                        color={isConnected && isFavorite.some(data => item._id == data) ? "#FF0000" : "#9CA3AF"}
+                        color={isConnected && isFavorite.some(data => item.place_id == data) ? "#FF0000" : "#9CA3AF"}
                     />
                 </View>
 

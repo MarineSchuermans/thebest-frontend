@@ -28,6 +28,9 @@ export default function LikeScreen({ navigation }) {
         fetch(`${backendAdress}/places`)
             .then(response => response.json())
             .then(data => {
+                
+
+                // console.log(data)
 
                 // if (data.places.some(place => place._id === id_places))
                 // const infoPlaces = data.find(place => id_places.some(idPlace => idPlace.id === place._id))
@@ -35,9 +38,10 @@ export default function LikeScreen({ navigation }) {
                 // setLikePlaces()
                 const updateLikes = []
                 for (let i = 0; i < id_places.length; i++) {
-                    if (data.places.some(place => place._id === id_places[i])) {
-                        const infoPlace = data.places.find(placeLike => placeLike._id === id_places[i])
-                        // console.log(infoPlace)
+                    if (data.places.some(place => place.id === id_places[i])) {
+                        // console.log(place.id)
+                        const infoPlace = data.places.find(placeLike => placeLike.id === id_places[i])
+                        console.log(infoPlace)
                         updateLikes.push(infoPlace)
                         // setLikePlaces([...likePlaces, infoPlace])
                     } else {
@@ -108,13 +112,13 @@ export default function LikeScreen({ navigation }) {
 
 
                     <Image
-                        source={{ uri: data.photo_reference }}
+                        source={{ uri: data.photo }}
                         style={styles.restaurantImage}
                     />
                     <View style={styles.restaurantInfo}>
                         <View style={styles.restaurantHeader}>
                             <Text style={styles.restaurantTitle}>{data.name}</Text>
-                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data._id)}>
+                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data.id)}>
 
                                 <Entypo
                                     name="cross"
