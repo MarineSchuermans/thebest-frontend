@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import { View, Text, Button, StyleSheet, Image, TouchableOpacity } from "react-native";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 
@@ -45,14 +45,23 @@ export default function GoogleSignin() {
 
   return (
     <View style={styles.container}>
+                          {/* <Image
+                        source={{ uri: data.photo_reference }}
+                        style={styles.restaurantImage}>
+                          
+                        </Image> */}
       {userInfo ? (
         <Text>Welcome, {userInfo.name}!</Text>
       ) : (
-        <Button
-          title="Sign in with Google"
-          onPress={() => promptAsync()}
-          disabled={!request}
+        <TouchableOpacity
+        onPress={() => promptAsync()}
+        disabled={!request}
+      >
+        <Image
+          source={require('../assets/googlelogo.webp')} // Chemin vers ton image
+          style={{ width: 50, height: 50 }} // Dimensions de l'image
         />
+      </TouchableOpacity>
       )}
     </View>
   );
