@@ -44,6 +44,7 @@ export default function HomeScreen({ navigation }) {
             id: place.id,
             title: place.name,
             location: place.address,
+            address: place.location,
             description: "Ici, bientôt une description",
             rating: place.rating,
             image: place.photo,
@@ -134,6 +135,7 @@ useEffect(() => {
           image: item.image,
           phoneNumber: item.phoneNumber,
           location: item.location,
+          address: item.address,
         })
       }
       style={styles.restaurantCard}
