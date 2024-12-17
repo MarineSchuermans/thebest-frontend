@@ -15,7 +15,8 @@
       "backgroundColor": "#C44949"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.iismael.myapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,10 +28,16 @@
       "favicon": "./assets/favicon.png",
       "config": {
         "googleSignIn": {
+<<<<<<< HEAD
           "expoClientId": "619790277370-st8fno1oaglfom2d8ajvjmcfpmg07rk9.apps.googleusercontent.com"
+=======
+          "expoClientId": " 619790277370-st8fno1oaglfom2d8ajvjmcfpmg07rk9.apps.googleusercontent.com"
+>>>>>>> fronteend
         }
       }
     },
+    "scheme": "my-app",
+    "platforms": ["ios", "android", "web"],
     "plugins": [
       [
         "expo-camera",
@@ -42,4 +49,9 @@
       ]
     ]
   }
+<<<<<<< HEAD
  }  
+=======
+}
+
+>>>>>>> fronteend
