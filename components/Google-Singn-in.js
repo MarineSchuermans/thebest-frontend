@@ -39,6 +39,7 @@ export default function GoogleSignin() {
       fetchUserInfo(response.authentication.accessToken);
     } else if (response?.type === "error") {
       console.error("Auth Error:", response.error);
+    
       setError(response.error);
     }
   }, [response]);
