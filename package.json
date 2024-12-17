@@ -23,7 +23,7 @@
     "apify-client": "^2.10.0",
     "cloudinary": "^2.5.1",
     "expo": "~52.0.15",
-    "expo-auth-session": "^6.0.1",
+    "expo-auth-session": "~6.0.1",
     "expo-av": "^15.0.1",
     "expo-camera": "^16.0.9",
     "expo-image-picker": "^16.0.3",
