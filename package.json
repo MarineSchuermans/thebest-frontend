@@ -50,7 +50,9 @@
     "uniqid": "^5.4.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   },
   "private": true
 }

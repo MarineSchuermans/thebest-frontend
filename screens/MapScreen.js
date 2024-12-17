@@ -4,12 +4,13 @@ import * as Location from 'expo-location';
 import { useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useState, useRef, useEffect} from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { backendAdress } from "../config";
 import { useNavigation } from '@react-navigation/native';
 
 export default function MapScreen({ route, navigation }) {
     const user = useSelector((state) => state.user.value);
+    const resto = useSelector((state) => state.resto.value);
     const { restaurantLocation } = route.params || {};
     const [userLocation, setUserLocation] = useState(null);
     const [mapRegion, setMapRegion] = useState(null);
@@ -18,6 +19,12 @@ export default function MapScreen({ route, navigation }) {
     const [parkings, setParkings] = useState([]);
     const mapRef = useRef(null);
     const [restaurants, setRestaurants] = useState([]);
+    const [isMapReady, setIsMapReady] = useState(false);
+
+    let isConnected = false
+    if (user.token?.length > 0) {
+        isConnected = true
+    }
 
     const fetchRestaurants = async () => {
         try {
@@ -28,6 +35,8 @@ export default function MapScreen({ route, navigation }) {
             console.error('Error fetching restaurants:', error);
         }
     };
+
+
 
 
     // Récupération des données des parkings
@@ -69,6 +78,46 @@ export default function MapScreen({ route, navigation }) {
             </View>
         );
     };
+
+
+    //Markers des favoris et restos HENRI NE PAS EFFECER STP !!!!!!
+    const favoritesOrNotMarkers = restaurants.map((data, i) => {
+        const isItFavorite = resto.some(place => place.id === data.place_id)
+        const dataFavorite = resto.find(placeInfo => placeInfo.id === data.place_id)
+
+        if (!isConnected || !isItFavorite) {
+            return (
+                <Marker key={i}
+                    coordinate={{ latitude: data.location.coordinates[1], longitude: data.location.coordinates[0] }}
+                    title={data.name}
+                    description={`Rating: ${data.rating}`}
+                    onPress={() => handleMarkerPress(data)}
+                    onCalloutPress={() => handleTextePress(data)}>
+                    <View style={styles.restaurantMarker}>
+                        <Image source={require('../assets/IMG_0029.png')} style={{ width: 40, height: 40 }} />
+                    </View>
+                </Marker>
+            )
+        } else if (isItFavorite) {
+            return (
+                <Marker key={i}
+                    coordinate={{ latitude: dataFavorite.location.coordinates[1], longitude: dataFavorite.location.coordinates[0] }}
+                    title={dataFavorite.name}
+                    description={`Rating: ${dataFavorite.rating}`}
+                    onPress={() => handleMarkerPress(data)}
+                    onCalloutPress={() => handleTextePress(data)}>
+                    <View style={styles.restaurantMarker}>
+                        <Image
+                            source={require('../assets/Icone_Favoris.png')}
+                            style={{ width: 50, height: 50 }} />
+                    </View>
+                </Marker>
+            )
+
+        }
+    })
+
+
 
     // Gestion de l'itinéraire
     // const fetchRoute = async (origin, destination) => {
@@ -112,8 +161,36 @@ export default function MapScreen({ route, navigation }) {
         })();
     }, []);
 
+    // Nouvelle fonction pour centrer la carte sur un restaurant
+    const centerMapOnRestaurant = (restaurant) => {
+        setTimeout(() => {
+            if (mapRef.current && restaurant) {
+                let latitude, longitude;
+                
+                if (restaurant.location && restaurant.location.coordinates) {
+                    // Format pour les restaurants de la liste initiale
+                    [longitude, latitude] = restaurant.location.coordinates;
+                } else if (restaurant.location && restaurant.location.latitude && restaurant.location.longitude) {
+                    // Format pour les restaurants sélectionnés depuis RestoScreen
+                    ({ latitude, longitude } = restaurant.location);
+                } else {
+                    return;
+                }
+    
+                const region = {
+                    latitude,
+                    longitude,
+                    latitudeDelta: 0.005,
+                    longitudeDelta: 0.005,
+                };
+                mapRef.current.animateToRegion(region, 1000);
+            } 
+        }, 500);
+    };
+    
     const handleMarkerPress = (restaurant) => {
         setSelectedRestaurant(restaurant);
+        centerMapOnRestaurant(restaurant);
     };
 
     const handleTextePress = (restaurant) => {
@@ -130,10 +207,21 @@ export default function MapScreen({ route, navigation }) {
 
     useEffect(() => {
         if (route.params?.restaurant) {
-            setSelectedRestaurant(route.params.restaurant);
+          const restaurant = route.params.restaurant;
+          setSelectedRestaurant(restaurant);
+        
+          if (route.params.centerOnRestaurant) {
+            centerMapOnRestaurant(restaurant);
+          }
         }
-    }, [route.params?.restaurant]);
+      }, [route.params?.restaurant]);
 
+      useEffect(() => {
+        if (isMapReady && selectedRestaurant) {
+            centerMapOnRestaurant(selectedRestaurant);
+        }
+    }, [isMapReady, selectedRestaurant]);
+      
     return (
         <View style={styles.container}>
             {mapRegion && (
@@ -142,7 +230,7 @@ export default function MapScreen({ route, navigation }) {
                     style={styles.map}
                     region={mapRegion}
                     showsUserLocation={true}
-
+                    onMapReady={() => setIsMapReady(true)}
                 >
                     {userLocation && (
                         <Marker
@@ -153,13 +241,13 @@ export default function MapScreen({ route, navigation }) {
                     )}
                     {parkings.map((parking, index) => (
                         <Marker
-                        key={index}
-                        coordinate={{
+                            key={index}
+                            coordinate={{
                                 latitude: parking.properties.latitude,
                                 longitude: parking.properties.longitude,
                             }}
-                         title={parking.properties.nom}
-                         description={`Places libres: ${parking.properties.nbr_libre}/${parking.properties.nbr_total}`}
+                            title={parking.properties.nom}
+                            description={`Places libres: ${parking.properties.nbr_libre}/${parking.properties.nbr_total}`}
                         >
                             <Image
                                 source={require('../assets/IMG_0028.jpeg')}
@@ -171,7 +259,7 @@ export default function MapScreen({ route, navigation }) {
                             />
                         </Marker>
                     ))}
-                    {restaurants.map((restaurant) => (
+                    {/* {restaurants.map((restaurant) => (
     <Marker
         key={restaurant.id}
         coordinate={{
@@ -193,7 +281,8 @@ export default function MapScreen({ route, navigation }) {
             </View>
         </View>
     </Marker>
-))}
+))} */}
+                    {favoritesOrNotMarkers}
 
                 </MapView>
             )}

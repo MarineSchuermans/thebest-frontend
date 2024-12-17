@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const WEB_CLIENT_ID = "619790277370-st8fno1oaglfom2d8ajvjmcfpmg07rk9.apps.googleusercontent.com";
+const WEB_CLIENT_ID =
+  "619790277370-st8fno1oaglfom2d8ajvjmcfpmg07rk9.apps.googleusercontent.com";
 
 export default function GoogleSignin() {
  const [userInfo, setUserInfo] = useState(null);
@@ -43,25 +51,22 @@ export default function GoogleSignin() {
    }
  };
 
- return (
-   <View style={styles.container}>
-     {userInfo ? (
-       <Text>Welcome, {userInfo.name}!</Text>
-     ) : (
-       <TouchableOpacity
-         onPress={() => promptAsync()}
-         disabled={!request}
-       >
-         <Image
-           source={require('../assets/googlelogo.webp')}
-           style={{ width: 50, height: 50 }}
-         />
-       </TouchableOpacity>
-     )}
-   </View>
- );
+  return (
+    <View style={styles.container}>
+      {userInfo ? (
+        <Text>Welcome, {userInfo.name}!</Text>
+      ) : (
+        <TouchableOpacity onPress={() => promptAsync()} disabled={!request}>
+          <Image
+            source={require("../assets/googlelogo.webp")}
+            style={{ width: 50, height: 50 }}
+          />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
- container: { height: 65, justifyContent: "center", alignItems: "center" },
+  container: { heigth: "65", justifyContent: "center", alignItems: "center" },
 });

@@ -5,16 +5,21 @@ import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo'
 import { FlatList, PanGestureHandler } from 'react-native-gesture-handler';
-import { removeFavoritesToStore } from '../reducers/user'
+import { removeFavoritesToStore, addFavoritesToStore } from '../reducers/user'
+import { addRestoToStore, initializeRestoToStore } from '../reducers/resto';
 import { backendAdress } from "../config"
 
 
 
 export default function LikeScreen({ navigation }) {
     const dispatch = useDispatch()
-    const [likePlaces, setLikePlaces] = useState([])
+    // const [likePlaces, setLikePlaces] = useState([])
+    const likePlaces = useSelector((state) => state.resto.value)
     const user = useSelector((state) => state.user.value)
+    // const resto = useSelector((state)=> state.resto.value)
     const id_places = user.favorites
+
+    // console.log(resto)
 
     let isConnected = false
     if (user.token?.length > 0) {
@@ -28,24 +33,26 @@ export default function LikeScreen({ navigation }) {
         fetch(`${backendAdress}/places`)
             .then(response => response.json())
             .then(data => {
+                dispatch(initializeRestoToStore())
 
-                // if (data.places.some(place => place._id === id_places))
-                // const infoPlaces = data.find(place => id_places.some(idPlace => idPlace.id === place._id))
-                // console.log(infoPlaces)
-                // setLikePlaces()
                 const updateLikes = []
                 for (let i = 0; i < id_places.length; i++) {
-                    if (data.places.some(place => place._id === id_places[i])) {
-                        const infoPlace = data.places.find(placeLike => placeLike._id === id_places[i])
-                        // console.log(infoPlace)
+                    if (data.places.some(place => place.id === id_places[i])) {
+                        // console.log(place.id)
+                        const infoPlace = data.places.find(placeLike => placeLike.id === id_places[i])
+                        console.log(infoPlace)
                         updateLikes.push(infoPlace)
-                        // setLikePlaces([...likePlaces, infoPlace])
                     } else {
                         console.log(false)
                     }
                 }
-                // console.log(updateLikes)
-                setLikePlaces([...updateLikes])
+
+                for (let i = 0; i < updateLikes.length; i++) {
+                    dispatch(addRestoToStore(updateLikes[i]))
+
+                }
+                console.log(updateLikes)
+                // setLikePlaces([...updateLikes])
             })
 
     }, [id_places.length])
@@ -108,13 +115,13 @@ export default function LikeScreen({ navigation }) {
 
 
                     <Image
-                        source={{ uri: data.photo_reference }}
+                        source={{ uri: data.photo }}
                         style={styles.restaurantImage}
                     />
                     <View style={styles.restaurantInfo}>
                         <View style={styles.restaurantHeader}>
                             <Text style={styles.restaurantTitle}>{data.name}</Text>
-                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data._id)}>
+                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data.id)}>
 
                                 <Entypo
                                     name="cross"
