@@ -61,6 +61,7 @@ export default function HomeScreen({ navigation }) {
                 const restaurantData = await response.json()
 
 
+
                 const formattedRestaurants = restaurantData.map((place, index) => ({
                     _id: place._id,
                     place_id: place.place_id,
@@ -70,6 +71,7 @@ export default function HomeScreen({ navigation }) {
                     address: place.location,
                     description: "Ici, bientôt une description",
                     rating: place.rating,
+                    reviews: place.reviews,
                     image: place.photo,
                     phoneNumber: place.phoneNumber,
                     openingHours: place.openingHours
@@ -213,8 +215,7 @@ export default function HomeScreen({ navigation }) {
         fetch(`${backendAdress}/findRestaurantsByCategory?category=${type}`)
             .then(response => response.json())
             .then(data => {
-                console.log(data)
-    
+                  
                 if (data.message === `Pas de best dans cette Categorie !: ${type}`) {
                     setIsFilter(false)
                 } else {
@@ -238,6 +239,7 @@ export default function HomeScreen({ navigation }) {
                         place_id: item.place_id,
                         description: item.description,
                         rating: item.rating,
+                        reviews: item.reviews,
                         image: item.image,
                         phoneNumber: item.phoneNumber,
                         location: item.location,
@@ -283,7 +285,6 @@ export default function HomeScreen({ navigation }) {
 // Si filtre actif, renvoie les 5 meilleurs resto de la catégory choisie 
     if (isFilter) {
         renderRestaurant = dataFilter.map((infos) => {
-                            console.log(infos.id)
                             return (
                                 <TouchableOpacity
                                     onPress={() =>

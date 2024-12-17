@@ -548,7 +548,7 @@ export default function RestoScreen({ route }) {
               />
               <TouchableOpacity
                 style={styles.favoriteIcon}
-                onPress={() => {handleFavorite()}
+                onPress={() => {isConnected ? handleFavorite() : dispatch(toggleModal())}
                     // {isConnected ? setIsFavorite(!isFavorite): dispatch(toggleModal())}
                 }
                 >
