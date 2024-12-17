@@ -127,14 +127,11 @@ useEffect(() => {
         })
             .then(response => response.json())
             .then(data => {
-                console.log(data)
                 if (data.result) {
-                    console.log(data.result)
                     // setIsFavorite([...isFavorite, item._id])
                     dispatch(addFavoritesToStore(item.place_id))
                     // console.log(item)
                 } else {
-                    console.log(data.result)
                     // setIsFavorite(a => a.filter(e => e !== item._id))
                     dispatch(removeFavoritesToStore(item.place_id))
                 }

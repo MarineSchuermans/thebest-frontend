@@ -27,7 +27,6 @@ import * as Location from "expo-location";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { backendAdress } from "../config";
 import { addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
-
 import { toggleModal } from "../reducers/user"; //ismael rajout
 
 // import { ApifyClient } from 'apify-client';
@@ -134,8 +133,7 @@ export default function RestoScreen({ route }) {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
   const isConnected = user?.token;
-
-  console.log(place_id)
+  
 
   const fetchParkings = async () => {
     try {
@@ -146,6 +144,7 @@ export default function RestoScreen({ route }) {
       console.error("Erreur lors de la récupération des parkings:", error);
     }
   };
+
   useEffect(() => {
     fetchUserLocation();
     fetchNearbyRestaurants();
@@ -333,8 +332,6 @@ export default function RestoScreen({ route }) {
     }
   };
 
-console.log(isFavorite)
-
   const handleFavorite = (item) => {
     if (!isConnected) {
         return navigation.navigate('User')
@@ -355,12 +352,10 @@ console.log(isFavorite)
     })
         .then(response => response.json())
         .then(data => {
-            console.log(data)
             if (data.result) {
                 console.log(data.result)
                 dispatch(addFavoritesToStore(infos.obj_id))
             } else {
-                console.log(data.result)
                 dispatch(removeFavoritesToStore(infos.obj_id))
             }
         })
@@ -534,8 +529,11 @@ console.log(isFavorite)
         longitude: parseFloat(address.coordinates[0]),
       },
     };
-
-    navigation.navigate("Map", { restaurant: restaurantDetails });
+  
+    navigation.navigate("Map", { 
+      restaurant: restaurantDetails,
+      centerOnRestaurant: true 
+    });
   };
 
   return (

@@ -19,6 +19,7 @@ export default function MapScreen({ route, navigation }) {
     const [parkings, setParkings] = useState([]);
     const mapRef = useRef(null);
     const [restaurants, setRestaurants] = useState([]);
+    const [isMapReady, setIsMapReady] = useState(false);
 
     let isConnected = false
     if (user.token?.length > 0) {
@@ -81,11 +82,8 @@ export default function MapScreen({ route, navigation }) {
 
     //Markers des favoris et restos HENRI NE PAS EFFECER STP !!!!!!
     const favoritesOrNotMarkers = restaurants.map((data, i) => {
-        console.log(data.place_id)
         const isItFavorite = resto.some(place => place.id === data.place_id)
         const dataFavorite = resto.find(placeInfo => placeInfo.id === data.place_id)
-
-        // console.log(dataFavorite)
 
         if (!isConnected || !isItFavorite) {
             return (
@@ -163,8 +161,36 @@ export default function MapScreen({ route, navigation }) {
         })();
     }, []);
 
+    // Nouvelle fonction pour centrer la carte sur un restaurant
+    const centerMapOnRestaurant = (restaurant) => {
+        setTimeout(() => {
+            if (mapRef.current && restaurant) {
+                let latitude, longitude;
+                
+                if (restaurant.location && restaurant.location.coordinates) {
+                    // Format pour les restaurants de la liste initiale
+                    [longitude, latitude] = restaurant.location.coordinates;
+                } else if (restaurant.location && restaurant.location.latitude && restaurant.location.longitude) {
+                    // Format pour les restaurants sélectionnés depuis RestoScreen
+                    ({ latitude, longitude } = restaurant.location);
+                } else {
+                    return;
+                }
+    
+                const region = {
+                    latitude,
+                    longitude,
+                    latitudeDelta: 0.005,
+                    longitudeDelta: 0.005,
+                };
+                mapRef.current.animateToRegion(region, 1000);
+            } 
+        }, 500);
+    };
+    
     const handleMarkerPress = (restaurant) => {
         setSelectedRestaurant(restaurant);
+        centerMapOnRestaurant(restaurant);
     };
 
     const handleTextePress = (restaurant) => {
@@ -181,10 +207,21 @@ export default function MapScreen({ route, navigation }) {
 
     useEffect(() => {
         if (route.params?.restaurant) {
-            setSelectedRestaurant(route.params.restaurant);
+          const restaurant = route.params.restaurant;
+          setSelectedRestaurant(restaurant);
+        
+          if (route.params.centerOnRestaurant) {
+            centerMapOnRestaurant(restaurant);
+          }
         }
-    }, [route.params?.restaurant]);
+      }, [route.params?.restaurant]);
 
+      useEffect(() => {
+        if (isMapReady && selectedRestaurant) {
+            centerMapOnRestaurant(selectedRestaurant);
+        }
+    }, [isMapReady, selectedRestaurant]);
+      
     return (
         <View style={styles.container}>
             {mapRegion && (
@@ -193,7 +230,7 @@ export default function MapScreen({ route, navigation }) {
                     style={styles.map}
                     region={mapRegion}
                     showsUserLocation={true}
-
+                    onMapReady={() => setIsMapReady(true)}
                 >
                     {userLocation && (
                         <Marker
