@@ -8,6 +8,7 @@
     "backgroundColor": "#C44949",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "my-app",
     "splash": {
       "image": "./assets/LogoTheBest.jpg",
       "resizeMode": "cover",
@@ -23,7 +24,12 @@
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "config": {
+        "googleSignIn": {
+          "expoClientId": "619790277370-st8fno1oaglfom2d8ajvjmcfpmg07rk9.apps.googleusercontent.com"
+        }
+      }
     },
     "plugins": [
       [
@@ -36,4 +42,4 @@
       ]
     ]
   }
-}
+ }  
