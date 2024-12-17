@@ -235,6 +235,7 @@ useEffect(() => {
       onPress={() =>
         navigation.navigate("Resto", {
           title: item.title,
+          place_id: item.place_id,
           description: item.description,
           rating: item.rating,
           image: item.image,

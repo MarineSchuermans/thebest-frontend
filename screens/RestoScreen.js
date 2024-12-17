@@ -101,6 +101,7 @@ const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
 export default function RestoScreen({ route }) {
   const {
     title,
+    place_id,
     description,
     rating,
     image,
@@ -133,6 +134,8 @@ export default function RestoScreen({ route }) {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
   const isConnected = user?.token;
+
+  console.log(place_id)
 
   const fetchParkings = async () => {
     try {
@@ -200,6 +203,7 @@ export default function RestoScreen({ route }) {
       const response = await fetch(`${backendAdress}/findNearbyRestaurants`);
       const data = await response.json();
       setNearbyRestaurants(data);
+      console.log(data)
     } catch (error) {
       console.error("Error fetching nearby restaurants:", error);
     }
@@ -339,8 +343,10 @@ console.log(isFavorite)
 
     const infos = {
         token: user.token,
-        obj_id: nearbyRestaurants[0].place_id
+        obj_id: place_id
     }
+
+    
 
     fetch('https://the-best-backend.vercel.app/users/favorites', {
         method: 'PUT',
@@ -551,7 +557,7 @@ console.log(isFavorite)
                 <Feather
                   name="heart"
                   size={24}
-                  color={isFavorite.some(data => nearbyRestaurants[0].place_id === data) ? "#FF0000" : "#FFFFFF"}
+                  color={isFavorite.some(data => place_id === data) ? "#FF0000" : "#FFFFFF"}
                 />
               </TouchableOpacity>
               <View style={styles.imageOverlay}>
