@@ -10,17 +10,11 @@ import {
   Image,
   Modal as RnModal,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
-  TouchableWithoutFeedback,
-  Keyboard,
 } from "react-native";
 import React, { useState } from "react";
 import { backendAdress } from "../config";
-//import { useState } from "react";
 import GoogleSingnin from "./Google-Singn-in";
-//import styles from "../styles/Home.module.css";
 
 export default function Modal() {
   const navigation = useNavigation();
@@ -30,7 +24,7 @@ export default function Modal() {
   const [isSignUp, setIsSignUp] = useState(false); // Gère l'état entre Sign-in et Sign-up
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState(""); // Utilisé uniquement pour Sign-up
+  const [email, setEmail] = useState(""); 
 
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
   const validateUsername = (username) => username.length >= 3;
@@ -129,7 +123,6 @@ export default function Modal() {
           setUsername("");
           setPassword("");
           navigation.navigate("Home");
-          // setIsModalVisible(false);
         } else {
           Alert.alert("Error", data.error || "Login failed.");
         }
@@ -138,29 +131,7 @@ export default function Modal() {
         Alert.alert("Error", "An error occurred. Please try again later.");
       });
   };
-  // Google Sign-In setup
-
-  // GoogleSignin.configure({
-  //   webClientId: clientId,
-  //   offlineAccess: true, // Utile si vous souhaitez un rafraîchissement de token
-  // });
-
-  // const handleGoogleSignIn = async () => {
-  //   try {
-  //     await GoogleSignin.hasPlayServices(); // Vérifie si les services Google Play sont disponibles sur l'appareil
-  //     const userInfo = await GoogleSignin.signIn(); // Lance la fenêtre de connexion Google et récupère les informations de l'utilisateur
-  //     const { idToken } = userInfo; // Récupère le "idToken" de la réponse de Google, qui contient les informations d'authentificatio
-  //     const decoded = jwtDecode(idToken); // Décode le "idToken" pour extraire les informations utilisateur sous forme de données lisibles
-  //     console.log("Decoded Google token:", decoded); // Affiche dans la console les informations extraites du "idToken" (utile pour le débogage)
-  //     dispatch(login({ username: decoded.name, token: idToken })); // Envoie les informations de l'utilisateur au store Redux pour mettre à jour l'état de l'utilisateur
-  //     _toggleModal(); // Ferme le modal actuel en appelant la fonction _toggleModal
-  //     //navigation.navigate("Home");// Navigue vers la page d'accueil de l'application une fois l'utilisateur connecté
-  //   } catch (error) {
-  //     console.log(error);
-  //     Alert.alert("Erreur", "Google Sign-In a échoué.");
-  //   }
-  // };
-
+  
   const _toggleModal = () => {
     dispatch(toggleModal());
     setIsSignUp(false); // Réinitialiser sur Sign-in à chaque ouverture
@@ -273,7 +244,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#DDD", // Couleur gris clair
     marginBottom: 10, // Moins d'espace entre les inputs
     width: "100%",
-    fontSize: 12,
+    fontSize: 15,
     color: "#333", // Texte sombre pour une bonne lisibilité
     paddingHorizontal: 10,
   },
@@ -292,7 +263,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     marginTop: 90,
-    fontSize: 12,
+    fontSize: 15,
     color: "black", // Liens en couleur bouton
     textDecorationLine: "underline",
     textAlign: "center",

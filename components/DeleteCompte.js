@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "black",  
-    fontSize: 16, 
+    fontSize: 15, 
     fontWeight: "bold",
   },
 });

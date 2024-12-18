@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#DDD",
     marginBottom: 10,
     width: "100%",
-    fontSize: 12,
+    fontSize: 15,
     color: "#333",
     paddingHorizontal: 10,
   },
