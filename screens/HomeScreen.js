@@ -199,14 +199,14 @@ useEffect(() => {
             setSearchResults([]);
         }
     };
-    
-    
+
+
     const clearSearch = () => {
         setSearchText('');
         setSearchResults([]);
     };
     
-    
+   
     //Filtrer les types de resto au press sur un des fitres predéfini via la route GET /findRestaurentsByCategory
     const handleFilterByType = (type) => {
         fetch(`${backendAdress}/findRestaurantsByCategory?category=${type}`)
@@ -216,31 +216,14 @@ useEffect(() => {
                 if (data.message === `Pas de best dans cette Categorie !: ${type}`) {
                     setIsFilter(false)
                 } else {
-
-                
+                    
                     setIsFilter(true)
-                    const dataRestaurantsFiltred = data.map((place, index) => ({
-                        place_id: place.place_id,
-                        id: index +1,
-                        title: place.name,
-                        location: place.address,
-                        address: place.location,
-                        description: place.reviews[0].text,
-                        rating: place.rating,
-                        reviews: place.reviews,
-                        image: place.photo,
-                        phoneNumber: place.phoneNumber,
-                        openingHours: place.openingHours
-                    }))
-                   
-                    setDataFilter(dataRestaurantsFiltred)
+                    setDataFilter([...data])
                 }
             }
             )
     }
 
-
-    
     // Affichage des cartes resto en fonction d'un filtre ou non 
     // Si ce n'est pas filtrer, afficher les 5 restos les mieux notés 
     let renderRestaurant = restaurants.map((item) => {
@@ -280,7 +263,7 @@ useEffect(() => {
                     />
                 </View>
 
-                    <Text style={styles.description}>{item.description.slice(0, 50)}...</Text>
+                    <Text style={styles.description}>{item.description}</Text>
 
                     <View style={styles.restaurantFooter}>
                         <Feather name="phone" size={16} />
@@ -298,27 +281,25 @@ useEffect(() => {
     })
 // Si filtre actif, renvoie les 5 meilleurs resto de la catégory choisie 
     if (isFilter) {
-        renderRestaurant = dataFilter.map((item) => {
+        renderRestaurant = dataFilter.map((infos) => {
                             return (
                                 <TouchableOpacity
                                     onPress={() =>
                                         navigation.navigate("Resto", {
-                                            title: item.title,
-                                            place_id: item.place_id,
-                                            description: item.description,
-                                            rating: item.rating,
-                                            reviews: item.reviews,
-                                            image: item.image,
-                                            phoneNumber: item.phoneNumber,
-                                            location: item.location,
-                                            address: item.address,
+                                            title: infos.name,
+                                            place_id: infos.place_id,
+                                            description: 'Description à venir',
+                                            rating: infos.rating,
+                                            image: infos.photo,
+                                            phoneNumber: infos.phoneNumber,
+                                            location: infos.location,
+                                            address: infos.address,
                                         })
                                     }
                                     style={styles.restaurantCard}
-                                    key={item.id} 
                                 >
-                                    {item.image && item.image !== "placeholder_url" ? (
-                                        <Image source={{ uri: item.image }} style={styles.restaurantImage} />
+                                    {infos.photo && infos.photo !== "placeholder_url" ? (
+                                        <Image source={{ uri: infos.photo }} style={styles.restaurantImage} />
                                     ) : (
                                         <View style={styles.placeholderImage}>
                                             <View style={styles.placeholderInner} />
@@ -327,22 +308,22 @@ useEffect(() => {
 
                                     <View style={styles.restaurantInfo}>
                                         <View style={styles.restaurantHeader}>
-                                            <Text style={styles.restaurantTitle}>{item.title}</Text>
+                                            <Text style={styles.restaurantTitle}>{infos.name}</Text>
                                             <LikeIcon
-                                                onClickIcon={() => handleFavorite(item)}
-                                                color={isConnected && isFavorite.some(data => item.place_id == data) ? "#FF0000" : "#9CA3AF"}
+                                                onClickIcon={() => handleFavorite(infos)}
+                                                color={isConnected && isFavorite.some(data => infos.place_id == data) ? "#FF0000" : "#9CA3AF"}
                                             />
                                         </View>
 
-                                        <Text style={styles.description}>{item.description.length > 0 ? item.description.slice(0, 50) : 'Service rapide, plats délicieux, ambiance agréable !'}...</Text>
+                                        <Text style={styles.description}>Description à venir</Text>
 
                                         <View style={styles.restaurantFooter}>
                                             <Feather name="phone" size={16} />
                                             <Feather name="map-pin" size={16} style={styles.footerIcon} />
                                             <View style={styles.rating}>
-                                                <Text>{"★".repeat(Math.floor(item.rating))}</Text>
-                                                <Text>{"☆".repeat(5 - Math.floor(item.rating))}</Text>
-                                                <Text style={styles.ratingText}>({item.rating})</Text>
+                                                <Text>{"★".repeat(Math.floor(infos.rating))}</Text>
+                                                <Text>{"☆".repeat(5 - Math.floor(infos.rating))}</Text>
+                                                <Text style={styles.ratingText}>({infos.rating})</Text>
                                             </View>
                                         </View>
                                     </View>
