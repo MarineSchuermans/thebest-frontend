@@ -202,14 +202,14 @@ export default function HomeScreen({ navigation }) {
             setSearchResults([]);
         }
     };
-
-
+    
+    
     const clearSearch = () => {
         setSearchText('');
         setSearchResults([]);
     };
     
-   
+    
     //Filtrer les types de resto au press sur un des fitres predéfini via la route GET /findRestaurentsByCategory
     const handleFilterByType = (type) => {
         fetch(`${backendAdress}/findRestaurantsByCategory?category=${type}`)
@@ -226,7 +226,7 @@ export default function HomeScreen({ navigation }) {
             }
             )
     }
-
+    
     // Affichage des cartes resto en fonction d'un filtre ou non 
     // Si ce n'est pas filtrer, afficher les 5 restos les mieux notés 
     let renderRestaurant = restaurants.map((item) => {
