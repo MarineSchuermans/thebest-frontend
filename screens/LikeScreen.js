@@ -19,7 +19,9 @@ export default function LikeScreen({ navigation }) {
     // const resto = useSelector((state)=> state.resto.value)
     const id_places = user.favorites
 
-    // console.log(resto)
+    // console.log(id_places)
+
+    // console.log(likePlaces)
 
     let isConnected = false
     if (user.token?.length > 0) {
@@ -27,46 +29,69 @@ export default function LikeScreen({ navigation }) {
     }
 
     // console.log(id_places.length)
-    console.log(isConnected)
+    // console.log(isConnected)
 
     useEffect(() => {
         fetch(`${backendAdress}/places`)
             .then(response => response.json())
             .then(data => {
                 dispatch(initializeRestoToStore())
-
+                // console.log(id_places.length)
+                // console.log(JSON.stringify(data.places.find('') null, 2))
                 const updateLikes = []
                 for (let i = 0; i < id_places.length; i++) {
-                    if (data.places.some(place => place.id === id_places[i])) {
-                        // console.log(place.id)
-                        const infoPlace = data.places.find(placeLike => placeLike.id === id_places[i])
-                        console.log(infoPlace)
-                        updateLikes.push(infoPlace)
-                    } else {
-                        console.log(false)
+                    // console.log(id_places[i] + ' result : \n', JSON.stringify(data.places.find(place => place.id === id_places[i]), null, 2))
+                    const matchingResto = data.places.find(place => place.id === id_places[i])
+
+                    if (matchingResto) {
+                        updateLikes.push(matchingResto)
                     }
+
+
                 }
 
                 for (let i = 0; i < updateLikes.length; i++) {
                     dispatch(addRestoToStore(updateLikes[i]))
 
                 }
-                console.log(updateLikes)
+                // console.log(updateLikes)
                 // setLikePlaces([...updateLikes])
             })
 
     }, [id_places.length])
 
-    //    console.log(likePlaces)
+    const dataRestoFav = likePlaces.map((place, index) => 
+    //     {
+    //     console.log(JSON.stringify(place.reviews[0]?.text, null, 2))
+    // }
+    ({
+        place_id: place.id,
+        id: index + 1,
+        title: place.name,
+        location: place.address,
+        address: place.location,
+        description: place.reviews[0]?.text,
+        rating: place.rating,
+        reviews: place.reviews,
+        image: place.photo,
+        phoneNumber: place.phoneNumber,
+        openingHours: place.openingHours
+    })
+)
+
+
+    // console.log(likePlaces)
+
+    // console.log(dataRestoFav)
 
     const handleRemoveFavorite = (item) => {
 
-        console.log(item)
+        // console.log(item)
         const infos = {
             token: user.token,
             obj_id: item
         }
-        console.log('remove favorite')
+        // console.log('remove favorite')
         fetch('https://the-best-backend.vercel.app/users/favorites', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -97,31 +122,34 @@ export default function LikeScreen({ navigation }) {
     if (likePlaces.length === 0 || !isConnected) {
         favoriteListe = <Text> No favorite</Text>
     } else {
-        favoriteListe = likePlaces.map((data, i) => {
+        favoriteListe = dataRestoFav.map((item, i) => {
             return (
 
                 <TouchableOpacity
                     onPress={() => navigation.navigate('Resto', {
                         key: { i },
-                        title: data.name,
-                        description: data.description,
-                        rating: data.rating,
-                        image: data.photo,
-                        phoneNumber: data.phone,
-                        location: data?.location,
+                        title: item.title,
+                        place_id: item.place_id,
+                        description: item?.description,
+                        rating: item.rating,
+                        reviews: item?.reviews,
+                        image: item.image,
+                        phoneNumber: item.phoneNumber,
+                        location: item?.location,
+                        address: item.address,
                     })}
                     style={styles.restaurantCard}
                 >
 
 
                     <Image
-                        source={{ uri: data.photo }}
+                        source={{ uri: item.image }}
                         style={styles.restaurantImage}
                     />
                     <View style={styles.restaurantInfo}>
                         <View style={styles.restaurantHeader}>
-                            <Text style={styles.restaurantTitle}>{data.name}</Text>
-                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(data.id)}>
+                            <Text style={styles.restaurantTitle}>{item.title}</Text>
+                            <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(item.place_id)}>
 
                                 <Entypo
                                     name="cross"
@@ -129,14 +157,14 @@ export default function LikeScreen({ navigation }) {
                                 />
                             </TouchableOpacity>
                         </View>
-                        <Text style={styles.description}>{data.description}</Text>
+                        <Text style={styles.description}>{item.description?.length > 0 ? item.description.slice(0, 35) : 'Service rapide, plats délicieux, ambiance agréable !'}...</Text>
                         <View style={styles.restaurantFooter}>
                             <Feather name="phone" size={16} />
                             <Feather name="map-pin" size={16} style={styles.footerIcon} />
                             <View style={styles.rating}>
-                                <Text>{'★'.repeat(Math.floor(data.rating))}</Text>
-                                <Text>{'☆'.repeat(5 - Math.floor(data.rating))}</Text>
-                                <Text style={styles.ratingText}>({data.rating})</Text>
+                                <Text>{'★'.repeat(Math.floor(item.rating))}</Text>
+                                <Text>{'☆'.repeat(5 - Math.floor(item.rating))}</Text>
+                                <Text style={styles.ratingText}>({item.rating})</Text>
                             </View>
                         </View>
                     </View>
