@@ -137,6 +137,8 @@ export default function RestoScreen({ route }) {
   const user = useSelector((state) => state.user.value);
   const isConnected = user?.token;
 
+  
+
 
 
   const fetchParkings = async () => {
@@ -412,6 +414,8 @@ console.log(isFavorite)
       }
     }
   };
+
+  console.log(reviews)
 
   const googleReviews = reviews.map((infos, i) => {
     const [isExpanded, setIsExpanted] = useState(false) //Pour afficher l'intégralité d'un avis ou non
