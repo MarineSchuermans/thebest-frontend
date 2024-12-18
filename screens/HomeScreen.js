@@ -64,7 +64,7 @@ export default function HomeScreen({ navigation }) {
                     title: place.name,
                     location: place.address,
                     address: place.location,
-                    description: "Ici, bientôt une description",
+                    description: place.reviews[0].text,
                     rating: place.rating,
                     image: place.photo,
                     phoneNumber: place.phoneNumber,
@@ -190,69 +190,86 @@ useEffect(() => {
                 .filter(suggestion => suggestion.fullAddress !== 'Adresse inconnue')
                 .sort((a, b) => b.accuracy - a.accuracy);
 
-            setSearchResults(sortedSuggestions);
-            console.log("Résultats de recherche:", sortedSuggestions);
-        } catch (error) {
-            console.error("Erreur lors de la recherche d'adresses:", error);
+                setSearchResults(sortedSuggestions);
+                console.log("Résultats de recherche:", sortedSuggestions);
+            } catch (error) {
+                console.error("Erreur lors de la recherche d'adresses:", error);
+            }
+        } else {
+            setSearchResults([]);
         }
-    } else {
-        setSearchResults([]);
-    }
-};
-
-// const fetchRestaurantsForLocation = async (latitude, longitude) => {
-//     try {
-//         const response = await fetch(`${backendAdress}/findNearbyRestaurants?lat=${latitude}&lng=${longitude}`);
-//         const restaurantData = await response.json();
-
-//         const formattedRestaurants = restaurantData.map((place, index) => ({
-//             _id: place._id,
-//             place_id: place.place_id,
-//             id: index + 1,
-//             title: place.name,
-//             location: place.address,
-//             address: place.location,
-//             description: "Ici, bientôt une description",
-//             rating: place.rating,
-//             image: place.photo,
-//             phoneNumber: place.phoneNumber,
-//             openingHours: place.openingHours
-//         }));
-
-//         setRestaurants(formattedRestaurants);
-//     } catch (error) {
-//         console.error("Error fetching restaurants:", error);
-//     }
-// };
+    };
+    
     
     const clearSearch = () => {
         setSearchText('');
         setSearchResults([]);
     };
+    
+    
+    //Filtrer les types de resto au press sur un des fitres predéfini via la route GET /findRestaurentsByCategory
+    const handleFilterByType = (type) => {
+        fetch(`${backendAdress}/findRestaurantsByCategory?category=${type}`)
+            .then(response => response.json())
+            .then(data => {
+                  
+                if (data.message === `Pas de best dans cette Categorie !: ${type}`) {
+                    setIsFilter(false)
+                } else {
 
-  const RenderRestaurantItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() =>
-        navigation.navigate("Resto", {
-          title: item.title,
-          place_id: item.place_id,
-          description: item.description,
-          rating: item.rating,
-          image: item.image,
-          phoneNumber: item.phoneNumber,
-          location: item.location,
-          address: item.address,
-        })
-      }
-      style={styles.restaurantCard}
-    >
-      {item.image && item.image !== "placeholder_url" ? (
-        <Image source={{ uri: item.image }} style={styles.restaurantImage} />
-      ) : (
-        <View style={styles.placeholderImage}>
-          <View style={styles.placeholderInner} />
-        </View>
-      )}
+                
+                    setIsFilter(true)
+                    const dataRestaurantsFiltred = data.map((place, index) => ({
+                        place_id: place.place_id,
+                        id: index +1,
+                        title: place.name,
+                        location: place.address,
+                        address: place.location,
+                        description: place.reviews[0].text,
+                        rating: place.rating,
+                        reviews: place.reviews,
+                        image: place.photo,
+                        phoneNumber: place.phoneNumber,
+                        openingHours: place.openingHours
+                    }))
+                   
+                    setDataFilter(dataRestaurantsFiltred)
+                }
+            }
+            )
+    }
+
+
+    
+    // Affichage des cartes resto en fonction d'un filtre ou non 
+    // Si ce n'est pas filtrer, afficher les 5 restos les mieux notés 
+    let renderRestaurant = restaurants.map((item) => {
+        return (
+
+            <TouchableOpacity
+                onPress={() =>
+                    navigation.navigate("Resto", {
+                        title: item.title,
+                        place_id: item.place_id,
+                        description: item.description,
+                        rating: item.rating,
+                        reviews: item.reviews,
+                        image: item.image,
+                        phoneNumber: item.phoneNumber,
+                        location: item.location,
+                        address: item.address,
+                    })
+                }
+                style={styles.restaurantCard}
+                key={item.id}
+            >
+                {item.image && item.image !== "placeholder_url" ? (
+                    <Image source={{ uri: item.image }} style={styles.restaurantImage} />
+                ) : (
+                    <View style={styles.placeholderImage}>
+                        <View style={styles.placeholderInner} />
+                    </View>
+                )}
 
             <View style={styles.restaurantInfo}>
                 <View style={styles.restaurantHeader}>
@@ -263,22 +280,142 @@ useEffect(() => {
                     />
                 </View>
 
-                <Text style={styles.description}>{item.description}</Text>
+                    <Text style={styles.description}>{item.description.slice(0, 50)}...</Text>
 
-                <View style={styles.restaurantFooter}>
-                    <Feather name="phone" size={16} />
-                    <Feather name="map-pin" size={16} style={styles.footerIcon} />
-                    <View style={styles.rating}>
-                        <Text>{"★".repeat(Math.floor(item.rating))}</Text>
-                        <Text>{"☆".repeat(5 - Math.floor(item.rating))}</Text>
-                        <Text style={styles.ratingText}>({item.rating})</Text>
+                    <View style={styles.restaurantFooter}>
+                        <Feather name="phone" size={16} />
+                        <Feather name="map-pin" size={16} style={styles.footerIcon} />
+                        <View style={styles.rating}>
+                            <Text>{"★".repeat(Math.floor(item.rating))}</Text>
+                            <Text>{"☆".repeat(5 - Math.floor(item.rating))}</Text>
+                            <Text style={styles.ratingText}>({item.rating})</Text>
+                        </View>
                     </View>
                 </View>
-            </View>
-        </TouchableOpacity>
+            </TouchableOpacity>
+        )
 
-    )
+    })
+// Si filtre actif, renvoie les 5 meilleurs resto de la catégory choisie 
+    if (isFilter) {
+        renderRestaurant = dataFilter.map((item) => {
+                            return (
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        navigation.navigate("Resto", {
+                                            title: item.title,
+                                            place_id: item.place_id,
+                                            description: item.description,
+                                            rating: item.rating,
+                                            reviews: item.reviews,
+                                            image: item.image,
+                                            phoneNumber: item.phoneNumber,
+                                            location: item.location,
+                                            address: item.address,
+                                        })
+                                    }
+                                    style={styles.restaurantCard}
+                                    key={item.id} 
+                                >
+                                    {item.image && item.image !== "placeholder_url" ? (
+                                        <Image source={{ uri: item.image }} style={styles.restaurantImage} />
+                                    ) : (
+                                        <View style={styles.placeholderImage}>
+                                            <View style={styles.placeholderInner} />
+                                        </View>
+                                    )}
 
+                                    <View style={styles.restaurantInfo}>
+                                        <View style={styles.restaurantHeader}>
+                                            <Text style={styles.restaurantTitle}>{item.title}</Text>
+                                            <LikeIcon
+                                                onClickIcon={() => handleFavorite(item)}
+                                                color={isConnected && isFavorite.some(data => item.place_id == data) ? "#FF0000" : "#9CA3AF"}
+                                            />
+                                        </View>
+
+                                        <Text style={styles.description}>{item.description.length > 0 ? item.description.slice(0, 50) : 'Service rapide, plats délicieux, ambiance agréable !'}...</Text>
+
+                                        <View style={styles.restaurantFooter}>
+                                            <Feather name="phone" size={16} />
+                                            <Feather name="map-pin" size={16} style={styles.footerIcon} />
+                                            <View style={styles.rating}>
+                                                <Text>{"★".repeat(Math.floor(item.rating))}</Text>
+                                                <Text>{"☆".repeat(5 - Math.floor(item.rating))}</Text>
+                                                <Text style={styles.ratingText}>({item.rating})</Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+
+
+                            )
+                        })
+    } 
+
+
+    // Creation des Cartes resto 
+    // const RenderRestaurantItem = ({ item }) => ({
+    //     if(isFilter) {
+
+    //         restaurants.map((item) => {
+    //             return (
+
+    //                 <TouchableOpacity
+    //                     onPress={() =>
+    //                         navigation.navigate("Resto", {
+    //                             title: item.title,
+    //                             place_id: item.place_id,
+    //                             description: item.description,
+    //                             rating: item.rating,
+    //                             image: item.image,
+    //                             phoneNumber: item.phoneNumber,
+    //                             location: item.location,
+    //                             address: item.address,
+    //                         })
+    //                     }
+    //                     style={styles.restaurantCard}
+    //                     key={item.id}
+    //                 >
+    //                     {item.image && item.image !== "placeholder_url" ? (
+    //                         <Image source={{ uri: item.image }} style={styles.restaurantImage} />
+    //                     ) : (
+    //                         <View style={styles.placeholderImage}>
+    //                             <View style={styles.placeholderInner} />
+    //                         </View>
+    //                     )}
+
+    //                     <View style={styles.restaurantInfo}>
+    //                         <View style={styles.restaurantHeader}>
+    //                             <Text style={styles.restaurantTitle}>{item.title}</Text>
+    //                             <LikeIcon
+    //                                 onClickIcon={() => handleFavorite(item)}
+    //                                 color={isConnected && isFavorite.some(data => item.place_id == data) ? "#FF0000" : "#9CA3AF"}
+    //                             />
+    //                         </View>
+
+    //                         <Text style={styles.description}>{item.description}</Text>
+
+    //                         <View style={styles.restaurantFooter}>
+    //                             <Feather name="phone" size={16} />
+    //                             <Feather name="map-pin" size={16} style={styles.footerIcon} />
+    //                             <View style={styles.rating}>
+    //                                 <Text>{"★".repeat(Math.floor(item.rating))}</Text>
+    //                                 <Text>{"☆".repeat(5 - Math.floor(item.rating))}</Text>
+    //                                 <Text style={styles.ratingText}>({item.rating})</Text>
+    //                             </View>
+    //                         </View>
+    //                     </View>
+    //                 </TouchableOpacity>
+    //             )
+
+    //         })
+    //     }
+    // }
+    // )
+
+
+    
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>

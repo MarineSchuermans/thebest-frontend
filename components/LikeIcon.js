@@ -8,7 +8,6 @@ export default function LikeIcon({ onClickIcon, color }) {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
   const isConnected = user?.token;
-  //const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleLikePress = () => {
     if (!isConnected) {
@@ -20,7 +19,6 @@ export default function LikeIcon({ onClickIcon, color }) {
       // Action "like" si connecté
       console.log("Action 'Like' exécutée !");
       onClickIcon();
-      // Ajoutez ici votre code pour liker un post ou effectuer une autre action
     }
   };
 

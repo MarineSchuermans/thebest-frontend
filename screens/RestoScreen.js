@@ -104,6 +104,7 @@ export default function RestoScreen({ route }) {
     place_id,
     description,
     rating,
+    reviews,
     image,
     phoneNumber,
     location,
@@ -113,7 +114,8 @@ export default function RestoScreen({ route }) {
   const [hasPermission, setHasPermission] = useState(false);
   const [isCameraVisible, setIsCameraVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [reviews, setReviews] = useState([]);
+  const [reviewsList, setReviewsList] = useState([]);
+  // const [isExpanded, setIsExpanted] = useState(false) //Pour afficher l'intégralité d'un avis ou non
   const [isFavorite, setIsFavorite] = useState([]);
   const cameraRef = useRef(null);
   const isFocused = useIsFocused();
@@ -135,7 +137,7 @@ export default function RestoScreen({ route }) {
   const user = useSelector((state) => state.user.value);
   const isConnected = user?.token;
 
-  console.log(place_id)
+
 
   const fetchParkings = async () => {
     try {
@@ -163,15 +165,15 @@ export default function RestoScreen({ route }) {
     const nearestParkingLocation = findNearestParking();
     const parkingDistanceResult = nearestParkingLocation
       ? await fetchRouteDistance(
-          {
-            latitude: address.coordinates[1],
-            longitude: address.coordinates[0],
-          }, // Restaurant location
-          {
-            latitude: nearestParkingLocation.latitude,
-            longitude: nearestParkingLocation.longitude,
-          }
-        )
+        {
+          latitude: address.coordinates[1],
+          longitude: address.coordinates[0],
+        }, // Restaurant location
+        {
+          latitude: nearestParkingLocation.latitude,
+          longitude: nearestParkingLocation.longitude,
+        }
+      )
       : null;
 
     setDistances({
@@ -224,7 +226,7 @@ export default function RestoScreen({ route }) {
 
   useEffect(() => {
     setIsFavorite([...user.favorites])
-}, [user.favorites.length])
+  }, [user.favorites.length])
 
   useEffect(() => {
     if (userLocation && address) {
@@ -337,40 +339,38 @@ console.log(isFavorite)
 
   const handleFavorite = (item) => {
     if (!isConnected) {
-        return navigation.navigate('User')
+      return navigation.navigate('User')
     }
 
 
     const infos = {
-        token: user.token,
-        obj_id: place_id
+      token: user.token,
+      obj_id: place_id
     }
 
-    
+
 
     fetch('https://the-best-backend.vercel.app/users/favorites', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(infos)
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(infos)
     })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            if (data.result) {
-                console.log(data.result)
-                dispatch(addFavoritesToStore(infos.obj_id))
-            } else {
-                console.log(data.result)
-                dispatch(removeFavoritesToStore(infos.obj_id))
-            }
-        })
-        .catch(error => {
-            console.error('Erreur de la requête:', error)
-        })
+      .then(response => response.json())
+      .then(data => {
+        if (data.result) {
+          console.log(data.result)
+          dispatch(addFavoritesToStore(infos.obj_id))
+        } else {
+          dispatch(removeFavoritesToStore(infos.obj_id))
+        }
+      })
+      .catch(error => {
+        console.error('Erreur de la requête:', error)
+      })
   }
 
   const handleAddReview = (review) => {
-    
+
     const newReview = {
       ...review,
       date: new Date().toISOString(),
@@ -379,10 +379,10 @@ console.log(isFavorite)
 
     if (userReview) {
       // Modifier l'avis existant
-      setReviews(reviews.map((r) => (r.isUserReview ? newReview : r)));
+      setReviewsList(reviewsList.map((r) => (r.isUserReview ? newReview : r)));
     } else {
       // Ajouter un nouvel avis
-      setReviews([...reviews, newReview]);
+      setReviewsList([...reviewsList, newReview]);
     }
     setUserReview(newReview);
     setPhotoUri(null);
@@ -390,28 +390,83 @@ console.log(isFavorite)
 
   const handleEditReview = () => {
     if (!isConnected) {
-        // Ouvrir le modal si non connecté rajouter ismael
-        dispatch(toggleModal(true));
-        return;
-      } else {
-    if (userReview) {
-      setPhotoUri(userReview.photo);
-      setModalVisible(true);
+      // Ouvrir le modal si non connecté rajouter ismael
+      dispatch(toggleModal(true));
+      return;
+    } else {
+      if (userReview) {
+        setPhotoUri(userReview.photo);
+        setModalVisible(true);
+      }
     }
-}
   };
   const handleDeleteReview = () => {
     if (!isConnected) {
-        // Ouvrir le modal si non connecté rajouter ismael
-        dispatch(toggleModal(true));
-        return;
-      } else {
-    if (userReview) {
-      setReviews(reviews.filter((r) => r.isUserReview === false));
-      setUserReview(null);
+      // Ouvrir le modal si non connecté rajouter ismael
+      dispatch(toggleModal(true));
+      return;
+    } else {
+      if (userReview) {
+        setReviewsList(reviewsList.filter((r) => r.isUserReview === false));
+        setUserReview(null);
+      }
     }
-}
   };
+
+  const googleReviews = reviews.map((infos, i) => {
+    const [isExpanded, setIsExpanted] = useState(false) //Pour afficher l'intégralité d'un avis ou non
+
+
+    const toggleExpand = () => setIsExpanted(!isExpanded)
+    // console.log(infos.rating)
+    return (
+      <View style={styles.reviewItem} key={i}>
+        <View style={styles.reviewRating}>
+          {[...Array(5)].map((_, index) => (
+            <FontAwesome
+              // key={i}
+              name={i < infos.rating ? "star" : "star-o"}
+              size={16}
+              color="#FFD700"
+            />
+          ))}
+        </View>
+        <Text style={styles.reviewName}>{infos.author}</Text>
+        <ScrollView> 
+        <Text style={styles.reviewComment} maxLength={50}>{isExpanded ? infos.text : infos.text.length > 50 ? `${infos.text.substring(0, 50)}...`: infos.text}
+        // {infos.text.length > 50 ? `${infos.text.substring(0, 50)}...` : infos.text}
+        </Text>
+        {infos.text.length > 50 && (
+          <TouchableOpacity onPress={toggleExpand}>
+            <Text style={styles.showMoreText}>
+              {isExpanded ? 'Moins' : 'Plus'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        </ScrollView>
+        <Text style={styles.reviewDate}>
+          {new Date(infos.date).toLocaleDateString()}
+        </Text>
+        {/* {item.isUserReview && (
+      <View>
+        <TouchableOpacity onPress={handleEditReview}>
+          <Text style={styles.editReview}>Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleDeleteReview}>
+          <Text style={styles.deleteReview}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    )} */}
+      </View>
+    )
+
+
+
+  })
+
+
 
   const uploadPhoto = async (uri) => {
     // Implémentation de l'upload de la photo
@@ -479,6 +534,8 @@ console.log(isFavorite)
     return nearestParking;
   };
 
+
+
   const calculateHaversineDistance = (point1, point2) => {
     const R = 6371; // Earth's radius in kilometers
     const dLat = toRadians(point2.latitude - point1.latitude);
@@ -486,9 +543,9 @@ console.log(isFavorite)
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(toRadians(point1.latitude)) *
-        Math.cos(toRadians(point2.latitude)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos(toRadians(point2.latitude)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
@@ -535,7 +592,10 @@ console.log(isFavorite)
       },
     };
 
-    navigation.navigate("Map", { restaurant: restaurantDetails });
+    navigation.navigate("Map", {
+      restaurant: restaurantDetails,
+      centerOnRestaurant: true
+    });
   };
 
   return (
@@ -550,10 +610,10 @@ console.log(isFavorite)
               />
               <TouchableOpacity
                 style={styles.favoriteIcon}
-                onPress={() => {handleFavorite()}
-                    // {isConnected ? setIsFavorite(!isFavorite): dispatch(toggleModal())}
+                onPress={() => { handleFavorite() }
+                  // {isConnected ? setIsFavorite(!isFavorite): dispatch(toggleModal())}
                 }
-                >
+              >
                 <Feather
                   name="heart"
                   size={24}
@@ -570,7 +630,7 @@ console.log(isFavorite)
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => {isConnected ? setIsCameraVisible(true) : dispatch(toggleModal())}}
+                  onPress={() => { isConnected ? setIsCameraVisible(true) : dispatch(toggleModal()) }}
                 >
                   <Feather name="camera" size={20} color="#FFFFFF" />
                   <Text style={styles.actionButtonText}>Photo</Text>
@@ -584,7 +644,7 @@ console.log(isFavorite)
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => {isConnected ? setModalVisible(true) : dispatch(toggleModal())}}
+                  onPress={() => { isConnected ? setModalVisible(true) : dispatch(toggleModal()) }}
                 >
                   <Feather name="edit" size={20} color="#FFFFFF" />
                   <Text style={styles.actionButtonText}>Avis</Text>
@@ -594,7 +654,10 @@ console.log(isFavorite)
                   <Text style={styles.actionButtonText}>GPS</Text>
                 </TouchableOpacity>
               </View>
-              <Text style={styles.description}>{description}</Text>
+              <ScrollView horizontal={true}>
+                {googleReviews}
+              {/* <Text style={styles.description}>{description}</Text> */}
+              </ScrollView>
               <View style={styles.mapPreview}>
                 <MapView
                   style={styles.map}
@@ -684,7 +747,7 @@ console.log(isFavorite)
             </View>
           </View>
         }
-        data={reviews}
+        data={reviewsList}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.reviewItem}>
@@ -701,6 +764,7 @@ console.log(isFavorite)
                 />
               ))}
             </View>
+            <Text style={styles.reviewComment}>{user.username}</Text>
             <Text style={styles.reviewComment}>{item.comment}</Text>
             <Text style={styles.reviewDate}>
               {new Date(item.date).toLocaleDateString()}
@@ -718,7 +782,15 @@ console.log(isFavorite)
             )}
           </View>
         )}
-      />
+       
+        
+        />
+
+      
+        {/* <ScrollView>
+        {googleReviews}
+        </ScrollView> */}
+      
       <ReviewModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -853,6 +925,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   reviewItem: {
+    width: 350,
     backgroundColor: "#FFFFFF",
     padding: 15,
     marginBottom: 10,
@@ -874,9 +947,18 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     color: "#FFAA00",
   },
+  reviewName: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    color: "#666666",
+  },
   reviewComment: {
     fontSize: 14,
     color: "#666666",
+  },
+  showMoreText: {
+    fontWeight: 'bold',
+
   },
   modalContainer: {
     flex: 1,

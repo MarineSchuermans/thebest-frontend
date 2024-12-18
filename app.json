@@ -8,14 +8,14 @@
     "backgroundColor": "#C44949",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme": "my-app",
     "splash": {
       "image": "./assets/LogoTheBest.jpg",
       "resizeMode": "cover",
       "backgroundColor": "#C44949"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.iismael.myapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,10 +27,12 @@
       "favicon": "./assets/favicon.png",
       "config": {
         "googleSignIn": {
-          "expoClientId": "619790277370-st8fno1oaglfom2d8ajvjmcfpmg07rk9.apps.googleusercontent.com"
+          "expoClientId": " 619790277370-st8fno1oaglfom2d8ajvjmcfpmg07rk9.apps.googleusercontent.com"
         }
       }
     },
+    "scheme": "my-app",
+    "platforms": ["ios", "android", "web"],
     "plugins": [
       [
         "expo-camera",
@@ -42,4 +44,5 @@
       ]
     ]
   }
- }  
+}
+
