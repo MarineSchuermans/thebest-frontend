@@ -30,7 +30,7 @@ export default function Login() {
       {user.token ? (
         <View style={styles.logoutSection}>
           {/* Texte de bienvenue plus personnalisé */}
-          <Text style={styles.welcomeText}>Bienvenu, Bester! Prêt à decouvrir les mielleure resto {user.username}! </Text>
+          <Text style={styles.welcomeText}>Bienvenu, Bester {user.username}! </Text>
         
 
           {/* Bouton de déconnexion stylisé */}
@@ -69,18 +69,18 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoutButton: {
-    backgroundColor: "#FF6347", // Couleur tomate pour un effet dynamique
+    backgroundColor: "#FF6347", 
     padding: 15,
-    borderRadius: 30, // Rounded corners for a more modern look
-    width: "80%", // Adjust width for a balanced button
+    borderRadius: 30, 
+    width: "80%", 
     alignItems: "center",
     paddingVertical: 15,
     paddingHorizontal: 51,
-    marginTop: 1, // Ombre pour un effet de profondeur
+    marginTop: 1, 
   },
   logoutButtonText: {
     color: "black",
-    fontSize: 19,
+    fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
   },

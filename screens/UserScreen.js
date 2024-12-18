@@ -14,8 +14,8 @@ export default function UserScreen({}) {
       <Login />
 
       {/* Afficher DeleteCompte uniquement si l'utilisateur est connecté */}
-      {user.token ? <DeleteCompte /> : null}
       {user.token ? <ModifierUser currentEmail={user.email} currentUsername={user.username}/> :  null}
+      {user.token ? <DeleteCompte /> : null}
       <StatusBar style="auto" />
     </View>
   );
