@@ -56,7 +56,6 @@ export default function HomeScreen({ navigation }) {
                 const response = await fetch(backendAdress + "/findNearbyRestaurants"); //ON N UTILISE PAS VERCEL A CAUSE DU TIMEOUT
                 const restaurantData = await response.json()
 
-
                 const formattedRestaurants = restaurantData.map((place, index) => ({
                     _id: place._id,
                     place_id: place.place_id,
@@ -64,7 +63,7 @@ export default function HomeScreen({ navigation }) {
                     title: place.name,
                     location: place.address,
                     address: place.location,
-                    description: place.reviews[0].text,
+                    description: place.reviews[0]?.text,
                     rating: place.rating,
                     image: place.photo,
                     phoneNumber: place.phoneNumber,
@@ -205,6 +204,28 @@ useEffect(() => {
         setSearchText('');
         setSearchResults([]);
     };
+
+    // const randomizeReviews = () => {
+    //     const randomReviewsList = [
+    //         "Service rapide et agréable.",
+    //         "Les plats étaient délicieux !",
+    //         "Une ambiance chaleureuse.",
+    //         "Rapport qualité-prix excellent.",
+    //         "Accueil parfait, merci !",
+    //         "Décevant, mais le service était correct.",
+    //         "Les desserts sont incroyables !",
+    //         "Très bonne expérience, à refaire.",
+    //         "Menu varié et bien préparé.",
+    //         "Un peu bruyant mais sympa."
+    //     ]
+
+    //     const [randomReview, setRandomReview] = useState("");
+
+    //     useEffect(() => {
+    //         const randomize = Math.floor(Math.random()*randomReviewsList.length);
+    //         setRandomRevie(randomReviewsList[randomize])
+    //     }, [])
+    // }
     
    
     //Filtrer les types de resto au press sur un des fitres predéfini via la route GET /findRestaurentsByCategory
@@ -263,7 +284,7 @@ useEffect(() => {
                     />
                 </View>
 
-                    <Text style={styles.description}>{item.description}</Text>
+                    <Text style={styles.description}>{item.description?.length > 0 ? item.description.slice(0, 35) : 'Service rapide, plats délicieux, ambiance agréable !'}...</Text>
 
                     <View style={styles.restaurantFooter}>
                         <Feather name="phone" size={16} />
@@ -315,7 +336,7 @@ useEffect(() => {
                                             />
                                         </View>
 
-                                        <Text style={styles.description}>Description à venir</Text>
+                                        <Text style={styles.description}>{item.description.length > 0 ? item.description.slice(0, 35) : 'Service rapide, plats délicieux, ambiance agréable !'}...</Text>
 
                                         <View style={styles.restaurantFooter}>
                                             <Feather name="phone" size={16} />
