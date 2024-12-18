@@ -35,16 +35,33 @@ const DISTANCE_MATRIX_API_KEY =
   "GyMlY5B5kAqL6CyTs3CexOtRqnMfBnLc3TapNQ53lvYsN8ccW9xPMp4WBWjeSw8D";
 const PARKING_DATA_URL =
   "https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json";
-const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
+const ReviewModal = ({ visible, onClose, onSubmit, photo, place_id }) => {
+  const user = useSelector((state) => state.user.value);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
   const handleSubmit = () => {
+    //Fetch de la route post/reviews pour poster les avis en BDD 
+    fetch(`${backendAdress}/reviews`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({token: user.token, place_id: place_id, rating: rating, text: comment, photo: photo})
+    }) 
+      .then(response => response.json())
+      .then((data) => {
+        if (data.result){
+          console.log(data)
+        } else {
+          console.log(data)
+        }
+      })
+
     onSubmit({ rating, comment, photo });
     setRating(0);
     setComment("");
     onClose();
   };
+
 
   return (
     <Modal
@@ -337,7 +354,7 @@ export default function RestoScreen({ route }) {
     }
   };
 
-console.log(isFavorite)
+// console.log(isFavorite)
 
   const handleFavorite = (item) => {
     if (!isConnected) {
@@ -372,6 +389,18 @@ console.log(isFavorite)
   }
 
   const handleAddReview = (review) => {
+
+    // fetch(`${backendAdress}/reviews`, {
+    //   method: 'POST',
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({token: user.token, })
+    // }) 
+    //   .then(response => response.json())
+    //   .then((data) => {
+    //     if (data.result){
+    //       console.log(data)
+    //     }
+    //   })
 
     const newReview = {
       ...review,
@@ -415,7 +444,7 @@ console.log(isFavorite)
     }
   };
 
-  console.log(reviews)
+  // console.log(reviews)
 
   const googleReviews = reviews.map((infos, i) => {
     const [isExpanded, setIsExpanted] = useState(false) //Pour afficher l'intégralité d'un avis ou non
@@ -800,6 +829,7 @@ console.log(isFavorite)
         onClose={() => setModalVisible(false)}
         onSubmit={handleAddReview}
         photo={photoUri}
+        place_id={place_id}
       />
       {isCameraVisible && (
         <View style={styles.cameraContainer}>
