@@ -26,16 +26,35 @@ export default function MapScreen({ route, navigation }) {
         isConnected = true
     }
 
-    const fetchRestaurants = async () => {
-        try {
-            const response = await fetch(backendAdress + "/findNearbyRestaurants");
-            const data = await response.json();
-            setRestaurants(data);
-        } catch (error) {
-            console.error('Error fetching restaurants:', error);
-        }
-    };
 
+    useEffect(() => {
+        const fetchRestaurants = async () => {
+            try {
+                const response = await fetch(backendAdress + "/findNearbyRestaurants");
+                const data = await response.json();
+
+                // console.log(data)
+
+                const formattedRestaurants = data.map((place, i) => ({
+                    place_id: place.place_id,
+                    id: i + 1,
+                    title: place.name,
+                    location: place.address,
+                    address: place.location,
+                    description: place.reviews[0]?.text || "Description non disponible",
+                    rating: place.rating,
+                    reviews: place.reviews,
+                    image: place.photo,
+                    phoneNumber: place.phoneNumber,
+                    openingHours: place.openingHours
+                }));
+                setRestaurants(formattedRestaurants);
+            } catch (error) {
+                console.error('Error fetching restaurants:', error);
+            }
+        };
+        fetchRestaurants();
+    }, [])
 
 
 
@@ -80,16 +99,21 @@ export default function MapScreen({ route, navigation }) {
     };
 
 
+    // console.log(restaurants)
     //Markers des favoris et restos HENRI NE PAS EFFECER STP !!!!!!
     const favoritesOrNotMarkers = restaurants.map((data, i) => {
-        const isItFavorite = resto.some(place => place.id === data.place_id)
-        const dataFavorite = resto.find(placeInfo => placeInfo.id === data.place_id)
+        const isItFavorite = resto?.some(place => place.id === data.place_id)
+        const dataFavorite = resto.find(place => place.id === data.place_id)
+        console.log(JSON.stringify(resto, null, 2))
 
-        if (!isConnected || !isItFavorite) {
+
+
+        if (isConnected === false || isItFavorite === false) {
+            // console.log(data.location)
             return (
                 <Marker key={i}
-                    coordinate={{ latitude: data.location.coordinates[1], longitude: data.location.coordinates[0] }}
-                    title={data.name}
+                    coordinate={{ latitude: data.address.coordinates[1], longitude: data.address.coordinates[0] }}
+                    title={data.title}
                     description={`Rating: ${data.rating}`}
                     onPress={() => handleMarkerPress(data)}
                     onCalloutPress={() => handleTextePress(data)}>
@@ -103,7 +127,7 @@ export default function MapScreen({ route, navigation }) {
                 <Marker key={i}
                     coordinate={{ latitude: dataFavorite.location.coordinates[1], longitude: dataFavorite.location.coordinates[0] }}
                     title={dataFavorite.name}
-                    description={`Rating: ${dataFavorite.rating}`}
+                    description={`Rating: ${resto.rating}`}
                     onPress={() => handleMarkerPress(data)}
                     onCalloutPress={() => handleTextePress(data)}>
                     <View style={styles.restaurantMarker}>
@@ -115,7 +139,90 @@ export default function MapScreen({ route, navigation }) {
             )
 
         }
+        
     })
+    
+    const favoriteMarkers = resto.map((data, i) => {
+        return (
+            <Marker key={i}
+                coordinate={{ latitude: data.location.coordinates[1], longitude: data.location.coordinates[0] }}
+                title={data.name}
+                description={`Rating: ${data.rating}`}
+                onPress={() => handleMarkerPress(data)}
+                onCalloutPress={() => handleTextePress({
+                    title: data.name,
+                    place_id: data.id,
+                    description: data.reviews[0]?.text || "Description non disponible",
+                    rating: data.rating,
+                    reviews: data.reviews,
+                    image: data.photo, 
+                    phoneNumber: data.phoneNumber,
+                    location: data.address,
+                    address: data.location,
+                    openingHours: data.openingHours
+                })}>
+                <View style={styles.restaurantMarker}>
+                    <Image
+                        source={require('../assets/Icone_Favoris.png')}
+                        style={{ width: 50, height: 50 }} />
+                </View>
+            </Marker>
+        )
+
+    })
+    
+    // const favoritesOrNotMarkers = restaurants.map((data, i) => {
+    //     const isItFavorite = resto.some(place => place.id === data.place_id)
+    //     const dataFavorite = resto.find(placeInfo => placeInfo.id === data.place_id)
+
+    //     if (!isConnected || !isItFavorite) {
+    //         return (
+    //             <Marker key={i}
+    //                 coordinate={{ latitude: data.location.coordinates[1], longitude: data.location.coordinates[0] }}
+    //     title={data.name}
+    //     description={`Rating: ${data.rating}`}
+    //     onPress={() => handleMarkerPress(data)}
+    //     onCalloutPress={() => handleTextePress(data)}>
+    //     <View style={styles.restaurantMarker}>
+    //         <Image source={require('../assets/IMG_0029.png')} style={{ width: 40, height: 40 }} />
+    //     </View>
+    // </Marker>
+    //         )
+    //     } 
+    // else if (isItFavorite) {
+    //         return (
+    //             <Marker key={i}
+    //                 coordinate={{ latitude: dataFavorite.location.coordinates[1], longitude: dataFavorite.location.coordinates[0] }}
+    //                 title={dataFavorite.name}
+    //                 description={`Rating: ${dataFavorite.rating}`}
+    //                 onPress={() => handleMarkerPress(data)}
+    //                 onCalloutPress={() => handleTextePress(data)}>
+    //                 <View style={styles.restaurantMarker}>
+    //                     <Image
+    //                         source={require('../assets/Icone_Favoris.png')}
+    //                         style={{ width: 50, height: 50 }} />
+    //                 </View>
+    //             </Marker>
+    //         )
+
+    //     } 
+    // else {
+    //     return (
+    //         <Marker key={i}
+    //         coordinate={{ latitude: dataFavorite.location.coordinates[1], longitude: dataFavorite.location.coordinates[0] }}
+    //         title={dataFavorite.name}
+    //         description={`Rating: ${dataFavorite.rating}`}
+    //         onPress={() => handleMarkerPress(data)}
+    //         onCalloutPress={() => handleTextePress(data)}>
+    //         <View style={styles.restaurantMarker}>
+    //             <Image
+    //                 source={require('../assets/Icone_Favoris.png')}
+    //                 style={{ width: 50, height: 50 }} />
+    //         </View>
+    //     </Marker>
+    //     )
+    // }
+    // })
 
 
 
@@ -166,7 +273,7 @@ export default function MapScreen({ route, navigation }) {
         setTimeout(() => {
             if (mapRef.current && restaurant) {
                 let latitude, longitude;
-                
+
                 if (restaurant.location && restaurant.location.coordinates) {
                     // Format pour les restaurants de la liste initiale
                     [longitude, latitude] = restaurant.location.coordinates;
@@ -176,7 +283,7 @@ export default function MapScreen({ route, navigation }) {
                 } else {
                     return;
                 }
-    
+
                 const region = {
                     latitude,
                     longitude,
@@ -184,44 +291,49 @@ export default function MapScreen({ route, navigation }) {
                     longitudeDelta: 0.005,
                 };
                 mapRef.current.animateToRegion(region, 1000);
-            } 
+            }
         }, 500);
     };
-    
+
     const handleMarkerPress = (restaurant) => {
         setSelectedRestaurant(restaurant);
         centerMapOnRestaurant(restaurant);
     };
 
-    const handleTextePress = (restaurant) => {
+    const handleTextePress = (restaurant, i) => {
         navigation.navigate('Resto', {
-            title: restaurant.name,
+            place_id: restaurant.place_id,
+            id: restaurant.id,
+            title: restaurant.title,
+            location: restaurant.location,
+            address: restaurant.address,
             description: restaurant.description,
             rating: restaurant.rating,
-            image: restaurant.photo,
+            reviews: restaurant.reviews,
+            image: restaurant.image,
             phoneNumber: restaurant.phoneNumber,
-            location: restaurant.address,
-            address: restaurant.location,
+            openingHours: restaurant.openingHours
+
         });
     };
 
     useEffect(() => {
         if (route.params?.restaurant) {
-          const restaurant = route.params.restaurant;
-          setSelectedRestaurant(restaurant);
-        
-          if (route.params.centerOnRestaurant) {
-            centerMapOnRestaurant(restaurant);
-          }
-        }
-      }, [route.params?.restaurant]);
+            const restaurant = route.params.restaurant;
+            setSelectedRestaurant(restaurant);
 
-      useEffect(() => {
+            if (route.params.centerOnRestaurant) {
+                centerMapOnRestaurant(restaurant);
+            }
+        }
+    }, [route.params?.restaurant]);
+
+    useEffect(() => {
         if (isMapReady && selectedRestaurant) {
             centerMapOnRestaurant(selectedRestaurant);
         }
     }, [isMapReady, selectedRestaurant]);
-      
+
     return (
         <View style={styles.container}>
             {mapRegion && (
@@ -283,6 +395,7 @@ export default function MapScreen({ route, navigation }) {
     </Marker>
 ))} */}
                     {favoritesOrNotMarkers}
+                    {favoriteMarkers}
 
                 </MapView>
             )}
