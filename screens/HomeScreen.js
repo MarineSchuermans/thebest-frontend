@@ -61,7 +61,6 @@ export default function HomeScreen({ navigation }) {
                     address: place.location,
                     description: place.reviews ? place.reviews[0]?.text : "Ici, bientôt une description",
                     rating: place.rating,
-                    reviews: place.reviews,
                     image: place.photo,
                     phoneNumber: place.phoneNumber,
                     openingHours: place.openingHours,
