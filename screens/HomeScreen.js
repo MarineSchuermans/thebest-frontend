@@ -62,20 +62,32 @@ export default function HomeScreen({ navigation }) {
 
 
 
-                const formattedRestaurants = restaurantData.map((place, index) => ({
-                    _id: place._id,
-                    place_id: place.place_id,
-                    id: index + 1,
-                    title: place.name,
-                    location: place.address,
-                    address: place.location,
-                    description: "Ici, bientôt une description",
-                    rating: place.rating,
-                    reviews: place.reviews,
-                    image: place.photo,
-                    phoneNumber: place.phoneNumber,
-                    openingHours: place.openingHours
-                }));
+                const formattedRestaurants = restaurantData.map((place, index) => {
+                    const truncatedTitle = place.name.length > 20 
+                        ? place.name.substring(0, 17) + "..." 
+                        : place.name;
+//a debloquer pour limiter la description à 23 caractères afin d'éviter les problèmes de mise en page si le texte est trop long.
+
+                    // const truncatedDescription = place.description.length > 23
+                    //     ? place.description.substring(0,23) + '...'
+                    //     :place.description;    
+                
+                    return {
+                        _id: place._id,
+                        place_id: place.place_id,
+                        id: index + 1,
+                        title: truncatedTitle, // ont ramene truncatedTitle éviter les problèmes de mise en page si le texte est trop long
+                        location: place.address,
+                        address: place.location,
+                        description: "Ici, bientôt une description", //truncatedDescription,
+                        rating: place.rating,
+                        reviews: place.reviews,
+                        image: place.photo,
+                        phoneNumber: place.phoneNumber,
+                        openingHours: place.openingHours
+                    };
+                });
+
 
                 setRestaurants(formattedRestaurants);
             } catch (error) {

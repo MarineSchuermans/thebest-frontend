@@ -181,16 +181,16 @@ export default function Modal() {
           <GoogleSingnin />
 
 
-          <Text style={styles.label}>Nom d'utilisateur</Text>
+          <Text style={styles.label}>Nom d'utilisateur :</Text>
           <TextInput
-            placeholder="Nom d'utilisateur"
+            placeholder="Minimum 3 cararactères"
             value={username}
             onChangeText={setUsername}
             style={styles.input}
           />
-          <Text style={styles.label}>Mot de passe</Text>
+          <Text style={styles.label}>Mot de passe :</Text>
           <TextInput
-            placeholder="Mot de passe"
+            placeholder="Minimum 8 caractères"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -198,9 +198,9 @@ export default function Modal() {
           />
           {isSignUp && (
             <>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>Email :</Text>
               <TextInput
-                placeholder="Email"
+                 placeholder="Email"
                 value={email}
                 onChangeText={setEmail}
                 style={styles.input}
@@ -217,20 +217,13 @@ export default function Modal() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={toggleSignUp}>
+          <TouchableOpacity style={styles.Text} onPress={toggleSignUp}>
             <Text>
               {isSignUp
                 ? "Déjà un compte ? Se connecter"
                 : "Pas de compte ? S'inscrire"}
             </Text>
           </TouchableOpacity>
-          {/* Google Sign-In button */}
-          {/* <GoogleSigninButton
-            style={{ width: 192, height: 48 }}
-            size={GoogleSigninButton.Size.Wide}
-            color={GoogleSigninButton.Color.Dark}
-            onPress={handleGoogleSignIn}
-          /> */}
         </View>
       </TouchableOpacity>
     </RnModal>
@@ -246,56 +239,66 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fond transparent sombre
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fond sombre avec transparence
   },
   modalContent: {
-    backgroundColor: "#C44949", // Base de l'application
-    padding: 30,
-    borderRadius: 10,
-    width: "80%",
+    backgroundColor: "#FFFFFF", // Fond blanc
+    padding: 20,
+    borderRadius: 12,
+    width: "85%",
     alignItems: "center",
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5, 
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "black", // Titre noir
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#333333",
     marginBottom: 20,
-    fontFamily: "Roboto", // Exemple de police professionnelle
+    textAlign: "center",
   },
   label: {
     alignSelf: "flex-start",
     fontSize: 14,
     fontWeight: "600",
-    color: "black", // Labels en noir
+    color: "#555555",
     marginBottom: 5,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#CCC", // Gris clair
-    backgroundColor: "#FFF", // Fond blanc
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
+    height: 30, // Hauteur plus petite pour les champs
+    borderBottomWidth: 1, // Bordure en bas
+    borderBottomColor: "#DDD", // Couleur gris clair
+    marginBottom: 10, // Moins d'espace entre les inputs
     width: "100%",
-    fontSize: 16,
+    fontSize: 12,
+    color: "#333", // Texte sombre pour une bonne lisibilité
+    paddingHorizontal: 10,
   },
   button: {
-    backgroundColor: "black", // Bouton noir
-    padding: 10,
-    borderRadius: 8,
+    backgroundColor: "#C44949", // Bouton rouge
+    padding: 12,
+    borderRadius: 10,
     width: "100%",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 50, // Marge de 2 cm environ (environ 40px)
   },
   buttonText: {
-    color: "#FFF", // Texte blanc sur le bouton
-    fontSize: 16,
+    color: "#FFFFFF", // Texte blanc pour contraste
+    fontSize: 14,
     fontWeight: "bold",
   },
   linkText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: "black", // Texte noir pour les liens
+    marginTop: 90,
+    fontSize: 12,
+    color: "black", // Liens en couleur bouton
     textDecorationLine: "underline",
+    textAlign: "center",
   },
+  Text: {
+    marginTop: 15
+  }
 });
+

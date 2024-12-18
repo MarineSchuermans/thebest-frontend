@@ -90,16 +90,16 @@ const styles = StyleSheet.create({
   deleteButton: {
     backgroundColor: "red",
     padding: 15,
-    borderRadius: 30, // Rounded corners for a more modern look
-    width: "80%", // Adjust width for a balanced button
+    borderRadius: 30, 
+    width: "80%", 
     alignItems: "center",
     paddingVertical: 15,
     paddingHorizontal: 51,
     marginTop: 1,
   },
   buttonText: {
-    color: "black",  // White text for better visibility on red
-    fontSize: 19, // Larger font for better readability
+    color: "black",  
+    fontSize: 16, 
     fontWeight: "bold",
   },
 });
