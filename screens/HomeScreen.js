@@ -61,7 +61,6 @@ export default function HomeScreen({ navigation }) {
                 const restaurantData = await response.json()
 
 
-
                 const formattedRestaurants = restaurantData.map((place, index) => ({
                     _id: place._id,
                     place_id: place.place_id,
@@ -69,7 +68,7 @@ export default function HomeScreen({ navigation }) {
                     title: place.name,
                     location: place.address,
                     address: place.location,
-                    description: "Ici, bientôt une description",
+                    description: place.reviews[0].text,
                     rating: place.rating,
                     reviews: place.reviews,
                     image: place.photo,
@@ -219,13 +218,30 @@ export default function HomeScreen({ navigation }) {
                 if (data.message === `Pas de best dans cette Categorie !: ${type}`) {
                     setIsFilter(false)
                 } else {
-                    
+
+                
                     setIsFilter(true)
-                    setDataFilter([...data])
+                    const dataRestaurantsFiltred = data.map((place, index) => ({
+                        place_id: place.place_id,
+                        id: index +1,
+                        title: place.name,
+                        location: place.address,
+                        address: place.location,
+                        description: place.reviews[0].text,
+                        rating: place.rating,
+                        reviews: place.reviews,
+                        image: place.photo,
+                        phoneNumber: place.phoneNumber,
+                        openingHours: place.openingHours
+                    }))
+                   
+                    setDataFilter(dataRestaurantsFiltred)
                 }
             }
             )
     }
+
+
     
     // Affichage des cartes resto en fonction d'un filtre ou non 
     // Si ce n'est pas filtrer, afficher les 5 restos les mieux notés 
@@ -266,7 +282,7 @@ export default function HomeScreen({ navigation }) {
                         />
                     </View>
 
-                    <Text style={styles.description}>{item.description}</Text>
+                    <Text style={styles.description}>{item.description.slice(0, 50)}...</Text>
 
                     <View style={styles.restaurantFooter}>
                         <Feather name="phone" size={16} />
@@ -284,25 +300,27 @@ export default function HomeScreen({ navigation }) {
     })
 // Si filtre actif, renvoie les 5 meilleurs resto de la catégory choisie 
     if (isFilter) {
-        renderRestaurant = dataFilter.map((infos) => {
+        renderRestaurant = dataFilter.map((item) => {
                             return (
                                 <TouchableOpacity
                                     onPress={() =>
                                         navigation.navigate("Resto", {
-                                            title: infos.name,
-                                            place_id: infos.place_id,
-                                            description: 'Description à venir',
-                                            rating: infos.rating,
-                                            image: infos.photo,
-                                            phoneNumber: infos.phoneNumber,
-                                            location: infos.location,
-                                            address: infos.address,
+                                            title: item.title,
+                                            place_id: item.place_id,
+                                            description: item.description,
+                                            rating: item.rating,
+                                            reviews: item.reviews,
+                                            image: item.image,
+                                            phoneNumber: item.phoneNumber,
+                                            location: item.location,
+                                            address: item.address,
                                         })
                                     }
                                     style={styles.restaurantCard}
+                                    key={item.id} 
                                 >
-                                    {infos.photo && infos.photo !== "placeholder_url" ? (
-                                        <Image source={{ uri: infos.photo }} style={styles.restaurantImage} />
+                                    {item.image && item.image !== "placeholder_url" ? (
+                                        <Image source={{ uri: item.image }} style={styles.restaurantImage} />
                                     ) : (
                                         <View style={styles.placeholderImage}>
                                             <View style={styles.placeholderInner} />
@@ -311,22 +329,22 @@ export default function HomeScreen({ navigation }) {
 
                                     <View style={styles.restaurantInfo}>
                                         <View style={styles.restaurantHeader}>
-                                            <Text style={styles.restaurantTitle}>{infos.name}</Text>
+                                            <Text style={styles.restaurantTitle}>{item.title}</Text>
                                             <LikeIcon
-                                                onClickIcon={() => handleFavorite(infos)}
-                                                color={isConnected && isFavorite.some(data => infos.place_id == data) ? "#FF0000" : "#9CA3AF"}
+                                                onClickIcon={() => handleFavorite(item)}
+                                                color={isConnected && isFavorite.some(data => item.place_id == data) ? "#FF0000" : "#9CA3AF"}
                                             />
                                         </View>
 
-                                        <Text style={styles.description}>Description à venir</Text>
+                                        <Text style={styles.description}>{item.description.length > 0 ? item.description.slice(0, 50) : 'Service rapide, plats délicieux, ambiance agréable !'}...</Text>
 
                                         <View style={styles.restaurantFooter}>
                                             <Feather name="phone" size={16} />
                                             <Feather name="map-pin" size={16} style={styles.footerIcon} />
                                             <View style={styles.rating}>
-                                                <Text>{"★".repeat(Math.floor(infos.rating))}</Text>
-                                                <Text>{"☆".repeat(5 - Math.floor(infos.rating))}</Text>
-                                                <Text style={styles.ratingText}>({infos.rating})</Text>
+                                                <Text>{"★".repeat(Math.floor(item.rating))}</Text>
+                                                <Text>{"☆".repeat(5 - Math.floor(item.rating))}</Text>
+                                                <Text style={styles.ratingText}>({item.rating})</Text>
                                             </View>
                                         </View>
                                     </View>

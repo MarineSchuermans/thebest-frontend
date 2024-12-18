@@ -137,6 +137,7 @@ export default function RestoScreen({ route }) {
   const isConnected = user?.token;
 
 
+
   const fetchParkings = async () => {
     try {
       const response = await fetch(PARKING_DATA_URL);
