@@ -28,9 +28,8 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { backendAdress } from "../config";
 import { addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
 
-import { toggleModal } from "../reducers/user"; //ismael rajout
+import { toggleModal } from "../reducers/user"; 
 
-// import { ApifyClient } from 'apify-client';
 const DISTANCE_MATRIX_API_KEY =
   "GyMlY5B5kAqL6CyTs3CexOtRqnMfBnLc3TapNQ53lvYsN8ccW9xPMp4WBWjeSw8D";
 const PARKING_DATA_URL =
@@ -273,42 +272,6 @@ export default function RestoScreen({ route }) {
   const photosFromApi = [];
   const videoFromApi = [];
 
-  // useEffect(() => {
-
-  //     // Initialize the ApifyClient with API token
-  //     const client = new ApifyClient({
-  //         token: 'apify_api_aQEbQtJvzhWHS48o1P5oq9elYbGsmn2lFuAU',
-  //     });
-
-  //     // Prepare Actor input
-  //     const input = {
-  //         "directUrls": [
-  //             "https://www.instagram.com/meltingpot_restaurant_lille/"
-  //         ],
-  //         "resultsType": "posts",
-  //         "resultsLimit": 5,
-  //         "searchType": "hashtag",
-  //         "searchLimit": 1,
-  //         "addParentData": false
-  //     };
-
-  //     (async () => {
-  //         // Run the Actor and wait for it to finish
-  //         const run = await client.actor("shu8hvrXbJbY3Eb9W").call(input);
-
-  //         // Fetch and print Actor results from the run's dataset (if any)
-  //         console.log('Results from dataset');
-  //         const { items } = await client.dataset(run.defaultDatasetId).listItems();
-  //         items.forEach((item) => {
-  //             console.dir(item);
-
-  //             setPhotoPlaces(...photoPlaces, item)
-
-  //             console.log(item)
-  //         });
-  //     })();
-  // }, [])
-
   const getTypeIcon = () => {
     switch (type) {
       case "family":
@@ -403,8 +366,6 @@ export default function RestoScreen({ route }) {
     })
   }, [])
 
-//  console.log(JSON.stringify(reviewsFromDB, null, 2))
-
   const handleAddReview = (review) => {
 
     const newReview = {
@@ -463,14 +424,11 @@ export default function RestoScreen({ route }) {
     }
   };
 
-  // console.log(reviews)
-
   const googleReviews = reviews.map((infos, i) => {
     const [isExpanded, setIsExpanted] = useState(false) //Pour afficher l'intégralité d'un avis ou non
 
 
     const toggleExpand = () => setIsExpanted(!isExpanded)
-    // console.log(infos.rating)
     return (
       <View style={styles.reviewItem} key={i}>
         <View style={styles.reviewRating}>
@@ -486,7 +444,6 @@ export default function RestoScreen({ route }) {
         <Text style={styles.reviewName}>{infos.author}</Text>
         <ScrollView> 
         <Text style={styles.reviewComment} maxLength={50}>{isExpanded ? infos.text : infos.text.length > 50 ? `${infos.text.substring(0, 50)}...`: infos.text}
-        {/* // {infos.text.length > 50 ? `${infos.text.substring(0, 50)}...` : infos.text} */}
         </Text>
         {infos.text.length > 50 && (
           <TouchableOpacity onPress={toggleExpand}>
@@ -502,9 +459,6 @@ export default function RestoScreen({ route }) {
         </Text>
         {user.token === infos.user ? (
       <View>
-        {/* <TouchableOpacity onPress={handleEditReview}>
-          <Text style={styles.editReview}>Edit</Text>
-        </TouchableOpacity> */}
 
         <TouchableOpacity onPress={() => handleDeleteReview(infos)}>
           <Text style={styles.deleteReview}>Delete</Text>
@@ -538,19 +492,6 @@ export default function RestoScreen({ route }) {
   if (!hasPermission || !isFocused) {
     return <View />;
   }
-  // const getCoordinatesFromAddress = async (address) => {
-  //     try {
-  //         const json = await Geocoder.from(address);
-  //         const location = json.results[0].geometry.location;
-  //         return {
-  //             latitude: location.lat,
-  //             longitude: location.lng,
-  //         };
-  //     } catch (error) {
-  //         console.error('Error getting coordinates:', error);
-  //         return null;
-  //     }
-  // };
 
   const fetchRouteDistance = async (origin, destination) => {
     const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${DISTANCE_MATRIX_API_KEY}`;
@@ -663,7 +604,6 @@ export default function RestoScreen({ route }) {
               <TouchableOpacity
                 style={styles.favoriteIcon}
                 onPress={() => { handleFavorite() }
-                  // {isConnected ? setIsFavorite(!isFavorite): dispatch(toggleModal())}
                 }
               >
                 <Feather
@@ -837,11 +777,6 @@ export default function RestoScreen({ route }) {
        
         
         />
-
-      
-        {/* <ScrollView>
-        {googleReviews}
-        </ScrollView> */}
       
       <ReviewModal
         visible={modalVisible}

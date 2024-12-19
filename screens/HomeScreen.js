@@ -4,14 +4,12 @@ import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addLocationToStore, addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
 import Feather from "react-native-vector-icons/Feather";
-import FontAwesome6 from "react-native-vector-icons/FontAwesome";
 import { backendAdress } from "../config";
 import LikeIcon from "../components/LikeIcon";
 import { MarqueeText } from '../components/marquee-text';
 
 export default function HomeScreen({ navigation }) {
     const dispatch = useDispatch();
-    const [favorites, setFavorites] = useState(new Set());
     const [restaurants, setRestaurants] = useState([]);
     const [isFavorite, setIsFavorite] = useState([]);
     const [isFilter, setIsFilter] = useState(false);
@@ -76,6 +74,7 @@ export default function HomeScreen({ navigation }) {
                     address: place.location,
                     description: place.reviews ? place.reviews[0]?.text : "Ici, bientôt une description",
                     rating: place.rating,
+                    reviews: place.reviews,
                     image: place.photo,
                     phoneNumber: place.phoneNumber,
                     openingHours: place.openingHours,
@@ -371,7 +370,14 @@ const styles = StyleSheet.create({
         width: 50,
     },
     categoryButton: {
-        backgroundColor: "#F3F4F6",
+        backgroundColor: "#C44949",
+        shadowRadius: 5,
+        shadowColor: "grey",
+        shadowOpacity: 0.3,
+        shadowOffset: {
+            width: 1,
+            height: 2,
+        },
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
@@ -380,6 +386,8 @@ const styles = StyleSheet.create({
     },
     categoryText: {
         fontSize: 14,
+        fontWeight: "500",
+        color: "white",
     },
     restaurantList: {
         flex: 1,
@@ -449,9 +457,11 @@ const styles = StyleSheet.create({
     searchInput: {
         backgroundColor: "#F3F4F6",
         borderRadius: 20,
-        paddingHorizontal: 135,
+        paddingHorizontal: 15,
         paddingVertical: 8,
         color: "#000",
+        maxHeight: 40,
+        minWidth: 300,
     },
     searchIcon: {
         position: "absolute",
@@ -460,7 +470,7 @@ const styles = StyleSheet.create({
     },
     dropdown: {
         position: 'absolute',
-        top: 60, // Ajustez selon la hauteur de votre header
+        top: 60, 
         left: 16,
         right: 16,
         backgroundColor: '#FFFFFF',

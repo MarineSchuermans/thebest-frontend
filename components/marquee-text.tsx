@@ -56,7 +56,7 @@ export const MarqueeText: React.FC<MarqueeProps> = ({ text, speed = 0.05 }) => {
 const styles = StyleSheet.create({
   container: {
     height: 40,
-    backgroundColor: '#C44949',
+    backgroundColor: 'transparent',
     overflow: 'hidden',
     width: '100%',
   },
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   text: {
-    color: '#FFFFFF',
+    color: 'black',
     fontSize: 14,
     fontWeight: '600',
     fontStyle: 'italic',
