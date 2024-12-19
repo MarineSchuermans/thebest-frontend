@@ -82,12 +82,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   searchInput: {
-    flex: 1,
     backgroundColor: "#F3F4F6",
     borderRadius: 20,
-    paddingHorizontal: 40,
+    paddingHorizontal: 15,
     paddingVertical: 8,
-  },
+    color: "#000",
+    maxHeight: 40,
+    minWidth: 300,
+},
   clearButton: {
     position: "absolute",
     right: 12,
@@ -196,10 +198,12 @@ const styles = StyleSheet.create({
   searchInput: {
     backgroundColor: "#F3F4F6",
     borderRadius: 20,
-    paddingHorizontal: 135,
+    paddingHorizontal: 15,
     paddingVertical: 8,
     color: "#000",
-  },
+    maxHeight: 40,
+    minWidth: 300,
+},
   searchIcon: {
     position: "absolute",
     left: 14,

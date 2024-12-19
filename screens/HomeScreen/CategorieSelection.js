@@ -100,15 +100,24 @@ const styles = StyleSheet.create({
     width: 50,
   },
   categoryButton: {
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#C44949",
+    shadowRadius: 5,
+    shadowColor: "grey",
+    shadowOpacity: 0.3,
+    shadowOffset: {
+        width: 1,
+        height: 2,
+    },
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
     height: 35,
-  },
+},
   categoryText: {
     fontSize: 14,
+    fontWeight: "500",
+    color: "#FFFFFF",
   },
   restaurantList: {
     flex: 1,
