@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   View,
   Text,
@@ -10,6 +11,7 @@ import {
 const categories = ["Fast food", "Italien", "Asiatique", "Gastronomique"];
 
 export default function CategorieSelection({ options, onOptionSelect }) {
+  const [selectedCategory, setSelectedCategory] = useState('')
   return (
     <View style={{ height: 50 }}>
       <ScrollView
@@ -17,15 +19,17 @@ export default function CategorieSelection({ options, onOptionSelect }) {
         showsHorizontalScrollIndicator={false}
         style={styles.categoriesContainer}
       >
-        {options.map((category) => (
+        {options.map((category) => {
+          const isSelected = selectedCategory === category;
+          return (
           <TouchableOpacity
             key={category}
-            style={styles.categoryButton}
-            onPress={() => onOptionSelect(category)}
+            style={isSelected ? styles.categoryButtonOn : styles.categoryButton}
+            onPress={() => onOptionSelect(category) + setSelectedCategory(category)}
           >
             <Text style={styles.categoryText}>{category}</Text>
           </TouchableOpacity>
-        ))}
+)})}
       </ScrollView>
     </View>
   );
@@ -113,6 +117,22 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 8,
     height: 35,
+},
+categoryButtonOn: {
+  backgroundColor: "#64de84",
+  shadowRadius: 5,
+  shadowColor: "grey",
+  shadowOpacity: 0.3,
+  shadowOffset: {
+      width: 1,
+      height: 2,
+  },
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+  borderRadius: 20,
+  marginRight: 8,
+  height: 35,
+
 },
   categoryText: {
     fontSize: 14,

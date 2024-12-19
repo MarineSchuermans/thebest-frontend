@@ -14,8 +14,9 @@ export default function HomeScreen({ navigation }) {
     const [restaurants, setRestaurants] = useState([]);
     const [isFavorite, setIsFavorite] = useState([]);
     const [isFilter, setIsFilter] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null)
     const [dataFilter, setDataFilter] = useState([]);
-    const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
+    // const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value);
     const restoFiltre = useSelector((state) => state.restoFiltred.value)
     const [currentLocation, setCurrentLocation] = useState("Rechercher un lieu...");
@@ -24,7 +25,6 @@ export default function HomeScreen({ navigation }) {
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const inputRef = useRef(null);
 
-    // console.log(restoFiltre)
 
     const toggleDropdown = () => {
         setIsDropdownVisible(!isDropdownVisible);
@@ -83,7 +83,6 @@ export default function HomeScreen({ navigation }) {
                     image: place.photo,
                     phoneNumber: place.phoneNumber,
                     openingHours: place.openingHours,
-                    reviews : place.reviews
                 }));
                 setRestaurants(formattedRestaurants);
 
@@ -137,6 +136,7 @@ export default function HomeScreen({ navigation }) {
             return;
         }
 
+
         fetch(`${backendAdress}/findRestaurantsByCategory?${query.toString()}`)
             .then(response => response.json())
             .then(data => {
@@ -178,6 +178,33 @@ export default function HomeScreen({ navigation }) {
             });
     };
 
+    const filterCategory = categories.map((category) => {
+
+        const [isSelected, setIsSelected] = useState()
+
+        if (selectedCategory === category){
+            setIsSelected(true)
+        } else (
+            setIsSelected(false)
+        )
+        
+        
+
+        // const [isSelected, setIsSelected] = useState(false)
+        // const toggleSelected = () => setIsSelected(!isSelected)
+
+        return (
+            <TouchableOpacity
+                key={category}
+                style={isSelected ? styles.categoryButtonOn : styles.categoryButton}
+                // color= {isSelected ? "#000000" : "#FFFFFF"}
+                onPress={() => handleFilterByType(category) + setSelectedCategory(category)}
+            >
+                <Text style={styles.categoryText}>{category}</Text>
+            </TouchableOpacity>
+
+        )
+    })
     const handleFavorite = (item) => {
         if (!isConnected) return navigation.navigate('User');
 
@@ -299,15 +326,18 @@ export default function HomeScreen({ navigation }) {
 
             <View style={{ height: 50 }}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-                    {categories.map((category) => (
+                    {filterCategory}
+
+                    {/* {categories.map((category) => (
                         <TouchableOpacity
                             key={category}
                             style={styles.categoryButton}
+                            // backgroundColor = {isFilter ? "#000000" : "#FFFFFF"}
                             onPress={() => handleFilterByType(category)}
                         >
                             <Text style={styles.categoryText}>{category}</Text>
                         </TouchableOpacity>
-                    ))}
+                    ))} */}
                 </ScrollView>
             </View>
             <MarqueeText
@@ -315,8 +345,8 @@ export default function HomeScreen({ navigation }) {
                 speed={0.05}
             />
             <ScrollView style={styles.restaurantList}>
-                {(isFilter ? dataFilter : restaurants).map((restaurant, index) => (
-                    <RenderRestaurantItem key={index} item={restaurant} />
+                {(isFilter ? dataFilter : restaurants).map((restaurant) => (
+                    <RenderRestaurantItem key={restaurant.id} item={restaurant} />
                 ))}
             </ScrollView>
         </SafeAreaView>
@@ -406,6 +436,22 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         marginRight: 8,
         height: 35,
+    },
+    categoryButtonOn: {
+        backgroundColor: "#64de84",
+        shadowRadius: 5,
+        shadowColor: "grey",
+        shadowOpacity: 0.3,
+        shadowOffset: {
+            width: 1,
+            height: 2,
+        },
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        marginRight: 8,
+        height: 35,
+
     },
     categoryText: {
         fontSize: 14,
@@ -506,4 +552,4 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
     },
-});
+})
