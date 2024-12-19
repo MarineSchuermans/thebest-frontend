@@ -13,57 +13,35 @@ import { backendAdress } from "../config"
 
 export default function LikeScreen({ navigation }) {
     const dispatch = useDispatch()
-    // const [likePlaces, setLikePlaces] = useState([])
     const likePlaces = useSelector((state) => state.resto.value)
     const user = useSelector((state) => state.user.value)
-    // const resto = useSelector((state)=> state.resto.value)
     const id_places = user.favorites
-
-    // console.log(id_places)
-
-    // console.log(likePlaces)
 
     let isConnected = false
     if (user.token?.length > 0) {
         isConnected = true
     }
 
-    // console.log(id_places.length)
-    // console.log(isConnected)
-
     useEffect(() => {
         fetch(`${backendAdress}/places`)
             .then(response => response.json())
             .then(data => {
                 dispatch(initializeRestoToStore())
-                // console.log(id_places.length)
-                // console.log(JSON.stringify(data.places.find('') null, 2))
                 const updateLikes = []
                 for (let i = 0; i < id_places.length; i++) {
-                    // console.log(id_places[i] + ' result : \n', JSON.stringify(data.places.find(place => place.id === id_places[i]), null, 2))
                     const matchingResto = data.places.find(place => place.id === id_places[i])
 
                     if (matchingResto) {
                         updateLikes.push(matchingResto)
                     }
-
-
                 }
-
                 for (let i = 0; i < updateLikes.length; i++) {
                     dispatch(addRestoToStore(updateLikes[i]))
-
                 }
-                // console.log(updateLikes)
-                // setLikePlaces([...updateLikes])
             })
-
     }, [id_places.length])
 
     const dataRestoFav = likePlaces.map((place, index) => 
-    //     {
-    //     console.log(JSON.stringify(place.reviews[0]?.text, null, 2))
-    // }
     ({
         place_id: place.id,
         id: index + 1,
@@ -78,20 +56,11 @@ export default function LikeScreen({ navigation }) {
         openingHours: place.openingHours
     })
 )
-
-
-    // console.log(likePlaces)
-
-    // console.log(dataRestoFav)
-
     const handleRemoveFavorite = (item) => {
-
-        // console.log(item)
         const infos = {
             token: user.token,
             obj_id: item
         }
-        // console.log('remove favorite')
         fetch('https://the-best-backend.vercel.app/users/favorites', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -99,22 +68,15 @@ export default function LikeScreen({ navigation }) {
         })
             .then(response => response.json())
             .then(data => {
-                // console.log(data)
                 if (data.result) {
-                    // setIsFavorite([...isFavorite, item._id])
                     dispatch(addFavoritesToStore(item))
-                    // console.log(item)
                 } else {
-                    // setIsFavorite(a => a.filter(e => e !== item._id))
                     dispatch(removeFavoritesToStore(item))
                 }
-                // console.log(isFavorite)
             })
             .catch(error => {
                 console.error('Erreur de la requête:', error)
             })
-
-        // dispatch(removeFavoritesToStore({ id: data }))
     }
 
     let favoriteListe
@@ -124,7 +86,6 @@ export default function LikeScreen({ navigation }) {
     } else {
         favoriteListe = dataRestoFav.map((item, i) => {
             return (
-
                 <TouchableOpacity
                     onPress={() => navigation.navigate('Resto', {
                         key: { i },
@@ -140,8 +101,6 @@ export default function LikeScreen({ navigation }) {
                     })}
                     style={styles.restaurantCard}
                 >
-
-
                     <Image
                         source={{ uri: item.image }}
                         style={styles.restaurantImage}
@@ -150,7 +109,6 @@ export default function LikeScreen({ navigation }) {
                         <View style={styles.restaurantHeader}>
                             <Text style={styles.restaurantTitle}>{item.title}</Text>
                             <TouchableOpacity style={styles.cross} onPress={() => handleRemoveFavorite(item.place_id)}>
-
                                 <Entypo
                                     name="cross"
                                     size={30}
@@ -168,17 +126,10 @@ export default function LikeScreen({ navigation }) {
                             </View>
                         </View>
                     </View>
-
                 </TouchableOpacity>
-
             )
         })
     }
-
-
-
-
-
 
     return (
         <SafeAreaView style={styles.container}>
@@ -186,41 +137,19 @@ export default function LikeScreen({ navigation }) {
                 <Feather name="map-pin" size={24} />
                 <View style={styles.searchContainer}>
                     <Text style={styles.title}>Tes Best of The Best ♥</Text>
-                    {/* <Feather name="search" size={16} style={styles.searchIcon} />
-                    <TextInput
-                        placeholder="Search"
-                        style={styles.searchInput}
-                    /> */}
                 </View>
                 <FontAwesome6 name="bars" size={24} />
             </View>
-
-
-
             <View style={styles.restaurantList}>
                 <ScrollView>
                     {favoriteListe}
                 </ScrollView>
-
             </View>
-
-
-
-
-
-
         </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
-    // container: {
-    //   flex: 1,
-    //   backgroundColor: '#fff',
-    //   alignItems: 'center',
-    //   justifyContent: 'center',
-    // },
-    // const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F9FAFB',

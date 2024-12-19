@@ -46,12 +46,14 @@
     "react-native-swipable": "^0.0.2",
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-swipeable": "^0.6.0",
+    "react-navigation": "^5.0.0",
     "react-redux": "^9.1.2",
     "tunnel": "^0.0.6",
     "uniqid": "^5.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@types/react": "~18.3.12",
     "supertest": "^7.0.0"
   },
   "private": true

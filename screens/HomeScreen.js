@@ -1,25 +1,40 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, SafeAreaView } from "react-native";
 import * as Location from "expo-location";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addLocationToStore, addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
+import { initializeFiltreToStore, addRestoFiltredToStore } from "../reducers/restoFiltred";
 import Feather from "react-native-vector-icons/Feather";
-import FontAwesome6 from "react-native-vector-icons/FontAwesome";
 import { backendAdress } from "../config";
 import LikeIcon from "../components/LikeIcon";
+import { MarqueeText } from '../components/marquee-text';
 
 export default function HomeScreen({ navigation }) {
     const dispatch = useDispatch();
-    const [favorites, setFavorites] = useState(new Set());
     const [restaurants, setRestaurants] = useState([]);
     const [isFavorite, setIsFavorite] = useState([]);
     const [isFilter, setIsFilter] = useState(false);
     const [dataFilter, setDataFilter] = useState([]);
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value);
+    const restoFiltre = useSelector((state) => state.restoFiltred.value)
     const [currentLocation, setCurrentLocation] = useState("Rechercher un lieu...");
-    const [searchText, setSearchText] = useState("");
-    const [searchResults, setSearchResults] = useState([]);
+    const [selectedCity, setSelectedCity] = useState("");
+    const availableCities = ["Lille", "Paris"];
+    const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+    const inputRef = useRef(null);
+
+    // console.log(restoFiltre)
+
+    const toggleDropdown = () => {
+        setIsDropdownVisible(!isDropdownVisible);
+    };
+
+    const selectCity = (city) => {
+        setSelectedCity(city);
+        setIsDropdownVisible(false);
+        handleFilterByType("", city);
+    };
 
     useEffect(() => {
         getCurrentLocation();
@@ -51,13 +66,14 @@ export default function HomeScreen({ navigation }) {
             try {
                 const response = await fetch(backendAdress + "/findNearbyRestaurants");
                 const restaurantData = await response.json();
-                
+                dispatch(initializeFiltreToStore())
+
                 const formattedRestaurants = restaurantData.map((place) => ({
                     _id: place._id,
                     place_id: place.place_id,
                     id: place.id,
-                    title: place.name.length > 20 
-                      ? place.name.substring(0, 17) + "..." 
+                    title: place.name.length > 20
+                        ? place.name.substring(0, 17) + "..."
                         : place.name,
                     location: place.address,
                     address: place.location,
@@ -70,6 +86,13 @@ export default function HomeScreen({ navigation }) {
                     reviews : place.reviews
                 }));
                 setRestaurants(formattedRestaurants);
+
+                // dispatch(addRestoFiltredToStore([...formattedRestaurants]))
+
+                for (let i = 0 ; i < formattedRestaurants.length; i++){
+                    dispatch(addRestoFiltredToStore(formattedRestaurants[i]))
+                }
+
             } catch (error) {
                 console.error("Error fetching restaurants:", error);
             }
@@ -96,50 +119,31 @@ export default function HomeScreen({ navigation }) {
         isConnected = true;
     }
 
-    const handleSearch = async (text) => {
-        setSearchText(text);
-        if (text.length > 2) {
-            try {
-                const generalResponse = await Location.geocodeAsync(text);
-                if (generalResponse.length > 0) {
-                    const detailedResults = await Promise.all(generalResponse.map(async (item) => {
-                        return await Location.reverseGeocodeAsync({
-                            latitude: item.latitude,
-                            longitude: item.longitude
-                        });
-                    }));
+    const handleFilterByType = (type, city = selectedCity) => {
+        const query = new URLSearchParams();
 
-                    const suggestions = detailedResults
-                        .flat()
-                        .map(address => ({
-                            fullAddress: address.city,
-
-                        }))
-                        .filter(item => item.fullAddress !== 'Adresse inconnue')
-                        .slice(0, 10);
-
-                    setSearchResults(suggestions);
-                }
-            } catch (error) {
-                console.error('Erreur lors de la recherche d\'adresses:', error);
-            }
-        } else {
-            setSearchResults([]);
+        if (city) {
+            query.append("city", city);
         }
-    };
 
-    const clearSearch = () => {
-        setSearchText('');
-        setSearchResults([]);
-    };
+        if (type) {
+            query.append("category", type);
+        }
 
-    const handleFilterByType = (type) => {
-        fetch(`${backendAdress}/findRestaurantsByCategory?category=${type}`)
+        if (!city && !type) {
+            // Si aucun filtre n'est sélectionné, on réinitialise l'affichage
+            setIsFilter(false);
+            setDataFilter([]);
+            return;
+        }
+
+        fetch(`${backendAdress}/findRestaurantsByCategory?${query.toString()}`)
             .then(response => response.json())
             .then(data => {
-                if (data.message === `Pas de best dans cette Categorie ! ${type}`) {
-                    setIsFilter(false);
-                } else {
+                dispatch(initializeFiltreToStore()) //On remet le reduccer filtre à zéro
+                
+                const updateFilterResto = []
+                if (Array.isArray(data) && data.length > 0) {
                     setIsFilter(true);
                     const dataRestaurantsFiltred = data.map((place, index) => ({
                         place_id: place.place_id,
@@ -155,7 +159,22 @@ export default function HomeScreen({ navigation }) {
                         openingHours: place.openingHours
                     }));
                     setDataFilter(dataRestaurantsFiltred);
+                    for (let i = 0 ; i < dataRestaurantsFiltred.length; i++){
+                        updateFilterResto.push(dataRestaurantsFiltred[i])
+                    }
+                } else {
+                    setIsFilter(false);
+                    setDataFilter([]);
                 }
+
+                for (let i = 0 ; i < updateFilterResto.length; i++){
+                    dispatch(addRestoFiltredToStore(updateFilterResto[i]))
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching filtered restaurants:", error);
+                setIsFilter(false);
+                setDataFilter([]);
             });
     };
 
@@ -227,8 +246,8 @@ export default function HomeScreen({ navigation }) {
                     </View>
 
                     <Text style={styles.description}>
-                        {item.description && item.description.length > 35 
-                            ? `${item.description.slice(0, 35)}...` 
+                        {item.description && item.description.length > 35
+                            ? `${item.description.slice(0, 35)}...`
                             : 'Service rapide, plats délicieux, ambiance agréable !'}
                     </Text>
 
@@ -256,45 +275,33 @@ export default function HomeScreen({ navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-    <Feather name="map-pin" size={24} style={styles.bar} />
-    <View style={styles.searchContainer}>
-        <TextInput
-            placeholder={currentLocation}
-            value={searchText}
-            onChangeText={handleSearch}
-            style={styles.searchInput}
-        />
-        {searchText !== '' && (
-            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-                <Feather name="x" size={20} color="#9CA3AF" />
-            </TouchableOpacity>
-        )}
-    </View>
-    <FontAwesome6 name="bars" size={24} style={styles.bar} />
-</View>
-            {searchResults.length > 0 && (
-                <ScrollView style={styles.suggestionList}>
-                    {searchResults.map((item, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={styles.suggestionItem}
-                            onPress={() => {
-                                setSearchText(item.fullAddress);
-                                setCurrentLocation(item.fullAddress);
-                                setSearchResults([]);
-                            }}
-                        >
-                            <Text>{item.fullAddress}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-            )}
+                <Feather name="map-pin" size={24} style={styles.bar} />
+                <View style={styles.searchContainer}>
+                    <TouchableOpacity onPress={toggleDropdown} style={styles.searchInput}>
+                        <Text>{selectedCity || "Rechercher une ville"}</Text>
+                    </TouchableOpacity>
+
+                    {isDropdownVisible && (
+                        <ScrollView style={styles.dropdown}>
+                            {availableCities.map((city) => (
+                                <TouchableOpacity
+                                    key={city}
+                                    style={styles.dropdownItem}
+                                    onPress={() => selectCity(city)}
+                                >
+                                    <Text>{city}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    )}
+                </View>
+            </View>
 
             <View style={{ height: 50 }}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
                     {categories.map((category) => (
-                        <TouchableOpacity 
-                            key={category} 
+                        <TouchableOpacity
+                            key={category}
                             style={styles.categoryButton}
                             onPress={() => handleFilterByType(category)}
                         >
@@ -303,7 +310,10 @@ export default function HomeScreen({ navigation }) {
                     ))}
                 </ScrollView>
             </View>
-
+            <MarqueeText
+                text="🔥Trend : Mamayia, Bestab du moment 🤯🍤🔥"
+                speed={0.05}
+            />
             <ScrollView style={styles.restaurantList}>
                 {(isFilter ? dataFilter : restaurants).map((restaurant) => (
                     <RenderRestaurantItem key={restaurant.id} item={restaurant} />
@@ -383,7 +393,14 @@ const styles = StyleSheet.create({
         width: 50,
     },
     categoryButton: {
-        backgroundColor: "#F3F4F6",
+        backgroundColor: "#C44949",
+        shadowRadius: 5,
+        shadowColor: "grey",
+        shadowOpacity: 0.3,
+        shadowOffset: {
+            width: 1,
+            height: 2,
+        },
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
@@ -392,6 +409,8 @@ const styles = StyleSheet.create({
     },
     categoryText: {
         fontSize: 14,
+        fontWeight: "500",
+        color: "white",
     },
     restaurantList: {
         flex: 1,
@@ -457,5 +476,34 @@ const styles = StyleSheet.create({
     ratingText: {
         marginLeft: 4,
         color: "#6B7280",
+    },
+    searchInput: {
+        backgroundColor: "#F3F4F6",
+        borderRadius: 20,
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        color: "#000",
+        maxHeight: 40,
+        minWidth: 300,
+    },
+    searchIcon: {
+        position: "absolute",
+        left: 14,
+        top: 10,
+    },
+    dropdown: {
+        position: 'absolute',
+        top: 60, 
+        left: 16,
+        right: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 5,
+        maxHeight: 200,
+        zIndex: 1000,
+    },
+    dropdownItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
     },
 });

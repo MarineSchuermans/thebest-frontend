@@ -15,9 +15,8 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { backendAdress } from "../config";
 import { addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
 
-import { toggleModal } from "../reducers/user"; //ismael rajout
+import { toggleModal } from "../reducers/user"; 
 
-// import { ApifyClient } from 'apify-client';
 const DISTANCE_MATRIX_API_KEY =
   "GyMlY5B5kAqL6CyTs3CexOtRqnMfBnLc3TapNQ53lvYsN8ccW9xPMp4WBWjeSw8D";
 const PARKING_DATA_URL =
@@ -124,6 +123,7 @@ export default function RestoScreen({ route }) {
   const cameraRef = useRef(null);
   const isFocused = useIsFocused();
   const [photoUri, setPhotoUri] = useState(null);
+  const [reviewsFromDB, setReviewsFromDB] = useState([])
   const [userReview, setUserReview] = useState(null);
   const screenWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
@@ -211,7 +211,7 @@ export default function RestoScreen({ route }) {
       const response = await fetch(`${backendAdress}/findNearbyRestaurants`);
       const data = await response.json();
       setNearbyRestaurants(data);
-      console.log(data)
+      // console.log(data)
     } catch (error) {
       console.error("Error fetching nearby restaurants:", error);
     }
@@ -339,11 +339,17 @@ export default function RestoScreen({ route }) {
       })
   }
 
+  // Recupération des avis Besters de la BDD par rapport a la place_id du resto
   useEffect(() => {
     fetch(`${backendAdress}/reviews/${place_id}`)
     .then(response => response.json())
     .then((data) => {
-      console.log(data.result)
+      // console.log(data)
+      if (data.result){
+        setReviewsFromDB(data.reviews)
+      } else {
+        console.log("Aucun Bester n'a laissé d'avis. Soyez le premier ! ")
+      }
     })
   }, [])
 
@@ -378,12 +384,26 @@ export default function RestoScreen({ route }) {
       }
     }
   };
-  const handleDeleteReview = () => {
+  const handleDeleteReview = (review) => {
     if (!isConnected) {
       // Ouvrir le modal si non connecté rajouter ismael
       dispatch(toggleModal(true));
       return;
     } else {
+      fetch(`${backendAdress}/reviews`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({token: user.token, _id: review._id})
+      })
+        .then(response => response.json())
+        .then((data) => {
+          if(data.result) {
+            console.log('Avis supprimé')
+            setReviewsFromDB(reviewsFromDB.find(reviews => reviews !== review))
+          }else{
+            console.error('Erreur:', data.error)
+          }
+        })
       if (userReview) {
         setReviewsList(reviewsList.filter((r) => r.isUserReview === false));
         setUserReview(null);
@@ -391,14 +411,11 @@ export default function RestoScreen({ route }) {
     }
   };
 
-  // console.log(reviews)
-
   const googleReviews = reviews.map((infos, i) => {
     const [isExpanded, setIsExpanted] = useState(false) //Pour afficher l'intégralité d'un avis ou non
 
 
     const toggleExpand = () => setIsExpanted(!isExpanded)
-    // console.log(infos.rating)
     return (
       <View style={styles.reviewItem} key={i}>
         <View style={styles.reviewRating}>
@@ -414,7 +431,6 @@ export default function RestoScreen({ route }) {
         <Text style={styles.reviewName}>{infos.author}</Text>
         <ScrollView> 
         <Text style={styles.reviewComment} maxLength={50}>{isExpanded ? infos.text : infos.text.length > 50 ? `${infos.text.substring(0, 50)}...`: infos.text}
-        // {infos.text.length > 50 ? `${infos.text.substring(0, 50)}...` : infos.text}
         </Text>
         {infos.text.length > 50 && (
           <TouchableOpacity onPress={toggleExpand}>
@@ -428,17 +444,14 @@ export default function RestoScreen({ route }) {
         <Text style={styles.reviewDate}>
           {new Date(infos.date).toLocaleDateString()}
         </Text>
-        {/* {item.isUserReview && (
+        {user.token === infos.user ? (
       <View>
-        <TouchableOpacity onPress={handleEditReview}>
-          <Text style={styles.editReview}>Edit</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleDeleteReview}>
+        <TouchableOpacity onPress={() => handleDeleteReview(infos)}>
           <Text style={styles.deleteReview}>Delete</Text>
         </TouchableOpacity>
-      </View>
-    )} */}
+      </View>) : (<View/>
+    )}
       </View>
     )
 
@@ -466,19 +479,6 @@ export default function RestoScreen({ route }) {
   if (!hasPermission || !isFocused) {
     return <View />;
   }
-  // const getCoordinatesFromAddress = async (address) => {
-  //     try {
-  //         const json = await Geocoder.from(address);
-  //         const location = json.results[0].geometry.location;
-  //         return {
-  //             latitude: location.lat,
-  //             longitude: location.lng,
-  //         };
-  //     } catch (error) {
-  //         console.error('Error getting coordinates:', error);
-  //         return null;
-  //     }
-  // };
 
   const fetchRouteDistance = async (origin, destination) => {
     const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${DISTANCE_MATRIX_API_KEY}`;
@@ -591,7 +591,6 @@ export default function RestoScreen({ route }) {
               <TouchableOpacity
                 style={styles.favoriteIcon}
                 onPress={() => { handleFavorite() }
-                  // {isConnected ? setIsFavorite(!isFavorite): dispatch(toggleModal())}
                 }
               >
                 <Feather
@@ -727,7 +726,7 @@ export default function RestoScreen({ route }) {
             </View>
           </View>
         }
-        data={reviewsList}
+        data={reviewsFromDB}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.reviewItem}>
@@ -744,10 +743,10 @@ export default function RestoScreen({ route }) {
                 />
               ))}
             </View>
-            <Text style={styles.reviewComment}>{user.username}</Text>
-            <Text style={styles.reviewComment}>{item.comment}</Text>
+            <Text style={styles.reviewComment}>{item.username}</Text>
+            <Text style={styles.reviewComment}>{item.text}</Text>
             <Text style={styles.reviewDate}>
-              {new Date(item.date).toLocaleDateString()}
+              {new Date(item.created).toLocaleDateString()}
             </Text>
             {item.isUserReview && (
               <View>
@@ -755,7 +754,7 @@ export default function RestoScreen({ route }) {
                   <Text style={styles.editReview}>Edit</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={handleDeleteReview}>
+                <TouchableOpacity onPress={() => handleDeleteReview(item)}>
                   <Text style={styles.deleteReview}>Delete</Text>
                 </TouchableOpacity>
               </View>
@@ -765,11 +764,6 @@ export default function RestoScreen({ route }) {
        
         
         />
-
-      
-        {/* <ScrollView>
-        {googleReviews}
-        </ScrollView> */}
       
       <ReviewModal
         visible={modalVisible}
