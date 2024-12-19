@@ -388,19 +388,15 @@ export default function RestoScreen({ route }) {
       })
   }
 
-  const handleAddReview = (review) => {
+  useEffect(() => {
+    fetch(`${backendAdress}/reviews/${place_id}`)
+    .then(response => response.json())
+    .then((data) => {
+      console.log(data.result)
+    })
+  }, [])
 
-    // fetch(`${backendAdress}/reviews`, {
-    //   method: 'POST',
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({token: user.token, })
-    // }) 
-    //   .then(response => response.json())
-    //   .then((data) => {
-    //     if (data.result){
-    //       console.log(data)
-    //     }
-    //   })
+  const handleAddReview = (review) => {
 
     const newReview = {
       ...review,
