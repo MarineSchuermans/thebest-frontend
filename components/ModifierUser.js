@@ -21,18 +21,21 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
     fetch(`${backendAdress}/users/modifier`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, ...updateData }), 
+      body: JSON.stringify({ email, ...updateData }),
     })
       .then((response) => response.json())
       .then((data) => {
         console.log("Réponse du serveur :", data);
         if (data.result) {
           setMessage("Utilisateur modifié avec succès !");
-          setModalVisible(false); // Ferme le modal après la mise à jour
-          
-          setTimeout(() => { //sert ca enlever l erreur 
+          setModalVisible(false);
+          setUsername('')
+          setPassword('')
+          setEmail('')
+          setTimeout(() => {
+            // Sert à enlever le message
             setMessage("");
-          }, 3000);  
+          }, 3000);
         } else {
           setMessage(`Erreur : ${data.error}`);
         }
@@ -45,8 +48,8 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.button}>
-        <Text style={styles.buttonText}>Modifier Profile</Text>
+      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.modifyButton}>
+        <Text style={styles.modifyButtonText}>Modifier Profil</Text>
       </TouchableOpacity>
 
       {/* Modal pour afficher les champs de saisie */}
@@ -57,10 +60,10 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Modifier Utilisateur</Text>
 
-            <Text>Nom d'utilisateur :</Text>
+            <Text style={styles.label}>Nom d'utilisateur</Text>
             <TextInput
               value={username}
               onChangeText={setUsername}
@@ -68,7 +71,7 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
               style={styles.input}
             />
 
-            <Text>Email :</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
               value={email}
               onChangeText={setEmail}
@@ -76,7 +79,7 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
               style={styles.input}
             />
 
-            <Text>Mot de passe :</Text>
+            <Text style={styles.label}>Mot de passe</Text>
             <TextInput
               value={password}
               onChangeText={setPassword}
@@ -85,7 +88,9 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
               style={styles.input}
             />
 
-            <Button title="Modifier" onPress={handleModifierUser} />
+            <TouchableOpacity style={styles.submitButton} onPress={handleModifierUser}>
+              <Text style={styles.submitButtonText}>Modifier</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Text style={styles.closeButton}>Fermer</Text>
@@ -99,57 +104,87 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
   );
 }
 
+// Définition des styles EN DEHORS du composant
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
   },
-  button: {
-    backgroundColor: '#FFEB3B', // Couleur jaune pour le bouton
+  modifyButton: {
+    backgroundColor: "#C44949", // Rouge moderne
     padding: 15,
-    borderRadius: 30, // Rounded corners for a more modern look
-    width: "80%", // Adjust width for a balanced button
+    borderRadius: 30,
+    width: "80%", 
     alignItems: "center",
     paddingVertical: 15,
     paddingHorizontal: 51,
     marginTop: 1,
-
   },
-  buttonText: {
-    fontSize: 18,
+  modifyButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
     fontWeight: "bold",
-    color: "black", // Texte noir pour contraster avec le fond jaune
   },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Transparence en arrière-plan
+    backgroundColor: "rgba(0, 0, 0, 0.5)", 
   },
-  modalContainer: {
-    backgroundColor: "#C44949", // Couleur du fond du modal
+  modalContent: {
+    backgroundColor: "#FFFFFF", // Fond blanc
     padding: 20,
-    width: "80%",
-    borderRadius: 20,
+    borderRadius: 12,
+    width: "85%",
     alignItems: "center",
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5, 
   },
   modalTitle: {
     fontSize: 20,
-    marginBottom: 10,
-    color: "black", // Couleur du texte du titre
+    fontWeight: "700",
+    color: "#333333",
+    marginBottom: 20,
+    textAlign: "center"
+  },
+  label: {
+    alignSelf: "flex-start",
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#555555", 
+    marginBottom: 5,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#CCC", // Gris clair
-    backgroundColor: "#FFF", // Fond blanc
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
+    height: 30,
+    borderBottomWidth: 1, 
+    borderBottomColor: "#DDD",
+    marginBottom: 10,
     width: "100%",
+    fontSize: 15,
+    color: "#333",
+    paddingHorizontal: 10,
+  },
+  submitButton: {
+    backgroundColor: "#C44949", // Rouge moderne
+    padding: 12,
+    borderRadius: 10,
+    width: "100%", // Bouton pleine largeur
+    alignItems: "center",
+    marginTop: 40, // Espacement avec les champs
+  },
+  submitButtonText: {
+    color: "#FFFFFF", // Texte blanc
     fontSize: 16,
+    fontWeight: "bold",
   },
   closeButton: {
-    color: "red", // Couleur rouge pour le bouton "Fermer"
-    marginTop: 10,
+    color: "#C44949", // Texte rouge pour le bouton "Fermer"
+    marginTop: 15,
+    fontSize: 14,
+    textDecorationLine: "underline",
   },
 });

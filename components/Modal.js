@@ -10,17 +10,11 @@ import {
   Image,
   Modal as RnModal,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
-  TouchableWithoutFeedback,
-  Keyboard,
 } from "react-native";
 import React, { useState } from "react";
 import { backendAdress } from "../config";
-//import { useState } from "react";
 import GoogleSingnin from "./Google-Singn-in";
-//import styles from "../styles/Home.module.css";
 
 export default function Modal() {
   const navigation = useNavigation();
@@ -30,7 +24,7 @@ export default function Modal() {
   const [isSignUp, setIsSignUp] = useState(false); // Gère l'état entre Sign-in et Sign-up
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState(""); // Utilisé uniquement pour Sign-up
+  const [email, setEmail] = useState(""); 
 
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
   const validateUsername = (username) => username.length >= 3;
@@ -129,7 +123,6 @@ export default function Modal() {
           setUsername("");
           setPassword("");
           navigation.navigate("Home");
-          // setIsModalVisible(false);
         } else {
           Alert.alert("Error", data.error || "Login failed.");
         }
@@ -138,29 +131,7 @@ export default function Modal() {
         Alert.alert("Error", "An error occurred. Please try again later.");
       });
   };
-  // Google Sign-In setup
-
-  // GoogleSignin.configure({
-  //   webClientId: clientId,
-  //   offlineAccess: true, // Utile si vous souhaitez un rafraîchissement de token
-  // });
-
-  // const handleGoogleSignIn = async () => {
-  //   try {
-  //     await GoogleSignin.hasPlayServices(); // Vérifie si les services Google Play sont disponibles sur l'appareil
-  //     const userInfo = await GoogleSignin.signIn(); // Lance la fenêtre de connexion Google et récupère les informations de l'utilisateur
-  //     const { idToken } = userInfo; // Récupère le "idToken" de la réponse de Google, qui contient les informations d'authentificatio
-  //     const decoded = jwtDecode(idToken); // Décode le "idToken" pour extraire les informations utilisateur sous forme de données lisibles
-  //     console.log("Decoded Google token:", decoded); // Affiche dans la console les informations extraites du "idToken" (utile pour le débogage)
-  //     dispatch(login({ username: decoded.name, token: idToken })); // Envoie les informations de l'utilisateur au store Redux pour mettre à jour l'état de l'utilisateur
-  //     _toggleModal(); // Ferme le modal actuel en appelant la fonction _toggleModal
-  //     //navigation.navigate("Home");// Navigue vers la page d'accueil de l'application une fois l'utilisateur connecté
-  //   } catch (error) {
-  //     console.log(error);
-  //     Alert.alert("Erreur", "Google Sign-In a échoué.");
-  //   }
-  // };
-
+  
   const _toggleModal = () => {
     dispatch(toggleModal());
     setIsSignUp(false); // Réinitialiser sur Sign-in à chaque ouverture
@@ -181,16 +152,16 @@ export default function Modal() {
           <GoogleSingnin />
 
 
-          <Text style={styles.label}>Nom d'utilisateur</Text>
+          <Text style={styles.label}>Nom d'utilisateur :</Text>
           <TextInput
-            placeholder="Nom d'utilisateur"
+            placeholder="Minimum 3 cararactères"
             value={username}
             onChangeText={setUsername}
             style={styles.input}
           />
-          <Text style={styles.label}>Mot de passe</Text>
+          <Text style={styles.label}>Mot de passe :</Text>
           <TextInput
-            placeholder="Mot de passe"
+            placeholder="Minimum 8 caractères"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -198,9 +169,9 @@ export default function Modal() {
           />
           {isSignUp && (
             <>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>Email :</Text>
               <TextInput
-                placeholder="Email"
+                 placeholder="Email"
                 value={email}
                 onChangeText={setEmail}
                 style={styles.input}
@@ -217,20 +188,13 @@ export default function Modal() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={toggleSignUp}>
+          <TouchableOpacity style={styles.Text} onPress={toggleSignUp}>
             <Text>
               {isSignUp
                 ? "Déjà un compte ? Se connecter"
                 : "Pas de compte ? S'inscrire"}
             </Text>
           </TouchableOpacity>
-          {/* Google Sign-In button */}
-          {/* <GoogleSigninButton
-            style={{ width: 192, height: 48 }}
-            size={GoogleSigninButton.Size.Wide}
-            color={GoogleSigninButton.Color.Dark}
-            onPress={handleGoogleSignIn}
-          /> */}
         </View>
       </TouchableOpacity>
     </RnModal>
@@ -246,56 +210,66 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fond transparent sombre
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fond sombre avec transparence
   },
   modalContent: {
-    backgroundColor: "#C44949", // Base de l'application
-    padding: 30,
-    borderRadius: 10,
-    width: "80%",
+    backgroundColor: "#FFFFFF", // Fond blanc
+    padding: 20,
+    borderRadius: 12,
+    width: "85%",
     alignItems: "center",
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5, 
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "black", // Titre noir
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#333333",
     marginBottom: 20,
-    fontFamily: "Roboto", // Exemple de police professionnelle
+    textAlign: "center",
   },
   label: {
     alignSelf: "flex-start",
     fontSize: 14,
     fontWeight: "600",
-    color: "black", // Labels en noir
+    color: "#555555",
     marginBottom: 5,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#CCC", // Gris clair
-    backgroundColor: "#FFF", // Fond blanc
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
+    height: 30, // Hauteur plus petite pour les champs
+    borderBottomWidth: 1, // Bordure en bas
+    borderBottomColor: "#DDD", // Couleur gris clair
+    marginBottom: 10, // Moins d'espace entre les inputs
     width: "100%",
-    fontSize: 16,
+    fontSize: 15,
+    color: "#333", // Texte sombre pour une bonne lisibilité
+    paddingHorizontal: 10,
   },
   button: {
-    backgroundColor: "black", // Bouton noir
-    padding: 10,
-    borderRadius: 8,
+    backgroundColor: "#C44949", // Bouton rouge
+    padding: 12,
+    borderRadius: 10,
     width: "100%",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 50, // Marge de 2 cm environ (environ 40px)
   },
   buttonText: {
-    color: "#FFF", // Texte blanc sur le bouton
-    fontSize: 16,
+    color: "#FFFFFF", // Texte blanc pour contraste
+    fontSize: 14,
     fontWeight: "bold",
   },
   linkText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: "black", // Texte noir pour les liens
+    marginTop: 90,
+    fontSize: 15,
+    color: "black", // Liens en couleur bouton
     textDecorationLine: "underline",
+    textAlign: "center",
   },
+  Text: {
+    marginTop: 15
+  }
 });
+

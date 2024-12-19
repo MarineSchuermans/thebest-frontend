@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import ModifierUser from "../components/ModifierUser";
 
 
-export default function UserScreen({}) {
+export default function UserScreen({ navigation }) {
   const user = useSelector((state) => state.user.value);
 
   return (
@@ -15,7 +15,7 @@ export default function UserScreen({}) {
 
       {/* Afficher DeleteCompte uniquement si l'utilisateur est connecté */}
       {user.token ? <DeleteCompte /> : null}
-      {user.token ? <ModifierUser currentEmail={user.email} currentUsername={user.username}/> :  null}
+      {user.token ? <ModifierUser currentEmail={user.email} currentUsername={user.user}/> :  null}
       <StatusBar style="auto" />
     </View>
   );
@@ -25,9 +25,8 @@ export default function UserScreen({}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-
+    backgroundColor: "#C44949",
   },
 });

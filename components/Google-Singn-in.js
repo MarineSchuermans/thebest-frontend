@@ -39,7 +39,6 @@ export default function GoogleSignin() {
       fetchUserInfo(response.authentication.accessToken);
     } else if (response?.type === "error") {
       console.error("Auth Error:", response.error);
-    
       setError(response.error);
     }
   }, [response]);
@@ -58,32 +57,33 @@ export default function GoogleSignin() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      {userInfo ? (
-        <Text>Welcome, {userInfo.name}!</Text>
-      ) : (
-        <>
-          <TouchableOpacity
-            onPress={() => {
-              console.log("Initiating Google Sign In");
-              promptAsync();
-              console.log("Error during Google Sign In:", error);
-            }}
-            disabled={!request}
-          >
-            <Image
-              source={require('../assets/googlelogo.webp')}
-              style={{ width: 50, height: 50 }}
-            />
-          </TouchableOpacity>
-          {error && <Text style={{ color: 'red' }}>{error}</Text>}
-        </>
-      )}
-    </View>
-  );
-}
+//   return (
+//     <View style={styles.container}>
+//       {userInfo ? (
+//         <Text>Welcome, {userInfo.name}!</Text>
+//       ) : (
+//         <>
+//           <TouchableOpacity
+//             onPress={() => {
+//               console.log("Initiating Google Sign In");
+//               promptAsync();
+//               console.log("Error during Google Sign In:", error);
+//             }}
+//             disabled={!request}
+//           >
+//             <Image
+//               source={require('../assets/googlelogo.webp')}
+//               style={{ width: 50, height: 50 }}
+//             />
+//           </TouchableOpacity>
+//           {error && <Text style={{ color: 'red' }}>{error}</Text>}
+//         </>
+//       )}
+//     </View>
+//   );
+// }
 
-const styles = StyleSheet.create({
-  container: { height: 65, justifyContent: "center", alignItems: "center" },
-});
+// const styles = StyleSheet.create({
+//   container: { height: 65, justifyContent: "center", alignItems: "center" },
+ }
+//);

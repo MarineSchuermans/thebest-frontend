@@ -4,7 +4,6 @@ import { logout, toggleModal } from "../reducers/user";
 import {
   View,
   Text,
- 
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
@@ -29,9 +28,8 @@ export default function Login() {
     <View style={styles.container}>
       {user.token ? (
         <View style={styles.logoutSection}>
-          {/* Texte de bienvenue plus personnalisé */}
-          <Text style={styles.welcomeText}>Bienvenu, Bester! Prêt à decouvrir les mielleure resto {user.username}! </Text>
-        
+          {/* Texte de bienvenue personnalisé pour l'utilisateur connecté */}
+          <Text style={styles.welcomeText}>Bienvenu, Bester {user.username}!</Text>
 
           {/* Bouton de déconnexion stylisé */}
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
@@ -39,9 +37,16 @@ export default function Login() {
           </TouchableOpacity>
         </View>
       ) : (
-        <TouchableOpacity onPress={_toggleModal} style={styles.userIcon}>
-          <Text>{isModalVisible ? "Close" : "Login/Sign-up"}</Text>
-        </TouchableOpacity>
+        <View style={styles.loginSection}>
+          {/* Texte de bienvenue pour l'utilisateur non connecté */}
+          <Text style={styles.welcomeText}>
+          Bienvenue ! Connectez-vous ou inscrivez-vous pour faire partie des meilleurs et découvrir notre sélection de meilleurs restaurants." </Text>
+
+          {/* Bouton pour ouvrir la modale de connexion */}
+          <TouchableOpacity onPress={_toggleModal} style={styles.userIcon}>
+            <Text>{isModalVisible ? "Fermer" : "Se Connecter | S'inscrire"}</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -53,13 +58,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#F9F9F9",
+    backgroundColor: "white",
   },
   welcomeText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
+    color: "black",
+    marginBottom: 80, // Augmentation de l'espacement sous le texte
     textAlign: "center",
   },
   logoutSection: {
@@ -69,30 +74,27 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoutButton: {
-    backgroundColor: "#FF6347", // Couleur tomate pour un effet dynamique
+    backgroundColor: "#FF6347",
     padding: 15,
-    borderRadius: 30, // Rounded corners for a more modern look
-    width: "80%", // Adjust width for a balanced button
+    borderRadius: 30,
     alignItems: "center",
-    paddingVertical: 15,
-    paddingHorizontal: 51,
-    marginTop: 1, // Ombre pour un effet de profondeur
   },
   logoutButtonText: {
     color: "black",
-    fontSize: 19,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: 900,
     textAlign: "center",
   },
   userIcon: {
-    padding: 10,
-    backgroundColor: "#F0F0F0",
+    padding: 25,
+    backgroundColor: "#C44949",
     borderRadius: 20,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 5, // Ombre pour un effet de profondeur
+    color: "black",
+    fontWeight: "bold", 
+  },
+  loginSection: {
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

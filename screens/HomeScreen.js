@@ -32,7 +32,7 @@ export default function HomeScreen({ navigation }) {
             console.log('Permission to access location was denied');
             return;
         }
-    
+
         let location = await Location.getCurrentPositionAsync({});
         let address = await Location.reverseGeocodeAsync(location.coords);
         if (address[0]) {
@@ -56,11 +56,14 @@ export default function HomeScreen({ navigation }) {
                     _id: place._id,
                     place_id: place.place_id,
                     id: place.id,
-                    title: place.name,
+                    title: place.name.length > 20 
+                      ? place.name.substring(0, 17) + "..." 
+                        : place.name,
                     location: place.address,
                     address: place.location,
                     description: place.reviews ? place.reviews[0]?.text : "Ici, bientôt une description",
                     rating: place.rating,
+                    reviews: place.reviews,
                     image: place.photo,
                     phoneNumber: place.phoneNumber,
                     openingHours: place.openingHours,
