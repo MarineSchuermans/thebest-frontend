@@ -83,6 +83,7 @@ export default function HomeScreen({ navigation }) {
                     image: place.photo,
                     phoneNumber: place.phoneNumber,
                     openingHours: place.openingHours,
+                    reviews : place.reviews
                 }));
                 setRestaurants(formattedRestaurants);
 

@@ -1,18 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Button,
-  Text,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Linking,
-  Share,
-  Image,
-  Modal,
-  TextInput,
-  FlatList,
-  ScrollView,
-} from "react-native";
+import {Button,Text,View,StyleSheet,TouchableOpacity,Linking,Share,Image,Modal,TextInput,FlatList,ScrollView,} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { CameraView, Camera } from "expo-camera";
 import { useIsFocused } from "@react-navigation/native";
@@ -272,7 +259,7 @@ export default function RestoScreen({ route }) {
   const photosFromApi = [];
   const videoFromApi = [];
 
-  const getTypeIcon = () => {
+   const getTypeIcon = () => {
     switch (type) {
       case "family":
         return { icon: "users", text: "Famille" };
