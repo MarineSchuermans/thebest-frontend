@@ -68,7 +68,9 @@ export default function HomeScreen({ navigation }) {
                     _id: place._id,
                     place_id: place.place_id,
                     id: place.id,
-                    title: place.name,
+                    title: place.name.length > 20 
+                      ? place.name.substring(0, 17) + "..." 
+                        : place.name,
                     location: place.address,
                     address: place.location,
                     description: place.reviews ? place.reviews[0]?.text : "Ici, bientôt une description",
