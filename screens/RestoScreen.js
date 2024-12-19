@@ -1,18 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Button,
-  Text,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Linking,
-  Share,
-  Image,
-  Modal,
-  TextInput,
-  FlatList,
-  ScrollView,
-} from "react-native";
+import {Button,Text,View,StyleSheet,TouchableOpacity,Linking,Share,Image,Modal,TextInput,FlatList,ScrollView,} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { CameraView, Camera } from "expo-camera";
 import { useIsFocused } from "@react-navigation/native";
@@ -40,7 +27,7 @@ const ReviewModal = ({ visible, onClose, onSubmit, photo }) => {
   const [comment, setComment] = useState("");
 
   const handleSubmit = () => {
-    onSubmit({ rating, comment, photo });
+    onSubmit({ rating, comment, photo }); 
     setRating(0);
     setComment("");
     onClose();
@@ -253,43 +240,7 @@ export default function RestoScreen({ route }) {
   const photosFromApi = [];
   const videoFromApi = [];
 
-  // useEffect(() => {
-
-  //     // Initialize the ApifyClient with API token
-  //     const client = new ApifyClient({
-  //         token: 'apify_api_aQEbQtJvzhWHS48o1P5oq9elYbGsmn2lFuAU',
-  //     });
-
-  //     // Prepare Actor input
-  //     const input = {
-  //         "directUrls": [
-  //             "https://www.instagram.com/meltingpot_restaurant_lille/"
-  //         ],
-  //         "resultsType": "posts",
-  //         "resultsLimit": 5,
-  //         "searchType": "hashtag",
-  //         "searchLimit": 1,
-  //         "addParentData": false
-  //     };
-
-  //     (async () => {
-  //         // Run the Actor and wait for it to finish
-  //         const run = await client.actor("shu8hvrXbJbY3Eb9W").call(input);
-
-  //         // Fetch and print Actor results from the run's dataset (if any)
-  //         console.log('Results from dataset');
-  //         const { items } = await client.dataset(run.defaultDatasetId).listItems();
-  //         items.forEach((item) => {
-  //             console.dir(item);
-
-  //             setPhotoPlaces(...photoPlaces, item)
-
-  //             console.log(item)
-  //         });
-  //     })();
-  // }, [])
-
-  const getTypeIcon = () => {
+   const getTypeIcon = () => {
     switch (type) {
       case "family":
         return { icon: "users", text: "Famille" };
