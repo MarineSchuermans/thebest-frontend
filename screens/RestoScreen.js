@@ -697,12 +697,12 @@ export default function RestoScreen({ route }) {
               {/* Distance Information */}
               <View style={styles.distanceContainer}>
                 <Text style={styles.distanceText}>
-                  Distance to you: {distances.toUser || "Calculating..."}
+                Distance jusqu'à vous : {distances.toUser || "Calculating..."}
                 </Text>
                 {nearestParking && (
                   <View style={styles.parkingDistanceContainer}>
                     <Text style={styles.distanceText}>
-                      Distance to nearest parking:
+                    Distance du parking le plus proche :
                     </Text>
                     <Text
                       style={[

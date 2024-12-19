@@ -88,7 +88,7 @@ export default function HomeScreen({ navigation }) {
 
                 // dispatch(addRestoFiltredToStore([...formattedRestaurants]))
 
-                for (let i = 0 ; i < formattedRestaurants.length; i++){
+                for (let i = 0; i < formattedRestaurants.length; i++) {
                     dispatch(addRestoFiltredToStore(formattedRestaurants[i]))
                 }
 
@@ -140,7 +140,7 @@ export default function HomeScreen({ navigation }) {
             .then(response => response.json())
             .then(data => {
                 dispatch(initializeFiltreToStore()) //On remet le reduccer filtre à zéro
-                
+
                 const updateFilterResto = []
                 if (Array.isArray(data) && data.length > 0) {
                     setIsFilter(true);
@@ -158,7 +158,7 @@ export default function HomeScreen({ navigation }) {
                         openingHours: place.openingHours
                     }));
                     setDataFilter(dataRestaurantsFiltred);
-                    for (let i = 0 ; i < dataRestaurantsFiltred.length; i++){
+                    for (let i = 0; i < dataRestaurantsFiltred.length; i++) {
                         updateFilterResto.push(dataRestaurantsFiltred[i])
                     }
                 } else {
@@ -166,7 +166,7 @@ export default function HomeScreen({ navigation }) {
                     setDataFilter([]);
                 }
 
-                for (let i = 0 ; i < updateFilterResto.length; i++){
+                for (let i = 0; i < updateFilterResto.length; i++) {
                     dispatch(addRestoFiltredToStore(updateFilterResto[i]))
                 }
             })
@@ -314,8 +314,8 @@ export default function HomeScreen({ navigation }) {
                 speed={0.05}
             />
             <ScrollView style={styles.restaurantList}>
-                {(isFilter ? dataFilter : restaurants).map((restaurant) => (
-                    <RenderRestaurantItem key={restaurant.id} item={restaurant} />
+                {(isFilter ? dataFilter : restaurants).map((restaurant, index) => (
+                    <RenderRestaurantItem key={index} item={restaurant} />
                 ))}
             </ScrollView>
         </SafeAreaView>
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     },
     dropdown: {
         position: 'absolute',
-        top: 60, 
+        top: 60,
         left: 16,
         right: 16,
         backgroundColor: '#FFFFFF',

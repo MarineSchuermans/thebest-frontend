@@ -77,7 +77,7 @@ export default function MapScreen({ route, navigation }) {
                     onPress={() => handleMarkerPress(data)}
                     onCalloutPress={() => handleTextePress(data)}>
                     <View style={styles.restaurantMarker}>
-                        <Image source={require('../assets/IMG_0029.png')} style={{ width: 40, height: 40 }} />
+                        <Image source={require('../assets/IMG_0029.png')} style={{ width: 70, height: 70 }} />
                     </View>
                 </Marker>
             )
