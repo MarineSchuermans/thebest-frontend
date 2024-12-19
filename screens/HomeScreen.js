@@ -24,7 +24,7 @@ export default function HomeScreen({ navigation }) {
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const inputRef = useRef(null);
 
-    console.log(restoFiltre)
+    // console.log(restoFiltre)
 
     const toggleDropdown = () => {
         setIsDropdownVisible(!isDropdownVisible);
