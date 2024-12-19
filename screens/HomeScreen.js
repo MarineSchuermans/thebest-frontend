@@ -3,6 +3,7 @@ import * as Location from "expo-location";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addLocationToStore, addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
+import { initializeFiltreToStore, addRestoFiltredToStore } from "../reducers/restoFiltred";
 import Feather from "react-native-vector-icons/Feather";
 import { backendAdress } from "../config";
 import LikeIcon from "../components/LikeIcon";
@@ -16,11 +17,14 @@ export default function HomeScreen({ navigation }) {
     const [dataFilter, setDataFilter] = useState([]);
     const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value);
+    const restoFiltre = useSelector((state) => state.restoFiltred.value)
     const [currentLocation, setCurrentLocation] = useState("Rechercher un lieu...");
     const [selectedCity, setSelectedCity] = useState("");
     const availableCities = ["Lille", "Paris"];
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const inputRef = useRef(null);
+
+    console.log(restoFiltre)
 
     const toggleDropdown = () => {
         setIsDropdownVisible(!isDropdownVisible);
@@ -62,6 +66,7 @@ export default function HomeScreen({ navigation }) {
             try {
                 const response = await fetch(backendAdress + "/findNearbyRestaurants");
                 const restaurantData = await response.json();
+                dispatch(initializeFiltreToStore())
 
                 const formattedRestaurants = restaurantData.map((place) => ({
                     _id: place._id,
@@ -80,6 +85,13 @@ export default function HomeScreen({ navigation }) {
                     openingHours: place.openingHours,
                 }));
                 setRestaurants(formattedRestaurants);
+
+                // dispatch(addRestoFiltredToStore([...formattedRestaurants]))
+
+                for (let i = 0 ; i < formattedRestaurants.length; i++){
+                    dispatch(addRestoFiltredToStore(formattedRestaurants[i]))
+                }
+
             } catch (error) {
                 console.error("Error fetching restaurants:", error);
             }
@@ -127,6 +139,9 @@ export default function HomeScreen({ navigation }) {
         fetch(`${backendAdress}/findRestaurantsByCategory?${query.toString()}`)
             .then(response => response.json())
             .then(data => {
+                dispatch(initializeFiltreToStore()) //On remet le reduccer filtre à zéro
+                
+                const updateFilterResto = []
                 if (Array.isArray(data) && data.length > 0) {
                     setIsFilter(true);
                     const dataRestaurantsFiltred = data.map((place, index) => ({
@@ -143,9 +158,16 @@ export default function HomeScreen({ navigation }) {
                         openingHours: place.openingHours
                     }));
                     setDataFilter(dataRestaurantsFiltred);
+                    for (let i = 0 ; i < dataRestaurantsFiltred.length; i++){
+                        updateFilterResto.push(dataRestaurantsFiltred[i])
+                    }
                 } else {
                     setIsFilter(false);
                     setDataFilter([]);
+                }
+
+                for (let i = 0 ; i < updateFilterResto.length; i++){
+                    dispatch(addRestoFiltredToStore(updateFilterResto[i]))
                 }
             })
             .catch(error => {
