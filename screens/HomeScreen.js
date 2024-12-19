@@ -7,6 +7,7 @@ import Feather from "react-native-vector-icons/Feather";
 import FontAwesome6 from "react-native-vector-icons/FontAwesome";
 import { backendAdress } from "../config";
 import LikeIcon from "../components/LikeIcon";
+import { MarqueeText } from '../components/marquee-text';
 
 export default function HomeScreen({ navigation }) {
     const dispatch = useDispatch();
@@ -30,7 +31,7 @@ export default function HomeScreen({ navigation }) {
     const selectCity = (city) => {
         setSelectedCity(city);
         setIsDropdownVisible(false);
-        handleFilterByType("", city); 
+        handleFilterByType("", city);
     };
 
     useEffect(() => {
@@ -68,8 +69,8 @@ export default function HomeScreen({ navigation }) {
                     _id: place._id,
                     place_id: place.place_id,
                     id: place.id,
-                    title: place.name.length > 20 
-                      ? place.name.substring(0, 17) + "..." 
+                    title: place.name.length > 20
+                        ? place.name.substring(0, 17) + "..."
                         : place.name,
                     location: place.address,
                     address: place.location,
@@ -259,18 +260,18 @@ export default function HomeScreen({ navigation }) {
                     </TouchableOpacity>
 
                     {isDropdownVisible && (
-                    <ScrollView style={styles.dropdown}>
-                        {availableCities.map((city) => (
-                            <TouchableOpacity
-                                key={city}
-                                style={styles.dropdownItem}
-                                onPress={() => selectCity(city)}
-                            >
-                                <Text>{city}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                )}
+                        <ScrollView style={styles.dropdown}>
+                            {availableCities.map((city) => (
+                                <TouchableOpacity
+                                    key={city}
+                                    style={styles.dropdownItem}
+                                    onPress={() => selectCity(city)}
+                                >
+                                    <Text>{city}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    )}
                 </View>
             </View>
 
@@ -287,7 +288,10 @@ export default function HomeScreen({ navigation }) {
                     ))}
                 </ScrollView>
             </View>
-
+            <MarqueeText
+                text="🔥Trend : Mamayia, Bestab du moment 🤯🍤🔥"
+                speed={0.05}
+            />
             <ScrollView style={styles.restaurantList}>
                 {(isFilter ? dataFilter : restaurants).map((restaurant) => (
                     <RenderRestaurantItem key={restaurant.id} item={restaurant} />
@@ -445,7 +449,7 @@ const styles = StyleSheet.create({
     searchInput: {
         backgroundColor: "#F3F4F6",
         borderRadius: 20,
-        paddingHorizontal: 40,
+        paddingHorizontal: 135,
         paddingVertical: 8,
         color: "#000",
     },
