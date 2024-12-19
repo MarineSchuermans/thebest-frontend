@@ -16,7 +16,7 @@ export default function HomeScreen({ navigation }) {
     const [isFilter, setIsFilter] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null)
     const [dataFilter, setDataFilter] = useState([]);
-    // const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
+    const categories = ['Fast food', 'Italien', 'Asiatique', 'Gastronomique'];
     const user = useSelector((state) => state.user.value);
     const restoFiltre = useSelector((state) => state.restoFiltred.value)
     const [currentLocation, setCurrentLocation] = useState("Rechercher un lieu...");
