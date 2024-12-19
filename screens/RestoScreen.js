@@ -137,6 +137,7 @@ export default function RestoScreen({ route }) {
   const cameraRef = useRef(null);
   const isFocused = useIsFocused();
   const [photoUri, setPhotoUri] = useState(null);
+  const [reviewsFromDB, setReviewsFromDB] = useState([])
   const [userReview, setUserReview] = useState(null);
   const screenWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
@@ -224,7 +225,7 @@ export default function RestoScreen({ route }) {
       const response = await fetch(`${backendAdress}/findNearbyRestaurants`);
       const data = await response.json();
       setNearbyRestaurants(data);
-      console.log(data)
+      // console.log(data)
     } catch (error) {
       console.error("Error fetching nearby restaurants:", error);
     }
@@ -388,13 +389,21 @@ export default function RestoScreen({ route }) {
       })
   }
 
+  // Recupération des avis Besters de la BDD par rapport a la place_id du resto
   useEffect(() => {
     fetch(`${backendAdress}/reviews/${place_id}`)
     .then(response => response.json())
     .then((data) => {
-      console.log(data.result)
+      // console.log(data)
+      if (data.result){
+        setReviewsFromDB(data.reviews)
+      } else {
+        console.log("Aucun Bester n'a laissé d'avis. Soyez le premier ! ")
+      }
     })
   }, [])
+
+//  console.log(JSON.stringify(reviewsFromDB, null, 2))
 
   const handleAddReview = (review) => {
 
@@ -427,12 +436,26 @@ export default function RestoScreen({ route }) {
       }
     }
   };
-  const handleDeleteReview = () => {
+  const handleDeleteReview = (review) => {
     if (!isConnected) {
       // Ouvrir le modal si non connecté rajouter ismael
       dispatch(toggleModal(true));
       return;
     } else {
+      fetch(`${backendAdress}/reviews`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({token: user.token, _id: review._id})
+      })
+        .then(response => response.json())
+        .then((data) => {
+          if(data.result) {
+            console.log('Avis supprimé')
+            setReviewsFromDB(reviewsFromDB.find(reviews => reviews !== review))
+          }else{
+            console.error('Erreur:', data.error)
+          }
+        })
       if (userReview) {
         setReviewsList(reviewsList.filter((r) => r.isUserReview === false));
         setUserReview(null);
@@ -463,7 +486,7 @@ export default function RestoScreen({ route }) {
         <Text style={styles.reviewName}>{infos.author}</Text>
         <ScrollView> 
         <Text style={styles.reviewComment} maxLength={50}>{isExpanded ? infos.text : infos.text.length > 50 ? `${infos.text.substring(0, 50)}...`: infos.text}
-        // {infos.text.length > 50 ? `${infos.text.substring(0, 50)}...` : infos.text}
+        {/* // {infos.text.length > 50 ? `${infos.text.substring(0, 50)}...` : infos.text} */}
         </Text>
         {infos.text.length > 50 && (
           <TouchableOpacity onPress={toggleExpand}>
@@ -477,17 +500,17 @@ export default function RestoScreen({ route }) {
         <Text style={styles.reviewDate}>
           {new Date(infos.date).toLocaleDateString()}
         </Text>
-        {/* {item.isUserReview && (
+        {user.token === infos.user ? (
       <View>
-        <TouchableOpacity onPress={handleEditReview}>
+        {/* <TouchableOpacity onPress={handleEditReview}>
           <Text style={styles.editReview}>Edit</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
-        <TouchableOpacity onPress={handleDeleteReview}>
+        <TouchableOpacity onPress={() => handleDeleteReview(infos)}>
           <Text style={styles.deleteReview}>Delete</Text>
         </TouchableOpacity>
-      </View>
-    )} */}
+      </View>) : (<View/>
+    )}
       </View>
     )
 
@@ -776,7 +799,7 @@ export default function RestoScreen({ route }) {
             </View>
           </View>
         }
-        data={reviewsList}
+        data={reviewsFromDB}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.reviewItem}>
@@ -793,10 +816,10 @@ export default function RestoScreen({ route }) {
                 />
               ))}
             </View>
-            <Text style={styles.reviewComment}>{user.username}</Text>
-            <Text style={styles.reviewComment}>{item.comment}</Text>
+            <Text style={styles.reviewComment}>{item.username}</Text>
+            <Text style={styles.reviewComment}>{item.text}</Text>
             <Text style={styles.reviewDate}>
-              {new Date(item.date).toLocaleDateString()}
+              {new Date(item.created).toLocaleDateString()}
             </Text>
             {item.isUserReview && (
               <View>
@@ -804,7 +827,7 @@ export default function RestoScreen({ route }) {
                   <Text style={styles.editReview}>Edit</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={handleDeleteReview}>
+                <TouchableOpacity onPress={() => handleDeleteReview(item)}>
                   <Text style={styles.deleteReview}>Delete</Text>
                 </TouchableOpacity>
               </View>
