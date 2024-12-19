@@ -1,12 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, Easing, StyleSheet, Dimensions } from 'react-native'
 
-interface MarqueeProps {
-  text: string;
-  speed?: number;
-}
-
-export const MarqueeText: React.FC<MarqueeProps> = ({ text, speed = 0.05 }) => {
+export const MarqueeText = ({ text, speed = 0.05 }) => {
   const scrollX = useRef(new Animated.Value(0)).current;
   const textWidth = useRef(0);
   const containerWidth = Dimensions.get('window').width;
