@@ -26,7 +26,7 @@ export default function HomeScreen({ navigation }) {
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const inputRef = useRef(null);
 
-    console.log(restoFiltre)
+    // console.log(restoFiltre)
 
     const toggleDropdown = () => {
         setIsDropdownVisible(!isDropdownVisible);
@@ -81,6 +81,7 @@ export default function HomeScreen({ navigation }) {
                     address: place.location,
                     description: place.reviews ? place.reviews[0]?.text : "Ici, bientôt une description",
                     rating: place.rating,
+                    review : place.review,
                     image: place.photo,
                     phoneNumber: place.phoneNumber,
                     openingHours: place.openingHours,
