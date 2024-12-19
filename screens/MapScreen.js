@@ -363,7 +363,7 @@ export default function MapScreen({ route, navigation }) {
                         >
                             <Image
                                 source={require('../assets/IMG_0028.jpeg')}
-                                style={{ width: 30, height: 30 }}
+                                style={{ width: 15, height: 15 }}
                             />
                             <ParkingMarker
                                 freeSpaces={parking.properties.nbr_libre}
