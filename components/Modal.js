@@ -1,7 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { login, toggleModal, addFavoritesToStore } from "../reducers/user";
-import { initializeRestoToStore, addRestoToStore } from "../reducers/resto";
 import {
   View,
   Alert,
@@ -110,32 +109,6 @@ export default function Modal() {
             }
 
           })
-          // fetch(`${backendAdress}/places`)
-          //             .then(response => response.json())
-          //             .then(data => {
-          //                 dispatch(initializeRestoToStore())
-          //                 // console.log(id_places.length)
-          //                 // console.log(JSON.stringify(data.places.find('') null, 2))
-          //                 const updateLikes = []
-          //                 for (let i = 0; i < id_places.length; i++) {
-          //                     // console.log(id_places[i] + ' result : \n', JSON.stringify(data.places.find(place => place.id === id_places[i]), null, 2))
-          //                     const matchingResto = data.places.find(place => place.id === id_places[i])
-          
-          //                     if (matchingResto) {
-          //                         updateLikes.push(matchingResto)
-          //                     }
-          
-          
-          //                 }
-          
-          //                 for (let i = 0; i < updateLikes.length; i++) {
-          //                     dispatch(addRestoToStore(updateLikes[i]))
-          
-          //                 }
-          //                 // console.log(updateLikes)
-          //                 // setLikePlaces([...updateLikes])
-          //             })
-          
           
           // fetch(`${backendAdress}/users/favorites`, {
           //   method: 'GET',

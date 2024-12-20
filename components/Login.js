@@ -64,25 +64,25 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "black",
-    marginBottom: 80, // Augmentation de l'espacement sous le texte
+    marginBottom: 13, // Augmentation de l'espacement sous le texte
     textAlign: "center",
   },
   logoutSection: {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginTop: 50,
   },
   logoutButton: {
-    backgroundColor: "#FF6347",
+    backgroundColor: "black",
     padding: 15,
     borderRadius: 30,
     alignItems: "center",
+
   },
   logoutButtonText: {
-    color: "black",
-    fontSize: 20,
-    fontWeight: 900,
+    color: "white",
+    fontSize: 15,
     textAlign: "center",
   },
   userIcon: {
@@ -96,5 +96,6 @@ const styles = StyleSheet.create({
   loginSection: {
     alignItems: "center",
     justifyContent: "center",
+     
   },
 });
