@@ -15,6 +15,7 @@ import { backendAdress, DISTANCE_MATRIX_API_KEY } from "../config";
 import { addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
 import { toggleModal } from "../reducers/user"; 
 
+
 // URL pour récupérer les données de parking depuis une API
 const PARKING_DATA_URL =
   "https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json";
