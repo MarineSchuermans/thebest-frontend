@@ -305,20 +305,15 @@ export default function RestoScreen({ route }) {
     }
   };
 
-// console.log(isFavorite)
-
   const handleFavorite = (item) => {
     if (!isConnected) {
       return navigation.navigate('User')
     }
 
-
     const infos = {
       token: user.token,
       obj_id: place_id
     }
-
-
 
     fetch('https://the-best-backend.vercel.app/users/favorites', {
       method: 'PUT',
@@ -351,10 +346,9 @@ export default function RestoScreen({ route }) {
         console.log("Aucun Bester n'a laissé d'avis. Soyez le premier ! ")
       }
     })
-  }, [])
+  }, [reviewsFromDB])
 
   const handleAddReview = (review) => {
-
     const newReview = {
       ...review,
       date: new Date().toISOString(),
@@ -411,6 +405,11 @@ export default function RestoScreen({ route }) {
     }
   };
 
+  // Comparatif des dates des avis afin que les avis les plus récents soient affichés en premiers
+  const sortedReviews = reviewsFromDB.sort((a, b) => 
+    new Date(b.created) - new Date(a.created)
+  )
+
   const googleReviews = reviews.map((infos, i) => {
     const [isExpanded, setIsExpanted] = useState(false) //Pour afficher l'intégralité d'un avis ou non
 
@@ -435,7 +434,7 @@ export default function RestoScreen({ route }) {
         {infos.text.length > 50 && (
           <TouchableOpacity onPress={toggleExpand}>
             <Text style={styles.showMoreText}>
-              {isExpanded ? 'Moins' : 'Plus'}
+              {isExpanded ? 'Moins' : 'Plus'} 
             </Text>
           </TouchableOpacity>
         )}
@@ -454,12 +453,7 @@ export default function RestoScreen({ route }) {
     )}
       </View>
     )
-
-
-
   })
-
-
 
   const uploadPhoto = async (uri) => {
     // Implémentation de l'upload de la photo
@@ -726,7 +720,7 @@ export default function RestoScreen({ route }) {
             </View>
           </View>
         }
-        data={reviewsFromDB}
+        data={sortedReviews}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.reviewItem}>

@@ -62,18 +62,14 @@ function InnerApp() {
               iconName = "user";
               return <FontAwesome name={iconName} size={size} color={color} />;
             } else if (route.name === "User" && isConnected) {
-              const avatarMap = {
-                "map-pin-yellow": require(`./assets/map-pin-yellow.png`),
-                avatar1: require(`./assets/avatars/avatar1.png`),
-                avatar2: require(`./assets/avatars/avatar2.png`),
-                avatar3: require(`./assets/avatars/avatar3.png`),
-              };
-              return (
-                <Image
-                  source={avatarMap[user.avatarUrl]}
-                  style={styles.userImage}
-                />
-              );
+              iconName = "user";
+              return <FontAwesome name={iconName} size={size} color='green' />;
+              // return (
+              //   <Image
+              //     source={avatarMap[user.avatarUrl]}
+              //     style={styles.userImage}
+              //   />
+              // );
             } else if (route.name === "Like") {
               iconName = "heart";
 
