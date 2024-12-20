@@ -32,15 +32,39 @@ export default function MapScreen({ route, navigation }) {
         isConnected = true;
     }
 
-    // Récupération des données des parkings
     const fetchParkings = async () => {
         try {
-            // Remplace l'URL avec une source valide si nécessaire
-            const response = await fetch(
+            // Récupération des parkings de Lille
+            const lilleParkingsResponse = await fetch(
                 'https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json'
             );
-            const data = await response.json();
-            setParkings(data.features);
+            const lilleParkingsData = await lilleParkingsResponse.json();
+    
+            // Récupération des stationnements de Paris
+            const parisParkingsResponse = await fetch(
+                'https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/stationnement-voie-publique-emplacements/records?limit=100'
+            );
+            const parisParkingsData = await parisParkingsResponse.json();
+    
+            // Transformation des données de Paris pour correspondre au format attendu
+            const parisFormattedParkings = parisParkingsData.results.map(parking => ({
+                type: 'Feature',
+                properties: {
+                    nom: `${parking.typsta} - ${parking.nomvoie}`,
+                    latitude: parking.geo_point_2d.lat,
+                    longitude: parking.geo_point_2d.lon,
+                    nbr_libre: parking.placal, // Utilisation de placal comme nombre de places libres (à ajuster si nécessaire)
+                    nbr_total: parking.plarel, // Utilisation de plarel comme nombre total de places (à ajuster si nécessaire)
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [parking.geo_point_2d.lon, parking.geo_point_2d.lat]
+                }
+            }));
+    
+            // Combinaison des parkings de Lille et Paris
+            const allParkings = [...lilleParkingsData.features, ...parisFormattedParkings];
+            setParkings(allParkings);
         } catch (error) {
             console.error('Erreur lors de la récupération des parkings:', error);
         }
