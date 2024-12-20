@@ -1,26 +1,35 @@
-import { View, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
 import { useState, useRef, useEffect } from 'react';
 
+// Composant principal de l'écran de la carte
 export default function MapScreen({ route, navigation }) {
+    // Sélectionne l'utilisateur depuis le store Redux
     const user = useSelector((state) => state.user.value);
+    // Sélectionne les restaurants depuis le store Redux
     const resto = useSelector((state) => state.resto.value);
-    const restoFiltre = useSelector((state) => state.restoFiltred.value)
-    const { restaurantLocation } = route.params || {};
+    // Sélectionne les restaurants filtrés depuis le store Redux
+    const restoFiltre = useSelector((state) => state.restoFiltred.value);
+    // État pour stocker la localisation de l'utilisateur
     const [userLocation, setUserLocation] = useState(null);
+    // État pour stocker la région de la carte
     const [mapRegion, setMapRegion] = useState(null);
-    const [routeCoordinates, setRouteCoordinates] = useState([]);
+    // État pour stocker le restaurant sélectionné
     const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+    // État pour stocker les parkings
     const [parkings, setParkings] = useState([]);
+    // Référence pour la carte
     const mapRef = useRef(null);
+    // État pour indiquer si la carte est prête
     const [isMapReady, setIsMapReady] = useState(false);
 
-    let isConnected = false
+    // Variable pour vérifier si l'utilisateur est connecté
+    let isConnected = false;
     if (user.token?.length > 0) {
-        isConnected = true
+        isConnected = true;
     }
 
     // Récupération des données des parkings
@@ -49,8 +58,8 @@ export default function MapScreen({ route, navigation }) {
         }
     };
 
-    // Composant pour le marqueur de parking
-    const ParkingMarker = ({ freeSpaces, totalSpaces }) => {
+// Composant pour afficher un marqueur de parking sur la carte
+const ParkingMarker = ({ freeSpaces, totalSpaces }) => {
         const percentage = (freeSpaces / totalSpaces) * 100;
         const gaugeColor = getParkingColor(freeSpaces, totalSpaces);
 
@@ -63,41 +72,47 @@ export default function MapScreen({ route, navigation }) {
         );
     };
 
-    //Markers des favoris et restos HENRI NE PAS EFFECER STP !!!!!!
-    const favoritesOrNotMarkers = restoFiltre.map((data, i) => {
-        const isItFavorite = resto?.some(place => place.id === data.place_id)
-        const dataFavorite = resto.find(place => place.id === data.place_id)
-      
-        if (isConnected === false || isItFavorite === false) {
-            return (
-                <Marker key={i}
-                    coordinate={{ latitude: data.address.coordinates[1], longitude: data.address.coordinates[0] }}
-                    title={data.title}
-                    description={`Rating: ${data.rating}`}
-                    onPress={() => handleMarkerPress(data)}
-                    onCalloutPress={() => handleTextePress(data)}>
-                    <View style={styles.restaurantMarker}>
-                        <Image source={require('../assets/IMG_0029.png')} style={{ width: 70, height: 70 }} />
-                    </View>
-                </Marker>
-            )
-        } else if (isItFavorite) {
-            return (
-                <Marker key={i}
-                    coordinate={{ latitude: dataFavorite.location.coordinates[1], longitude: dataFavorite.location.coordinates[0] }}
-                    title={dataFavorite.name}
-                    description={`Rating: ${resto.rating}`}
-                    onPress={() => handleMarkerPress(data)}
-                    onCalloutPress={() => handleTextePress(data)}>
-                    <View style={styles.restaurantMarker}>
-                        <Image
-                            source={require('../assets/Icone_Favoris.png')}
-                            style={{ width: 50, height: 50 }} />
-                    </View>
-                </Marker>
-            )
-        }   
-    })
+    // Création des marqueurs pour les restaurants filtrés
+const favoritesOrNotMarkers = restoFiltre.map((data, i) => {
+    // Vérifie si le restaurant est dans les favoris
+    const isItFavorite = resto?.some(place => place.id === data.place_id);
+    // Trouve les données du restaurant favori
+    const dataFavorite = resto.find(place => place.id === data.place_id);
+
+    // Si l'utilisateur n'est pas connecté ou si le restaurant n'est pas favori
+    if (isConnected === false || isItFavorite === false) {
+        return (
+            <Marker key={i}
+                coordinate={{ latitude: data.address.coordinates[1], longitude: data.address.coordinates[0] }}
+                title={data.title}
+                description={`Rating: ${data.rating}`}
+                onPress={() => handleMarkerPress(data)}
+                onCalloutPress={() => handleTextePress(data)}>
+                <View style={styles.restaurantMarker}>
+                    <Image source={require('../assets/IMG_0029.png')} style={{ width: 70, height: 70 }} />
+                </View>
+            </Marker>
+        );
+    } 
+    // Si le restaurant est favori
+    else if (isItFavorite) {
+        return (
+            <Marker key={i}
+                coordinate={{ latitude: dataFavorite.location.coordinates[1], longitude: dataFavorite.location.coordinates[0] }}
+                title={dataFavorite.name}
+                description={`Rating: ${resto.rating}`}
+                onPress={() => handleMarkerPress(data)}
+                onCalloutPress={() => handleTextePress(data)}>
+                <View style={styles.restaurantMarker}>
+                    <Image
+                        source={require('../assets/Icone_Favoris.png')}
+                        style={{ width: 50, height: 50 }} />
+                </View>
+            </Marker>
+        );
+    }   
+});
+
     // Recuperation des infos via le reduccer resto pour afficher les markers Favoris sur la Map
     const favoriteMarkers = resto.map((data, i) => {
         return (
@@ -150,72 +165,82 @@ export default function MapScreen({ route, navigation }) {
         })();
     }, []);
 
-    // Nouvelle fonction pour centrer la carte sur un restaurant
-    const centerMapOnRestaurant = (restaurant) => {
-        setTimeout(() => {
-            if (mapRef.current && restaurant) {
-                let latitude, longitude;
+// Fonction pour centrer la carte sur un restaurant spécifique
+const centerMapOnRestaurant = (restaurant) => {
+    setTimeout(() => {
+        if (mapRef.current && restaurant) {
+            let latitude, longitude;
 
-                console.log(restaurant.address.coordinates)
+            console.log(restaurant.address.coordinates);
 
-                if (restaurant.location && restaurant.address.coordinates) {
-                    // Format pour les restaurants de la liste initiale
-                    [longitude, latitude] = restaurant.address.coordinates;
-                } else if (restaurant.location && restaurant.location.latitude && restaurant.location.longitude) {
-                    // Format pour les restaurants sélectionnés depuis RestoScreen
-                    ({ latitude, longitude } = restaurant.location);
-                } else {
-                    return;
-                }
-
-                const region = {
-                    latitude,
-                    longitude,
-                    latitudeDelta: 0.005,
-                    longitudeDelta: 0.005,
-                };
-                mapRef.current.animateToRegion(region, 1000);
+            if (restaurant.location && restaurant.address.coordinates) {
+                // Format pour les restaurants de la liste initiale
+                [longitude, latitude] = restaurant.address.coordinates;
+            } else if (restaurant.location && restaurant.location.latitude && restaurant.location.longitude) {
+                // Format pour les restaurants sélectionnés depuis RestoScreen
+                ({ latitude, longitude } = restaurant.location);
+            } else {
+                return;
             }
-        }, 500);
-    };
 
+            // Définition de la région à centrer sur la carte
+            const region = {
+                latitude,
+                longitude,
+                latitudeDelta: 0.005,
+                longitudeDelta: 0.005,
+            };
+            // Animation de la carte pour centrer sur la région définie
+            mapRef.current.animateToRegion(region, 1000);
+        }
+    }, 500); // Délai de 500ms avant de centrer la carte
+};
+
+// Fonction pour gérer l'événement lorsqu'un marqueur sur la carte est pressé
+    // Elle définit le restaurant sélectionné et centre la carte sur la localisation du restaurant
     const handleMarkerPress = (restaurant) => {
-        setSelectedRestaurant(restaurant);
-        centerMapOnRestaurant(restaurant);
+        setSelectedRestaurant(restaurant); // Met à jour l'état avec le restaurant sélectionné
+        centerMapOnRestaurant(restaurant); // Centre la carte sur le restaurant sélectionné
     };
 
-    const handleTextePress = (restaurant, i) => {
-        navigation.navigate('Resto', {
-            place_id: restaurant.place_id,
-            id: restaurant.id,
-            title: restaurant.title,
-            location: restaurant.location,
-            address: restaurant.address,
-            description: restaurant.description,
-            rating: restaurant.rating,
-            reviews: restaurant.reviews,
-            image: restaurant.image,
-            phoneNumber: restaurant.phoneNumber,
-            openingHours: restaurant.openingHours
-        });
-    };
+// Fonction pour gérer l'événement lorsqu'un texte de restaurant est pressé
+// Elle navigue vers l'écran des détails du restaurant avec les informations du restaurant
+const handleTextePress = (restaurant, i) => {
+    navigation.navigate('Resto', {
+        place_id: restaurant.place_id,       // ID du lieu du restaurant
+        id: restaurant.id,                   // ID du restaurant
+        title: restaurant.title,             // Titre du restaurant
+        location: restaurant.location,       // Localisation du restaurant
+        address: restaurant.address,         // Adresse du restaurant
+        description: restaurant.description, // Description du restaurant
+        rating: restaurant.rating,           // Note du restaurant
+        reviews: restaurant.reviews,         // Avis sur le restaurant
+        image: restaurant.image,             // Image du restaurant
+        phoneNumber: restaurant.phoneNumber, // Numéro de téléphone du restaurant
+        openingHours: restaurant.openingHours // Heures d'ouverture du restaurant
+    });
+};
 
-    useEffect(() => {
-        if (route.params?.restaurant) {
-            const restaurant = route.params.restaurant;
-            setSelectedRestaurant(restaurant);
+// Utilisation de useEffect pour vérifier si un restaurant est passé en paramètre via la route
+// Si un restaurant est passé, il est défini comme restaurant sélectionné
+// Si le paramètre centerOnRestaurant est vrai, la carte est centrée sur ce restaurant
+useEffect(() => {
+    if (route.params?.restaurant) {
+        const restaurant = route.params.restaurant;
+        setSelectedRestaurant(restaurant); // Met à jour l'état avec le restaurant sélectionné
 
-            if (route.params.centerOnRestaurant) {
-                centerMapOnRestaurant(restaurant);
-            }
+        if (route.params.centerOnRestaurant) {
+            centerMapOnRestaurant(restaurant); // Centre la carte sur le restaurant sélectionné
         }
-    }, [route.params?.restaurant]);
+    }
+}, [route.params?.restaurant]);
 
-    useEffect(() => {
-        if (isMapReady && selectedRestaurant) {
-            centerMapOnRestaurant(selectedRestaurant);
-        }
-    }, [isMapReady, selectedRestaurant]);
+// Utilisation de useEffect pour centrer la carte sur le restaurant sélectionné lorsque la carte est prête
+useEffect(() => {
+    if (isMapReady && selectedRestaurant) {
+        centerMapOnRestaurant(selectedRestaurant); // Centre la carte sur le restaurant sélectionné
+    }
+}, [isMapReady, selectedRestaurant]);
 
     return (
         <View style={styles.container}>
