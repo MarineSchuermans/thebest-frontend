@@ -24,6 +24,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Feather from "react-native-vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
+import PopDescrip from "./components/PopDescrip";
 // import { TouchableOpacity } from "react-native-gesture-handler";
 
 const store = configureStore({
@@ -49,6 +50,7 @@ function InnerApp() {
   return (
     <NavigationContainer>
       <Modal />
+      <PopDescrip />
 
       <Tab.Navigator
         screenOptions={({ route }) => ({
