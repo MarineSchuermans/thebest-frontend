@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     height: 35,
 },
 categoryButtonOn: {
-  backgroundColor: "#64de84",
+  backgroundColor: "#fc9595",
   shadowRadius: 5,
   shadowColor: "grey",
   shadowOpacity: 0.3,
