@@ -15,10 +15,6 @@ import { backendAdress, DISTANCE_MATRIX_API_KEY } from "../config";
 import { addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
 import { toggleModal } from "../reducers/user"; 
 
-// URL pour récupérer les données de parking depuis une API
-const PARKING_DATA_URL =
-  "https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json";
-
   // Composant ReviewModal pour afficher et soumettre des avis
 const ReviewModal = ({ visible, onClose, onSubmit, photo, place_id }) => {
     // Récupération de l'utilisateur depuis le store Redux
@@ -143,19 +139,60 @@ export default function RestoScreen({ route }) {
   const user = useSelector((state) => state.user.value);
   const isConnected = user?.token;
 
-  
-
-
-
   const fetchParkings = async () => {
     try {
-      const response = await fetch(PARKING_DATA_URL);
-      const data = await response.json();
-      setParkings(data.features);
+      // Récupération des parkings de Lille
+      const lilleParkingsResponse = await fetch(
+        'https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json'
+      );
+      const lilleParkingsData = await lilleParkingsResponse.json();
+  
+      // Récupération des stationnements de Paris
+      const parisParkingsResponse = await fetch(
+        'https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/stationnement-voie-publique-emplacements/records?limit=100'
+      );
+      const parisParkingsData = await parisParkingsResponse.json();
+  
+      // Transformation des données de Paris pour correspondre au format attendu
+      const parisFormattedParkings = parisParkingsData.results.map(parking => ({
+        type: 'Feature',
+        properties: {
+          nom: `${parking.typsta} - ${parking.nomvoie}`,
+          latitude: parking.geo_point_2d.lat,
+          longitude: parking.geo_point_2d.lon,
+          nbr_libre: parking.placal,
+          nbr_total: parking.plarel,
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [parking.geo_point_2d.lon, parking.geo_point_2d.lat],
+        },
+      }));
+  
+      // Transformation des données de Lille pour correspondre au format attendu
+      const lilleFormattedParkings = lilleParkingsData.features.map(parking => ({
+        type: 'Feature',
+        properties: {
+          nom: parking.properties.nom,
+          latitude: parking.properties.latitude,
+          longitude: parking.properties.longitude,
+          nbr_libre: parking.properties.nbr_libre,
+          nbr_total: parking.properties.nbr_total,
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [parking.properties.longitude, parking.properties.latitude],
+        },
+      }));
+  
+      // Combinaison des parkings de Lille et Paris
+      const allParkings = [...lilleFormattedParkings, ...parisFormattedParkings];
+      setParkings(allParkings);
     } catch (error) {
-      console.error("Erreur lors de la récupération des parkings:", error);
+      console.error('Erreur lors de la récupération des parkings:', error);
     }
   };
+
   useEffect(() => {
     fetchUserLocation();
     fetchNearbyRestaurants();
@@ -163,27 +200,29 @@ export default function RestoScreen({ route }) {
   }, []);
 
   const calculateDistances = async () => {
+    if (!userLocation || !address) return;
+  
     // Distance to user
     const userDistanceResult = await fetchRouteDistance(
       { latitude: userLocation.latitude, longitude: userLocation.longitude },
       { latitude: address.coordinates[1], longitude: address.coordinates[0] }
     );
-
+  
     // Find nearest parking
     const nearestParkingLocation = findNearestParking();
     const parkingDistanceResult = nearestParkingLocation
       ? await fetchRouteDistance(
-        {
-          latitude: address.coordinates[1],
-          longitude: address.coordinates[0],
-        }, // Restaurant location
-        {
-          latitude: nearestParkingLocation.latitude,
-          longitude: nearestParkingLocation.longitude,
-        }
-      )
+          {
+            latitude: address.coordinates[1],
+            longitude: address.coordinates[0],
+          }, // Restaurant location
+          {
+            latitude: nearestParkingLocation.latitude,
+            longitude: nearestParkingLocation.longitude,
+          }
+        )
       : null;
-
+  
     setDistances({
       toUser: userDistanceResult,
       toParking: parkingDistanceResult,
@@ -493,24 +532,22 @@ export default function RestoScreen({ route }) {
 
   const findNearestParking = () => {
     if (!userLocation || !parkings.length) return null;
-
+  
     const nearestParking = parkings.reduce((nearest, parking) => {
       const parkingCoords = {
         latitude: parking.properties.latitude,
         longitude: parking.properties.longitude,
       };
-
+  
       const distance = calculateHaversineDistance(userLocation, parkingCoords);
-
+  
       return !nearest || distance < nearest.distance
         ? { ...parkingCoords, distance, details: parking.properties }
         : nearest;
     }, null);
-
+  
     return nearestParking;
   };
-
-
 
   const calculateHaversineDistance = (point1, point2) => {
     const R = 6371; // Earth's radius in kilometers

@@ -24,8 +24,6 @@
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ]
     },
@@ -54,12 +52,16 @@
       ]
     ],
     "extra": {
+      "eas": {
+        "projectId": "9e758cf2-f42e-42e8-90a5-5d308b7d6288"
+      }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
       "url": "https://u.expo.dev/9e758cf2-f42e-42e8-90a5-5d308b7d6288"
-    }
+    },
+    "owner": "losbanditos"
   }
 }
