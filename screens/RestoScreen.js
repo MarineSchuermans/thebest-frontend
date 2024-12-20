@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {Button,Text,View,StyleSheet,TouchableOpacity,Linking,Share,Image,Modal,TextInput,FlatList,ScrollView,} from "react-native";
+import {Text,View,StyleSheet,TouchableOpacity,Linking,Share,Image,Modal,TextInput,FlatList,ScrollView,} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { CameraView, Camera } from "expo-camera";
 import { useIsFocused } from "@react-navigation/native";
@@ -11,23 +11,25 @@ import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { backendAdress } from "../config";
+import { backendAdress, DISTANCE_MATRIX_API_KEY } from "../config";
 import { addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
-
 import { toggleModal } from "../reducers/user"; 
 
-const DISTANCE_MATRIX_API_KEY =
-  "GyMlY5B5kAqL6CyTs3CexOtRqnMfBnLc3TapNQ53lvYsN8ccW9xPMp4WBWjeSw8D";
+// URL pour récupérer les données de parking depuis une API
 const PARKING_DATA_URL =
   "https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json";
+
+  // Composant ReviewModal pour afficher et soumettre des avis
 const ReviewModal = ({ visible, onClose, onSubmit, photo, place_id }) => {
+    // Récupération de l'utilisateur depuis le store Redux
   const user = useSelector((state) => state.user.value);
+    // Déclaration des états locaux pour la note et le commentaire
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
+    // Fonction pour gérer la soumission du formulaire d'avis
   const handleSubmit = () => {
-    //Fetch de la route post/reviews pour poster les avis en BDD 
+    // Envoi de la requête POST à l'API pour enregistrer l'avis en base de données
     fetch(`${backendAdress}/reviews`, {
       method: 'POST',
       headers: { "Content-Type": "application/json" },
@@ -36,9 +38,9 @@ const ReviewModal = ({ visible, onClose, onSubmit, photo, place_id }) => {
       .then(response => response.json())
       .then((data) => {
         if (data.result){
-          console.log(data)
+          console.log(data) // Affichage des données en cas de succès
         } else {
-          console.log(data)
+          console.log(data) // Affichage des données en cas d'échec
         }
       })
 
@@ -65,7 +67,7 @@ const ReviewModal = ({ visible, onClose, onSubmit, photo, place_id }) => {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.modalContent}
         >
-          <Text style={styles.modalTitle}>Add a Review</Text>
+          <Text style={styles.modalTitle}>Ajouter un avis</Text>
           {photo && (
             <Image source={{ uri: photo }} style={styles.reviewPhoto} />
           )}
@@ -85,7 +87,7 @@ const ReviewModal = ({ visible, onClose, onSubmit, photo, place_id }) => {
           </View>
           <TextInput
             style={styles.commentInput}
-            placeholder="Write your review"
+            placeholder="Donnez votre avis"
             value={comment}
             onChangeText={setComment}
             multiline
@@ -940,6 +942,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.4)",
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingVertical: 10,
   },
   modalContent: {
     backgroundColor: "#FFFFFF",
