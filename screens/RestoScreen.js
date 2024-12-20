@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {Text,View,StyleSheet,TouchableOpacity,Linking,Share,Image,Modal,TextInput,FlatList,ScrollView,} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { CameraView, Camera } from "expo-camera";
@@ -15,6 +15,9 @@ import { backendAdress, DISTANCE_MATRIX_API_KEY } from "../config";
 import { addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
 import { toggleModal } from "../reducers/user"; 
 
+// URL pour récupérer les données de parking depuis une API
+const PARKING_DATA_URL =
+  "https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json";
 
   // Composant ReviewModal pour afficher et soumettre des avis
 const ReviewModal = ({ visible, onClose, onSubmit, photo, place_id }) => {
@@ -136,64 +139,59 @@ export default function RestoScreen({ route }) {
   });
   const [parkings, setParkings] = useState([]);
   const [photoPlaces, setPhotoPlaces] = useState([]);
+  const [photos, setPhotos] = useState([]);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
   const isConnected = user?.token;
 
+  useEffect(() => {
+    const fetchRestaurantData = async () => {
+        try {
+            console.log("Fetching restaurant data for place_id:", place_id);
+            console.log("Backend URL:", `${backendAdress}/restaurant/${place_id}`);
+
+            const response = await fetch(`${backendAdress}/restaurant/${place_id}`);
+            
+            const responseText = await response.text();
+            console.log("Raw response:", responseText);
+
+            const data = JSON.parse(responseText);
+
+            if (data.success && data.data && data.data.all_photos) {
+                console.log("Photos found:", data.data.all_photos);
+                setPhotos(data.data.all_photos);
+            } else if (image) {
+                console.log("No photos found, using default image");
+                setPhotos([image]);
+            }
+        } catch (error) {
+            console.error("Erreur lors de la récupération des données :", error);
+            if (image) {
+                setPhotos([image]);
+            }
+        }
+    };
+
+    if (place_id) {
+        fetchRestaurantData();
+    }
+}, [place_id, image]);
+
+
+  useEffect(() => {
+    console.log("Photos à afficher dans RestoScreen:", photos);
+}, [photos]);
+
+
   const fetchParkings = async () => {
     try {
-      // Récupération des parkings de Lille
-      const lilleParkingsResponse = await fetch(
-        'https://data.lillemetropole.fr/geoserver/wms?service=WFS&version=1.1.0&request=GetFeature&typeName=parking&outputFormat=application/json'
-      );
-      const lilleParkingsData = await lilleParkingsResponse.json();
-  
-      // Récupération des stationnements de Paris
-      const parisParkingsResponse = await fetch(
-        'https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/stationnement-voie-publique-emplacements/records?limit=100'
-      );
-      const parisParkingsData = await parisParkingsResponse.json();
-  
-      // Transformation des données de Paris pour correspondre au format attendu
-      const parisFormattedParkings = parisParkingsData.results.map(parking => ({
-        type: 'Feature',
-        properties: {
-          nom: `${parking.typsta} - ${parking.nomvoie}`,
-          latitude: parking.geo_point_2d.lat,
-          longitude: parking.geo_point_2d.lon,
-          nbr_libre: parking.placal,
-          nbr_total: parking.plarel,
-        },
-        geometry: {
-          type: 'Point',
-          coordinates: [parking.geo_point_2d.lon, parking.geo_point_2d.lat],
-        },
-      }));
-  
-      // Transformation des données de Lille pour correspondre au format attendu
-      const lilleFormattedParkings = lilleParkingsData.features.map(parking => ({
-        type: 'Feature',
-        properties: {
-          nom: parking.properties.nom,
-          latitude: parking.properties.latitude,
-          longitude: parking.properties.longitude,
-          nbr_libre: parking.properties.nbr_libre,
-          nbr_total: parking.properties.nbr_total,
-        },
-        geometry: {
-          type: 'Point',
-          coordinates: [parking.properties.longitude, parking.properties.latitude],
-        },
-      }));
-  
-      // Combinaison des parkings de Lille et Paris
-      const allParkings = [...lilleFormattedParkings, ...parisFormattedParkings];
-      setParkings(allParkings);
+      const response = await fetch(PARKING_DATA_URL);
+      const data = await response.json();
+      setParkings(data.features);
     } catch (error) {
-      console.error('Erreur lors de la récupération des parkings:', error);
+      console.error("Erreur lors de la récupération des parkings:", error);
     }
   };
-
   useEffect(() => {
     fetchUserLocation();
     fetchNearbyRestaurants();
@@ -201,29 +199,27 @@ export default function RestoScreen({ route }) {
   }, []);
 
   const calculateDistances = async () => {
-    if (!userLocation || !address) return;
-  
     // Distance to user
     const userDistanceResult = await fetchRouteDistance(
       { latitude: userLocation.latitude, longitude: userLocation.longitude },
       { latitude: address.coordinates[1], longitude: address.coordinates[0] }
     );
-  
+
     // Find nearest parking
     const nearestParkingLocation = findNearestParking();
     const parkingDistanceResult = nearestParkingLocation
       ? await fetchRouteDistance(
-          {
-            latitude: address.coordinates[1],
-            longitude: address.coordinates[0],
-          }, // Restaurant location
-          {
-            latitude: nearestParkingLocation.latitude,
-            longitude: nearestParkingLocation.longitude,
-          }
-        )
+        {
+          latitude: address.coordinates[1],
+          longitude: address.coordinates[0],
+        }, // Restaurant location
+        {
+          latitude: nearestParkingLocation.latitude,
+          longitude: nearestParkingLocation.longitude,
+        }
+      )
       : null;
-  
+
     setDistances({
       toUser: userDistanceResult,
       toParking: parkingDistanceResult,
@@ -435,7 +431,7 @@ export default function RestoScreen({ route }) {
         .then((data) => {
           if(data.result) {
             console.log('Avis supprimé')
-            setReviewsFromDB(reviewsFromDB.find(reviews => reviews !== review))
+            setReviewsFromDB(reviewsFromDB.filter(reviews => reviews._id !== review._id))
           }else{
             console.error('Erreur:', data.error)
           }
@@ -463,7 +459,7 @@ export default function RestoScreen({ route }) {
           {[...Array(5)].map((_, index) => (
             <FontAwesome
               // key={i}
-              name={i < infos.rating ? "star" : "star-o"}
+              name={index < infos.rating ? "star" : "star-o"}
               size={16}
               color="#FFD700"
             />
@@ -533,22 +529,24 @@ export default function RestoScreen({ route }) {
 
   const findNearestParking = () => {
     if (!userLocation || !parkings.length) return null;
-  
+
     const nearestParking = parkings.reduce((nearest, parking) => {
       const parkingCoords = {
         latitude: parking.properties.latitude,
         longitude: parking.properties.longitude,
       };
-  
+
       const distance = calculateHaversineDistance(userLocation, parkingCoords);
-  
+
       return !nearest || distance < nearest.distance
         ? { ...parkingCoords, distance, details: parking.properties }
         : nearest;
     }, null);
-  
+
     return nearestParking;
   };
+
+
 
   const calculateHaversineDistance = (point1, point2) => {
     const R = 6371; // Earth's radius in kilometers
@@ -618,10 +616,19 @@ export default function RestoScreen({ route }) {
         ListHeaderComponent={
           <View>
             <View style={styles.imageContainer}>
-              <Image
-                source={{ uri: image }}
-                style={[styles.image, { width: screenWidth }]}
-              />
+              <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+              >
+                {photos.map((photo, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: photo }}
+                    style={[styles.image, { width: screenWidth }]}
+                  />
+                ))}
+              </ScrollView>
               <TouchableOpacity
                 style={styles.favoriteIcon}
                 onPress={() => { handleFavorite() }
@@ -1095,4 +1102,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  restaurantMarker: {
+    alignItems: "center",
+  },
+  ratingBadge: {
+    position: "absolute",
+    top: -10,
+    backgroundColor: "#FFD700",
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 5,
+  },
+  ratingText: {
+    fontSize: 12,
+    color: "#000",
+  },
 });
+
