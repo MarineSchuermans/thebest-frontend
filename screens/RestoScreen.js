@@ -15,6 +15,7 @@ import { backendAdress, DISTANCE_MATRIX_API_KEY } from "../config";
 import { addFavoritesToStore, removeFavoritesToStore } from "../reducers/user";
 import { toggleModal } from "../reducers/user"; 
 
+
   // Composant ReviewModal pour afficher et soumettre des avis
 const ReviewModal = ({ visible, onClose, onSubmit, photo, place_id }) => {
     // Récupération de l'utilisateur depuis le store Redux
