@@ -94,7 +94,9 @@ export default function LikeScreen({ navigation }) {
     //Si pas de favori renvoie 'No Favorite' si favoris affichera tt les favoris (utilisation du .map pour créer les différentes cartes)
     let favoriteListe
     if (likePlaces.length === 0 || !isConnected) {
-        favoriteListe = <Text> Tu n'as pas encore de Favoris </Text>
+        favoriteListe = <View style={styles.nosfav}>
+            <Text > Sois pas timide, rajoute tes favoris ! </Text>
+            </View>
     } else {
         favoriteListe = dataRestoFav.map((item, i) => {
             return (
@@ -148,7 +150,7 @@ export default function LikeScreen({ navigation }) {
             <View style={styles.header}>
                 <Feather name="map-pin" size={24} />
                 <View style={styles.searchContainer}>
-                    <Text style={styles.title}>Tes Best of The Best ♥</Text>
+                    <Text style={styles.title}>The Best of The Best <Text style = {{color : '#C44949'}}>♥</Text></Text>
                 </View>
             </View>
             <View style={styles.restaurantList}>
@@ -275,6 +277,17 @@ const styles = StyleSheet.create({
     ratingText: {
         marginLeft: 4,
         color: '#6B7280',
+    },
+    
+    nosfav : {
+
+        display : "flex",
+        alignItems : "center",
+        justifyContent : "center",
+        height : "100%",
+        with : "100%",
+        marginTop : 150
     }
 
-});
+
+})
