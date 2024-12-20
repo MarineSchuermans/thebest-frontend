@@ -72,7 +72,7 @@ export default function DeleteCompte() {
 
   return (
     <View style={styles.container}>
-      <Text>cliquez pour desactiver votre compte</Text>
+      <Text style={styles.text}>cliquez pour desactiver votre compte</Text>
       <TouchableOpacity style={styles.deleteButton} onPress={handleDeletePress}>
         <Text style={styles.buttonText}> Supprimer profile</Text>
       </TouchableOpacity>
@@ -85,21 +85,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    marginTop: '80%',
+  },
+  text: {
+    color: "black",
+
   },
   deleteButton: {
-    backgroundColor: "red",
-    padding: 15,
-    borderRadius: 30, 
-    width: "80%", 
+    backgroundColor: "rgba(255, 0, 0, 0.74)",
+    borderRadius: 30,
     alignItems: "center",
     paddingVertical: 15,
     paddingHorizontal: 51,
-    marginTop: 1,
   },
   buttonText: {
-    color: "black",  
-    fontSize: 15, 
+    color: "black",
+    fontSize: 15,
     fontWeight: "bold",
   },
 });

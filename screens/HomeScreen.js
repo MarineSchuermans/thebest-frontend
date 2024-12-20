@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
         height: 35,
     },
     categoryButtonOn: {
-        backgroundColor: "#64de84",
+        backgroundColor: "#ffffff",
         shadowRadius: 5,
         shadowColor: "grey",
         shadowOpacity: 0.3,
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     categoryText: {
         fontSize: 14,
         fontWeight: "500",
-        color: "white",
+        color: "black",
     },
     restaurantList: {
         flex: 1,

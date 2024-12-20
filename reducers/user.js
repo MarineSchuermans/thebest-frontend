@@ -44,11 +44,16 @@ export const userSlice = createSlice({
         }
         // la valeur de isModaleVisible s'inverse ex : (connecter => true => alors false => reste fermer|| connecter => false => alors true => isModalVisible)
         state.value.isModalVisible = !state.value.isModalVisible;
-    }
+      },
+        modifierUser: (state, action) => {
+          state.value.username = action.payload.username;
+
+  },
   },
 });
 
 export const {
+  modifierUser,
   addLocationToStore,
   login,
   logout,

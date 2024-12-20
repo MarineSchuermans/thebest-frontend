@@ -24,6 +24,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Feather from "react-native-vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
+import PopDescrip from "./components/PopDescrip";
 // import { TouchableOpacity } from "react-native-gesture-handler";
 
 const store = configureStore({
@@ -49,6 +50,7 @@ function InnerApp() {
   return (
     <NavigationContainer>
       <Modal />
+      <PopDescrip />
 
       <Tab.Navigator
         screenOptions={({ route }) => ({
@@ -62,18 +64,14 @@ function InnerApp() {
               iconName = "user";
               return <FontAwesome name={iconName} size={size} color={color} />;
             } else if (route.name === "User" && isConnected) {
-              const avatarMap = {
-                "map-pin-yellow": require(`./assets/map-pin-yellow.png`),
-                avatar1: require(`./assets/avatars/avatar1.png`),
-                avatar2: require(`./assets/avatars/avatar2.png`),
-                avatar3: require(`./assets/avatars/avatar3.png`),
-              };
-              return (
-                <Image
-                  source={avatarMap[user.avatarUrl]}
-                  style={styles.userImage}
-                />
-              );
+              iconName = "user";
+              return <FontAwesome name={iconName} size={size} color='green' />;
+              // return (
+              //   <Image
+              //     source={avatarMap[user.avatarUrl]}
+              //     style={styles.userImage}
+              //   />
+              // );
             } else if (route.name === "Like") {
               iconName = "heart";
 

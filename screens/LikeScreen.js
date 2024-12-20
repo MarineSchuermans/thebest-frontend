@@ -13,19 +13,23 @@ import { backendAdress } from "../config"
 
 export default function LikeScreen({ navigation }) {
     const dispatch = useDispatch()
-    const likePlaces = useSelector((state) => state.resto.value)
+    const likePlaces = useSelector((state) => state.resto.value) // récupération des data des restos Favoris
     const user = useSelector((state) => state.user.value)
-    const id_places = user.favorites
+    const id_places = user.favorites // récupération des place_id des restos Favoris de l'user
 
     let isConnected = false
     if (user.token?.length > 0) {
         isConnected = true
     }
 
+    // Filtre et compare les id_places des favoris et les id_places de tt les restos de la BDD et garde uniquement ceux qui matchent
+    // Le fetch s'effectue à chaque modification du redducer user.favorites
+    // Ces infos sont ensuite envoyées dans le reduccer resto pour être réutilisé dans d'autres Screen
     useEffect(() => {
         fetch(`${backendAdress}/places`)
             .then(response => response.json())
             .then(data => {
+                // A chaque fetch, les données du reduccer resto est remis à zéro pour etre remplacées pas les nouvelles données du fetch
                 dispatch(initializeRestoToStore())
                 const updateLikes = []
                 for (let i = 0; i < id_places.length; i++) {
@@ -36,12 +40,15 @@ export default function LikeScreen({ navigation }) {
                     }
                 }
                 for (let i = 0; i < updateLikes.length; i++) {
+                    // Ajout des nouvelles données au reduccer resto
                     dispatch(addRestoToStore(updateLikes[i]))
                 }
             })
     }, [id_places.length])
 
-    const dataRestoFav = likePlaces.map((place, index) => 
+
+    // Formatage des datas afin qu'elles correspondent au format attendu par la restoScreen
+    const dataRestoFav = likePlaces.map((place, index) =>
     ({
         place_id: place.id,
         id: index + 1,
@@ -55,7 +62,9 @@ export default function LikeScreen({ navigation }) {
         phoneNumber: place.phoneNumber,
         openingHours: place.openingHours
     })
-)
+    )
+
+    // Modifications des favoris via une route PUT qui effectuera les modifications en BDD 
     const handleRemoveFavorite = (item) => {
         const infos = {
             token: user.token,
@@ -69,8 +78,10 @@ export default function LikeScreen({ navigation }) {
             .then(response => response.json())
             .then(data => {
                 if (data.result) {
+                    //Si ajout d'un favoris, la place_id du restaurent sera ajouté dans le reduccer user.favoris
                     dispatch(addFavoritesToStore(item))
                 } else {
+                    // Si suppression d'un favoris, la place_id du restaurent sera retiré du reduccer user.favoris
                     dispatch(removeFavoritesToStore(item))
                 }
             })
@@ -79,10 +90,11 @@ export default function LikeScreen({ navigation }) {
             })
     }
 
+    // Mise en place des 'cartes' resto ajoutés en Favoris 
+    //Si pas de favori renvoie 'No Favorite' si favoris affichera tt les favoris (utilisation du .map pour créer les différentes cartes)
     let favoriteListe
-
     if (likePlaces.length === 0 || !isConnected) {
-        favoriteListe = <Text> No favorite</Text>
+        favoriteListe = <Text> Tu n'as pas encore de Favoris </Text>
     } else {
         favoriteListe = dataRestoFav.map((item, i) => {
             return (
@@ -138,11 +150,10 @@ export default function LikeScreen({ navigation }) {
                 <View style={styles.searchContainer}>
                     <Text style={styles.title}>Tes Best of The Best ♥</Text>
                 </View>
-                <FontAwesome6 name="bars" size={24} />
             </View>
             <View style={styles.restaurantList}>
                 <ScrollView>
-                    {favoriteListe}
+                    {favoriteListe} 
                 </ScrollView>
             </View>
         </SafeAreaView>

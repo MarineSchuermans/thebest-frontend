@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Modal, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, Modal, TouchableOpacity, StyleSheet } from "react-native";
 import { backendAdress } from "../config"; // Si tu utilises une variable pour l'URL de ton backend
+import { useDispatch, useSelector} from "react-redux";
+import { modifierUser } from "../reducers/user";
 
 export default function ModifierUser({ currentUsername, currentEmail }) {
   const [username, setUsername] = useState(currentUsername || "");
@@ -8,11 +10,12 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [modalVisible, setModalVisible] = useState(false); // État pour contrôler la visibilité du Modal
-
-  const handleModifierUser = () => {
+  const dispatch = useDispatch();
+ 
+  const currentUsernameFromStore = useSelector((state) => state.user.value.username);  const handleModifierUser = () => {
     console.log("Données envoyées :", { username, email, password });
+    
 
-    // Création de l'objet contenant uniquement les champs remplis
     const updateData = {};
     if (username) updateData.username = username;
     if (email) updateData.email = email;
@@ -27,13 +30,16 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
       .then((data) => {
         console.log("Réponse du serveur :", data);
         if (data.result) {
+        
+          dispatch(modifierUser({ username: data.User.username }));
           setMessage("Utilisateur modifié avec succès !");
           setModalVisible(false);
-          setUsername('')
-          setPassword('')
-          setEmail('')
+          setUsername('');
+          setPassword('');
+          setEmail('');
+
+
           setTimeout(() => {
-            // Sert à enlever le message
             setMessage("");
           }, 3000);
         } else {
@@ -41,7 +47,7 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
         }
       })
       .catch((error) => {
-        console.error("Erreur lors de la modification :", error);
+       console.error("Erreur lors de la modification :", error);
         setMessage("Une erreur s'est produite lors de la modification.");
       });
   };
@@ -61,7 +67,7 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Modifier Utilisateur</Text>
+            <Text style={styles.modalTitle}>Modifier Profile</Text>
 
             <Text style={styles.label}>Nom d'utilisateur</Text>
             <TextInput
@@ -75,7 +81,7 @@ export default function ModifierUser({ currentUsername, currentEmail }) {
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="Nouvel email"
+              placeholder="Email obligatoire"
               style={styles.input}
             />
 
@@ -110,6 +116,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    marginBottom: '0%',
   },
   modifyButton: {
     backgroundColor: "#C44949", // Rouge moderne
@@ -118,13 +125,13 @@ const styles = StyleSheet.create({
     width: "80%", 
     alignItems: "center",
     paddingVertical: 15,
-    paddingHorizontal: 51,
-    marginTop: 1,
+    paddingHorizontal: 10,
+    marginBottom: '9',
+    
   },
   modifyButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
+    color: "white",
+    fontSize: 15,
   },
   modalOverlay: {
     flex: 1,

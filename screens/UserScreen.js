@@ -14,8 +14,8 @@ export default function UserScreen({ navigation }) {
       <Login />
 
       {/* Afficher DeleteCompte uniquement si l'utilisateur est connecté */}
-      {user.token ? <DeleteCompte /> : null}
       {user.token ? <ModifierUser currentEmail={user.email} currentUsername={user.user}/> :  null}
+      {user.token ? <DeleteCompte /> : null}
       <StatusBar style="auto" />
     </View>
   );
@@ -27,6 +27,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#C44949",
+    backgroundColor: "white",
   },
 });
