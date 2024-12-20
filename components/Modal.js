@@ -12,6 +12,7 @@ import {
   Modal as RnModal,
   TouchableOpacity,
   StyleSheet,
+  KeyboardAvoidingView,
 } from "react-native";
 import React, { useState } from "react";
 import { backendAdress } from "../config";
@@ -171,6 +172,7 @@ export default function Modal() {
       onRequestClose={_toggleModal}
     >
       <TouchableOpacity style={styles.modalOverlay} onPress={_toggleModal}>
+      <KeyboardAvoidingView behavior="padding">
         <View style={styles.modalContent}>
           <Text style={styles.title}>
             {isSignUp ? "Inscription" : "Connexion"}
@@ -223,8 +225,10 @@ export default function Modal() {
             </Text>
           </TouchableOpacity>
         </View>
+        </KeyboardAvoidingView>
       </TouchableOpacity>
     </RnModal>
+  
   );
 }
 const styles = StyleSheet.create({
@@ -243,7 +247,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF", // Fond blanc
     padding: 20,
     borderRadius: 12,
-    width: "85%",
+    minWidth: "85%",
     alignItems: "center",
     shadowColor: "#000", 
     shadowOffset: { width: 0, height: 4 },
